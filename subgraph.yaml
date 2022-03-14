@@ -1,0 +1,62 @@
+specVersion: 0.0.1
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ProofOfHumanity
+    network: mainnet
+    source:
+      address: "0xc5e9ddebb09cd64dfacab4011a0d5cedaf7c9bdb"
+      abi: ProofOfHumanity
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - AddSubmission
+        - AppealContribution
+        - ArbitratorComplete
+        - ChallengeResolved
+        - Dispute
+        - Evidence
+        - HasPaidAppealFee
+        - MetaEvidence
+        - ReapplySubmission
+        - RemoveSubmission
+        - Ruling
+        - SubmissionChallenged
+        - VouchAdded
+        - VouchRemoved
+      abis:
+        - name: ProofOfHumanity
+          file: ./abis/ProofOfHumanity.json
+      eventHandlers:
+        - event: AddSubmission(indexed address,uint256)
+          handler: handleAddSubmission
+        - event: AppealContribution(indexed address,indexed uint256,uint8,indexed address,uint256)
+          handler: handleAppealContribution
+        - event: ArbitratorComplete(address,indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleArbitratorComplete
+        - event: ChallengeResolved(indexed address,indexed uint256,uint256)
+          handler: handleChallengeResolved
+        - event: Dispute(indexed address,indexed uint256,uint256,uint256)
+          handler: handleDispute
+        - event: Evidence(indexed address,indexed uint256,indexed address,string)
+          handler: handleEvidence
+        - event: HasPaidAppealFee(indexed address,indexed uint256,uint8)
+          handler: handleHasPaidAppealFee
+        - event: MetaEvidence(indexed uint256,string)
+          handler: handleMetaEvidence
+        - event: ReapplySubmission(indexed address,uint256)
+          handler: handleReapplySubmission
+        - event: RemoveSubmission(indexed address,indexed address,uint256)
+          handler: handleRemoveSubmission
+        - event: Ruling(indexed address,indexed uint256,uint256)
+          handler: handleRuling
+        - event: SubmissionChallenged(indexed address,indexed uint256,uint256)
+          handler: handleSubmissionChallenged
+        - event: VouchAdded(indexed address,indexed address)
+          handler: handleVouchAdded
+        - event: VouchRemoved(indexed address,indexed address)
+          handler: handleVouchRemoved
+      file: ./src/mapping.ts
