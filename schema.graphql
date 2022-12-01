@@ -1,6 +1,200 @@
-type ExampleEntity @entity {
-  id: ID!
-  count: BigInt!
-  _submissionID: Bytes! # address
-  _requestID: BigInt! # uint256
+enum Party {
+  None
+  Requester
+  Challenger
+}
+
+enum Reason {
+  None
+  IncorrectSubmission
+  Deceased
+  Duplicate
+  DoesNotExist
+}
+
+enum Status {
+  Vouching
+  Resolving
+  Disputed
+  Resolved
+}
+
+enum OldSubmissionStatus {
+  None
+  Vouching
+  PendingRegistration
+  PendingRemoval
+}
+
+type _Schema_
+  @fulltext(
+    name: "submissionSearch"
+    language: en
+    algorithm: rank
+    include: [{ entity: "Claimer", fields: [{ name: "name" }] }]
+  )
+
+type Contract @entity {
+  id: Bytes!
+  address: Bytes!
+  governor: Bytes!
+  requestBaseDeposit: BigInt!
+  humanityLifespan: BigInt!
+  renewalTime: BigInt!
+  challengePeriodDuration: BigInt!
+  requiredNumberOfVouches: BigInt!
+  sharedStakeMultiplier: BigInt!
+  winnerStakeMultiplier: BigInt!
+  loserStakeMultiplier: BigInt!
+  metaEvidenceUpdates: BigInt!
+  latestArbitratorData: ArbitratorData!
+}
+
+type ArbitratorData @entity {
+  id: Bytes!
+  registrationMeta: String!
+  clearingMeta: String!
+  arbitrator: Bytes!
+  arbitratorExtraData: Bytes!
+  metaEvidenceUpdateTime: BigInt!
+}
+
+type Humanity @entity {
+  id: Bytes!
+  owner: Claimer
+  claimed: Boolean!
+  claimTime: BigInt!
+  expirationTime: BigInt!
+  vouching: Boolean!
+  usedVouch: Claimer
+  pendingRevocation: Boolean!
+  claimers: [Claimer!]! @derivedFrom(field: "targetHumanity")
+  requests: [Request!]! @derivedFrom(field: "humanity")
+  nbRequests: BigInt!
+  nbPendingRequests: BigInt!
+}
+
+type Claimer @entity {
+  id: Bytes!
+  name: String
+  humanity: Humanity
+  targetHumanity: Humanity
+  hasHumanity: Boolean!
+  currentRequest: Request
+  lastRequestTime: BigInt!
+  disputed: Boolean!
+  vouches: [Vouch!]! @derivedFrom(field: "from")
+  vouchesReceived: [Vouch!]!
+}
+
+type Request @entity {
+  id: Bytes!
+  humanity: Humanity!
+  index: BigInt!
+  requester: Bytes!
+  registration: Boolean!
+  claimer: Claimer!
+  status: Status!
+  creationTime: BigInt!
+  resolutionTime: BigInt!
+  challengePeriodEnd: BigInt!
+  usedReasons: [Reason!]!
+  currentReason: Reason!
+  ultimateChallenger: Bytes
+  lastStatusChange: BigInt!
+  requesterLost: Boolean!
+  vouches: [Vouch!]!
+  lastProcessedVouchIndex: BigInt!
+  arbitratorData: ArbitratorData!
+  evidence: [Evidence!]! @derivedFrom(field: "request")
+  nbEvidence: BigInt!
+  challenges: [Challenge!]! @derivedFrom(field: "request")
+  nbChallenges: BigInt!
+}
+
+type Challenge @entity {
+  id: Bytes!
+  request: Request!
+  reason: Reason!
+  challenger: Bytes
+  creationTime: BigInt!
+  disputeId: BigInt!
+  ruling: Party!
+  appealPeriodStart: BigInt!
+  appealPeriodEnd: BigInt!
+  rounds: [Round!]! @derivedFrom(field: "challenge")
+  nbRounds: BigInt!
+}
+
+type Round @entity {
+  id: Bytes!
+  challenge: Challenge!
+  creationTime: BigInt!
+  requesterFunds: BigInt!
+  challengerFunds: BigInt!
+  requesterPaid: Boolean!
+  challengerPaid: Boolean!
+  feeRewards: BigInt!
+  contributions: [Contribution!]! @derivedFrom(field: "round")
+  nbContributions: BigInt!
+}
+
+type Vouch @entity(immutable: true) {
+  id: Bytes!
+  for: Claimer!
+  humanity: Humanity!
+  from: Claimer!
+}
+
+type Contribution @entity {
+  id: Bytes!
+  round: Round!
+  contributor: Bytes!
+  forRequester: BigInt!
+  forChallenger: BigInt!
+}
+
+type Evidence @entity(immutable: true) {
+  id: Bytes!
+  request: Request!
+  creationTime: BigInt!
+  URI: String!
+  sender: Bytes!
+}
+
+type Counter @entity {
+  id: Bytes!
+  vouching: BigInt!
+  pendingClaims: BigInt!
+  challengedClaims: BigInt!
+  registered: BigInt!
+  pendingRevocations: BigInt!
+  challengedRevocation: BigInt!
+  removed: BigInt!
+  expired: BigInt!
+}
+
+type CrossChainHumanity @entity {
+  id: Bytes!
+  owner: Claimer
+  claimed: Boolean!
+  expirationTime: BigInt!
+  lastReceivedTransferTimestamp: BigInt!
+}
+
+type OutTransfer @entity(immutable: true) {
+  id: Bytes!
+  foreignProxy: Bytes!
+  transferHash: Bytes!
+  transferTimestamp: BigInt!
+}
+
+type InTransfer @entity(immutable: true) {
+  id: Bytes!
+  humanityId: Bytes!
+}
+
+type CrossChainGateway @entity {
+  id: Bytes!
+  foreignProxy: Bytes!
 }

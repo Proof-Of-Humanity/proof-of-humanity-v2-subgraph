@@ -1,16 +1,22 @@
 {
-  "name": "",
+  "name": "poh-subgraph",
   "license": "UNLICENSED",
   "scripts": {
-    "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ ",
-    "create-local": "graph create --node http://localhost:8020/ ",
-    "remove-local": "graph remove --node http://localhost:8020/ ",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 "
+    "gen": "graph codegen --output-dir generated/",
+    "gen-mainnet-v1": "mustache config/mainnet-v1.json subgraph.template.yaml > subgraph.yaml && yarn gen",
+    "gen-goerli": "mustache config/goerli.json subgraph.template.yaml > subgraph.yaml && yarn gen",
+    "gen-opgoerli": "mustache config/opgoerli.json subgraph.template.yaml > subgraph.yaml && yarn gen",
+    "gen-gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml && yarn gen",
+    "deploy-goerli": "yarn gen-goerli && graph deploy --product hosted-service andreimvp/poh-goerli",
+    "deploy-opgoerli": "yarn gen-opgoerli && graph deploy --product hosted-service andreimvp/poh-opgoerli",
+    "deploy-gnosis": "yarn gen-gnosis && graph deploy --product hosted-service andreimvp/poh-gnosis",
+    "deploy-mainnet-v1": "yarn gen-mainnet-v1 && graph deploy --product hosted-service andreimvp/poh-v1-in-v2-shoes"
   },
-  "dependencies": {
-    "@graphprotocol/graph-cli": "0.25.3",
-    "@graphprotocol/graph-ts": "0.24.1"
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.33.0",
+    "@graphprotocol/graph-ts": "^0.27.0",
+    "mustache": "^4.2.0",
+    "typescript": "^4.7.4"
   }
 }

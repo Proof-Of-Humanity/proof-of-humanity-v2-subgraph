@@ -1,0 +1,7 @@
+{
+    "network": "optimism-goerli",
+    "address": "0x9De81Cf9b4B46046C1A87FdC71Ae55566919bE64",
+    "start-block": 2472037,
+    "cross-chain": "0xEb457616C5dcd17e49e92Fc55F557dD1262a8835",
+    "cross-chain-start-block": 2472257
+}

@@ -5,13 +5,14 @@ features:
 schema:
   file: ./schema.graphql
 dataSources:
+  {{^v1}}
   - kind: ethereum
     name: ProofOfHumanity
-    network: optimism-goerli
+    network: {{network}}
     source:
-      address: "0x9De81Cf9b4B46046C1A87FdC71Ae55566919bE64"
+      address: "{{address}}"
       abi: ProofOfHumanity
-      startBlock: 2472037
+      startBlock: {{start-block}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -87,13 +88,90 @@ dataSources:
           handler: handleVouchesProcessed
         - event: FeesAndRewardsWithdrawn(address,bytes20,uint256,uint256,uint256)
           handler: handleFeesAndRewardsWithdrawn
+  {{/v1}}
+  {{#v1}}
+  - kind: ethereum
+    name: ProofOfHumanityOld
+    network: mainnet
+    source:
+      address: "{{v1-address}}"
+      abi: ProofOfHumanityOld
+      startBlock: {{v1-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./v1/mappings/index.ts
+      entities:
+        - Contract
+        - ArbitratorData
+        - Soul
+        - Claimer
+        - Request
+        - Vouch
+        - Evidence
+        - Counter
+      abis:
+        - name: ProofOfHumanityOld
+          file: ./abis/ProofOfHumanityOld.json
+      eventHandlers:
+        - event: ArbitratorComplete(address,indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleArbitratorComplete
+        - event: MetaEvidence(indexed uint256,string)
+          handler: handleMetaEvidence
+        - event: VouchAdded(indexed address,indexed address)
+          handler: handleVouchAdded
+        - event: VouchRemoved(indexed address,indexed address)
+          handler: handleVouchRemoved
+      callHandlers:
+        - function: changeSubmissionBaseDeposit(uint256)
+          handler: changeSubmissionBaseDeposit
+        - function: changeDurations(uint64,uint64,uint64)
+          handler: changeDurations
+        - function: changeRequiredNumberOfVouches(uint64)
+          handler: changeRequiredNumberOfVouches
+        - function: changeSharedStakeMultiplier(uint256)
+          handler: changeSharedStakeMultiplier
+        - function: changeWinnerStakeMultiplier(uint256)
+          handler: changeWinnerStakeMultiplier
+        - function: changeLoserStakeMultiplier(uint256)
+          handler: changeLoserStakeMultiplier
+        - function: changeGovernor(address)
+          handler: changeGovernor
+        - function: changeArbitrator(address,bytes)
+          handler: changeArbitrator
+        - function: addSubmissionManually(address[],string[],string[])
+          handler: addSubmissionManually
+        - function: removeSubmissionManually(address)
+          handler: removeSubmissionManually
+        - function: addSubmission(string,string)
+          handler: addSubmission
+        - function: reapplySubmission(string,string)
+          handler: reapplySubmission
+        - function: removeSubmission(address,string)
+          handler: removeSubmission
+        - function: withdrawSubmission()
+          handler: withdrawSubmission
+        - function: changeStateToPending(address,address[],bytes[],uint256[])
+          handler: changeStateToPending
+        - function: challengeRequest(address,uint8,address,string)
+          handler: challengeRequest
+        - function: executeRequest(address)
+          handler: executeRequest
+        - function: processVouches(address,uint256,uint256)
+          handler: processVouches
+        - function: rule(uint256,uint256)
+          handler: rule
+        - function: submitEvidence(address,string)
+          handler: submitEvidence
+  {{/v1}}
   - kind: ethereum
     name: CrossChainProofOfHumanity
-    network: optimism-goerli
+    network: {{network}}
     source:
-      address: "0xEb457616C5dcd17e49e92Fc55F557dD1262a8835"
+      address: "{{cross-chain}}"
       abi: CrossChainProofOfHumanity
-      startBlock: 2472257
+      startBlock: {{cross-chain-start-block}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

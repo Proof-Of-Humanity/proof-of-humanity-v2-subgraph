@@ -1,112 +1,24 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "contract IArbitrator",
-        "name": "_arbitrator",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_arbitratorExtraData",
-        "type": "bytes"
-      },
-      {
-        "internalType": "string",
-        "name": "_registrationMetaEvidence",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_clearingMetaEvidence",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_submissionBaseDeposit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_submissionDuration",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_renewalPeriodDuration",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_challengePeriodDuration",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint256[3]",
-        "name": "_multipliers",
-        "type": "uint256[3]"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_requiredNumberOfVouches",
-        "type": "uint64"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_submissionID",
+        "indexed": false,
+        "internalType": "contract IArbitrator",
+        "name": "arbitrator",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_requestID",
-        "type": "uint256"
-      }
-    ],
-    "name": "AddSubmission",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_submissionID",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "_challengeID",
+        "name": "disputeId",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "enum ProofOfHumanity.Party",
-        "name": "_party",
+        "name": "side",
         "type": "uint8"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_contributor",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
       }
     ],
     "name": "AppealContribution",
@@ -118,84 +30,74 @@
       {
         "indexed": false,
         "internalType": "contract IArbitrator",
-        "name": "_arbitrator",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_governor",
+        "name": "arbitrator",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_submissionBaseDeposit",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_submissionDuration",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_challengePeriodDuration",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_requiredNumberOfVouches",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_sharedStakeMultiplier",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_winnerStakeMultiplier",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_loserStakeMultiplier",
+        "name": "disputeId",
         "type": "uint256"
       }
     ],
-    "name": "ArbitratorComplete",
+    "name": "AppealCreated",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_submissionID",
+        "indexed": false,
+        "internalType": "contract IArbitrator",
+        "name": "arbitrator",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "arbitratorExtraData",
+        "type": "bytes"
+      }
+    ],
+    "name": "ArbitratorChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
-        "name": "_requestID",
+        "name": "requestId",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_challengeID",
+        "name": "challengeId",
         "type": "uint256"
       }
     ],
-    "name": "ChallengeResolved",
+    "name": "ChallengePeriodRestart",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "crossChainProofOfHumanity",
+        "type": "address"
+      }
+    ],
+    "name": "CrossChainProxyChanged",
     "type": "event"
   },
   {
@@ -233,6 +135,31 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "humanityLifespan",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "renewalPeriodDuration",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "challengePeriodDuration",
+        "type": "uint64"
+      }
+    ],
+    "name": "DurationsChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "contract IArbitrator",
         "name": "_arbitrator",
@@ -264,25 +191,195 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
-        "name": "_submissionID",
+        "name": "beneficiary",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
-        "name": "_challengeID",
+        "name": "requestId",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "enum ProofOfHumanity.Party",
-        "name": "_side",
-        "type": "uint8"
+        "internalType": "uint256",
+        "name": "challengeId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
       }
     ],
-    "name": "HasPaidAppealFee",
+    "name": "FeesAndRewardsWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "governor",
+        "type": "address"
+      }
+    ],
+    "name": "GovernorChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidence",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "HumanityClaim",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "expirationTime",
+        "type": "uint64"
+      }
+    ],
+    "name": "HumanityGrantedManually",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidence",
+        "type": "string"
+      }
+    ],
+    "name": "HumanityRenewal",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidence",
+        "type": "string"
+      }
+    ],
+    "name": "HumanityRevocation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "human",
+        "type": "address"
+      }
+    ],
+    "name": "HumanityRevokedManually",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      
+    ],
+    "name": "Initialized",
     "type": "event"
   },
   {
@@ -308,44 +405,114 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_submissionID",
-        "type": "address"
-      },
-      {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_requestID",
+        "name": "requestBaseDeposit",
         "type": "uint256"
       }
     ],
-    "name": "ReapplySubmission",
+    "name": "RequestBaseDepositChanged",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_requester",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_submissionID",
-        "type": "address"
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_requestID",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "challengeId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ProofOfHumanity.Reason",
+        "name": "reason",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidence",
+        "type": "string"
+      }
+    ],
+    "name": "RequestChallenged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "claimer",
+        "type": "address"
+      }
+    ],
+    "name": "RequestContribution",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
         "type": "uint256"
       }
     ],
-    "name": "RemoveSubmission",
+    "name": "RequestExecuted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      }
+    ],
+    "name": "RequestWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "requiredNumberOfVouches",
+        "type": "uint64"
+      }
+    ],
+    "name": "RequiredNumberOfVouchesChanged",
     "type": "event"
   },
   {
@@ -377,25 +544,38 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_submissionID",
-        "type": "address"
-      },
-      {
-        "indexed": true,
+        "indexed": false,
         "internalType": "uint256",
-        "name": "_requestID",
+        "name": "sharedMultiplier",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_challengeID",
+        "name": "winnerMultiplier",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "loserMultiplier",
         "type": "uint256"
       }
     ],
-    "name": "SubmissionChallenged",
+    "name": "StakeMultipliersChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "claimer",
+        "type": "address"
+      }
+    ],
+    "name": "StateAdvanced",
     "type": "event"
   },
   {
@@ -404,14 +584,20 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_submissionID",
+        "name": "voucher",
         "type": "address"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_voucher",
+        "name": "vouched",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
       }
     ],
     "name": "VouchAdded",
@@ -423,73 +609,136 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_submissionID",
+        "name": "voucher",
         "type": "address"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_voucher",
+        "name": "vouched",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
       }
     ],
     "name": "VouchRemoved",
     "type": "event"
   },
   {
-    "constant": false,
-    "inputs": [
-      { "internalType": "string", "name": "_evidence", "type": "string" },
-      { "internalType": "string", "name": "_name", "type": "string" }
-    ],
-    "name": "addSubmission",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": false,
+    "anonymous": false,
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "_submissionIDs",
-        "type": "address[]"
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
       },
-      { "internalType": "string[]", "name": "_evidence", "type": "string[]" },
-      { "internalType": "string[]", "name": "_names", "type": "string[]" }
-    ],
-    "name": "addSubmissionManually",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" }
-    ],
-    "name": "addVouch",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "name": "arbitratorDataList",
-    "outputs": [
       {
-        "internalType": "contract IArbitrator",
-        "name": "arbitrator",
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "endIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "VouchesProcessed",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_human",
         "type": "address"
       },
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      }
+    ],
+    "name": "addVouch",
+    "outputs": [
+      
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_claimer",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_vouches",
+        "type": "address[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "expirationTime",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "v",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "r",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "s",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct ProofOfHumanity.SignatureVouch[]",
+        "name": "_signatureVouches",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "advanceState",
+    "outputs": [
+      
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "arbitratorDataList",
+    "outputs": [
       {
         "internalType": "uint96",
         "name": "metaEvidenceUpdates",
         "type": "uint96"
+      },
+      {
+        "internalType": "contract IArbitrator",
+        "name": "arbitrator",
+        "type": "address"
       },
       {
         "internalType": "bytes",
@@ -497,54 +746,55 @@
         "type": "bytes"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "uint256", "name": "", "type": "uint256" }
+      
     ],
-    "name": "arbitratorDisputeIDToDisputeData",
-    "outputs": [
-      { "internalType": "uint96", "name": "challengeID", "type": "uint96" },
-      { "internalType": "address", "name": "submissionID", "type": "address" }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "challengePeriodDuration",
-    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
-    "payable": false,
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_requestId",
+        "type": "uint64"
+      },
       {
         "internalType": "enum ProofOfHumanity.Reason",
         "name": "_reason",
         "type": "uint8"
       },
-      { "internalType": "address", "name": "_duplicateID", "type": "address" },
-      { "internalType": "string", "name": "_evidence", "type": "string" }
+      {
+        "internalType": "string",
+        "name": "_evidence",
+        "type": "string"
+      }
     ],
     "name": "challengeRequest",
-    "outputs": [],
-    "payable": true,
+    "outputs": [
+      
+    ],
     "stateMutability": "payable",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "contract IArbitrator",
@@ -558,17 +808,32 @@
       }
     ],
     "name": "changeArbitrator",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_crossChainProofOfHumanity",
+        "type": "address"
+      }
+    ],
+    "name": "changeCrossChainProofOfHumanity",
+    "outputs": [
+      
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint64",
-        "name": "_submissionDuration",
+        "name": "_humanityLifespan",
         "type": "uint64"
       },
       {
@@ -583,39 +848,28 @@
       }
     ],
     "name": "changeDurations",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      { "internalType": "address", "name": "_governor", "type": "address" }
+    "outputs": [
+      
     ],
-    "name": "changeGovernor",
-    "outputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_loserStakeMultiplier",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_governor",
+        "type": "address"
       }
     ],
-    "name": "changeLoserStakeMultiplier",
-    "outputs": [],
-    "payable": false,
+    "name": "changeGovernor",
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "string",
@@ -629,13 +883,28 @@
       }
     ],
     "name": "changeMetaEvidence",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_requestBaseDeposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeRequestBaseDeposit",
+    "outputs": [
+      
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint64",
@@ -644,103 +913,168 @@
       }
     ],
     "name": "changeRequiredNumberOfVouches",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "uint256",
         "name": "_sharedStakeMultiplier",
         "type": "uint256"
-      }
-    ],
-    "name": "changeSharedStakeMultiplier",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "address[]", "name": "_vouches", "type": "address[]" },
-      { "internalType": "bytes[]", "name": "_signatures", "type": "bytes[]" },
-      {
-        "internalType": "uint256[]",
-        "name": "_expirationTimestamps",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "changeStateToPending",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_submissionBaseDeposit",
-        "type": "uint256"
-      }
-    ],
-    "name": "changeSubmissionBaseDeposit",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
+      },
       {
         "internalType": "uint256",
         "name": "_winnerStakeMultiplier",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_loserStakeMultiplier",
+        "type": "uint256"
       }
     ],
-    "name": "changeWinnerStakeMultiplier",
-    "outputs": [],
-    "payable": false,
+    "name": "changeStakeMultipliers",
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" },
-      { "internalType": "address", "name": "_duplicateID", "type": "address" }
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "string",
+        "name": "_evidence",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      }
     ],
-    "name": "checkRequestDuplicates",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "payable": false,
+    "name": "claimHumanity",
+    "outputs": [
+      
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_evidence",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      }
+    ],
+    "name": "claimHumanity",
+    "outputs": [
+      
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
+    "name": "crossChainProofOfHumanity",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "disputeIdToData",
+    "outputs": [
+      {
+        "internalType": "uint96",
+        "name": "requestId",
+        "type": "uint96"
+      },
+      {
+        "internalType": "uint96",
+        "name": "challengeId",
+        "type": "uint96"
+      },
+      {
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      }
     ],
     "name": "executeRequest",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_challengeID", "type": "uint256" },
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_challengeId",
+        "type": "uint256"
+      },
       {
         "internalType": "enum ProofOfHumanity.Party",
         "name": "_side",
@@ -748,117 +1082,256 @@
       }
     ],
     "name": "fundAppeal",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" }
+    "outputs": [
+      
     ],
-    "name": "fundSubmission",
-    "outputs": [],
-    "payable": true,
     "stateMutability": "payable",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_claimer",
+        "type": "address"
+      }
+    ],
+    "name": "fundRequest",
+    "outputs": [
+      
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
     "name": "getArbitratorDataListCount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "payable": false,
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_challengeID", "type": "uint256" }
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_challengeId",
+        "type": "uint256"
+      }
     ],
     "name": "getChallengeInfo",
     "outputs": [
-      { "internalType": "uint16", "name": "lastRoundID", "type": "uint16" },
-      { "internalType": "address", "name": "challenger", "type": "address" },
-      { "internalType": "uint256", "name": "disputeID", "type": "uint256" },
+      {
+        "internalType": "uint16",
+        "name": "lastRoundId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "address",
+        "name": "challenger",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "disputeId",
+        "type": "uint256"
+      },
       {
         "internalType": "enum ProofOfHumanity.Party",
         "name": "ruling",
         "type": "uint8"
-      },
-      {
-        "internalType": "uint64",
-        "name": "duplicateSubmissionIndex",
-        "type": "uint64"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_challengeID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_round", "type": "uint256" },
-      { "internalType": "address", "name": "_contributor", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_claimer",
+        "type": "address"
+      }
+    ],
+    "name": "getClaimerRequestId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_challengeId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_contributor",
+        "type": "address"
+      }
     ],
     "name": "getContributions",
     "outputs": [
       {
-        "internalType": "uint256[3]",
-        "name": "contributions",
-        "type": "uint256[3]"
+        "internalType": "uint256",
+        "name": "forRequester",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "forChallenger",
+        "type": "uint256"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" }
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      }
+    ],
+    "name": "getHumanityInfo",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "vouching",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "pendingRevocation",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint64",
+        "name": "nbPendingRequests",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "expirationTime",
+        "type": "uint64"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nbRequests",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      }
     ],
     "name": "getNumberOfVouches",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "payable": false,
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" }
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      }
     ],
     "name": "getRequestInfo",
     "outputs": [
-      { "internalType": "bool", "name": "disputed", "type": "bool" },
-      { "internalType": "bool", "name": "resolved", "type": "bool" },
-      { "internalType": "bool", "name": "requesterLost", "type": "bool" },
       {
-        "internalType": "enum ProofOfHumanity.Reason",
-        "name": "currentReason",
+        "internalType": "bool",
+        "name": "requesterLost",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint8",
+        "name": "usedReasons",
         "type": "uint8"
       },
       {
         "internalType": "uint16",
-        "name": "nbParallelDisputes",
+        "name": "arbitratorDataId",
         "type": "uint16"
       },
-      { "internalType": "uint16", "name": "lastChallengeID", "type": "uint16" },
       {
         "internalType": "uint16",
-        "name": "arbitratorDataID",
+        "name": "lastChallengeId",
         "type": "uint16"
+      },
+      {
+        "internalType": "uint64",
+        "name": "challengePeriodEnd",
+        "type": "uint64"
       },
       {
         "internalType": "address payable",
@@ -870,277 +1343,576 @@
         "name": "ultimateChallenger",
         "type": "address"
       },
-      { "internalType": "uint8", "name": "usedReasons", "type": "uint8" }
+      {
+        "internalType": "enum ProofOfHumanity.Status",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ProofOfHumanity.Reason",
+        "name": "currentReason",
+        "type": "uint8"
+      }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_challengeID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_round", "type": "uint256" }
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_challengeId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      }
     ],
     "name": "getRoundInfo",
     "outputs": [
-      { "internalType": "bool", "name": "appealed", "type": "bool" },
       {
-        "internalType": "uint256[3]",
-        "name": "paidFees",
-        "type": "uint256[3]"
+        "internalType": "bool",
+        "name": "appealed",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "paidFeesRequester",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "paidFeesChallenger",
+        "type": "uint256"
       },
       {
         "internalType": "enum ProofOfHumanity.Party",
         "name": "sideFunded",
         "type": "uint8"
       },
-      { "internalType": "uint256", "name": "feeRewards", "type": "uint256" }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" }
-    ],
-    "name": "getSubmissionInfo",
-    "outputs": [
-      {
-        "internalType": "enum ProofOfHumanity.Status",
-        "name": "status",
-        "type": "uint8"
-      },
-      { "internalType": "uint64", "name": "submissionTime", "type": "uint64" },
-      { "internalType": "uint64", "name": "index", "type": "uint64" },
-      { "internalType": "bool", "name": "registered", "type": "bool" },
-      { "internalType": "bool", "name": "hasVouched", "type": "bool" },
       {
         "internalType": "uint256",
-        "name": "numberOfRequests",
+        "name": "feeRewards",
         "type": "uint256"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "governor",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" }
+      
     ],
-    "name": "isRegistered",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "payable": false,
+    "name": "governor",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "loserStakeMultiplier",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_iterations", "type": "uint256" }
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_expirationTime",
+        "type": "uint64"
+      }
+    ],
+    "name": "grantManually",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
+    "name": "humanityLifespan",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "humans",
+    "outputs": [
+      {
+        "internalType": "bytes20",
+        "name": "",
+        "type": "bytes20"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IArbitrator",
+        "name": "_arbitrator",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_arbitratorExtraData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "string",
+        "name": "_registrationMetaEvidence",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_clearingMetaEvidence",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestBaseDeposit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_humanityLifespan",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_renewalPeriodDuration",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_challengePeriodDuration",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256[3]",
+        "name": "_multipliers",
+        "type": "uint256[3]"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_requiredNumberOfVouches",
+        "type": "uint64"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [
+      
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
+    "name": "initialized",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      }
+    ],
+    "name": "isClaimed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_humanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "isHuman",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
+    "name": "loserStakeMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_iterations",
+        "type": "uint256"
+      }
     ],
     "name": "processVouches",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
-      { "internalType": "string", "name": "_evidence", "type": "string" },
-      { "internalType": "string", "name": "_name", "type": "string" }
-    ],
-    "name": "reapplySubmission",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "string", "name": "_evidence", "type": "string" }
-    ],
-    "name": "removeSubmission",
-    "outputs": [],
-    "payable": true,
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" }
-    ],
-    "name": "removeSubmissionManually",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_human",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      }
     ],
     "name": "removeVouch",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "renewalPeriodDuration",
-    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "requiredNumberOfVouches",
-    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [
-      { "internalType": "uint256", "name": "_disputeID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_ruling", "type": "uint256" }
+      {
+        "internalType": "string",
+        "name": "_evidence",
+        "type": "string"
+      }
+    ],
+    "name": "renewHumanity",
+    "outputs": [
+      
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
+    "name": "renewalPeriodDuration",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
+    "name": "requestBaseDeposit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      
+    ],
+    "name": "requiredNumberOfVouches",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "string",
+        "name": "_evidence",
+        "type": "string"
+      }
+    ],
+    "name": "revokeHumanity",
+    "outputs": [
+      
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_humanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "revokeManually",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "expirationTime",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_disputeId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_ruling",
+        "type": "uint256"
+      }
     ],
     "name": "rule",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "sharedStakeMultiplier",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "submissionBaseDeposit",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "submissionCounter",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "submissionDuration",
-    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "string", "name": "_evidence", "type": "string" }
+      
+    ],
+    "name": "sharedStakeMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_evidence",
+        "type": "string"
+      }
     ],
     "name": "submitEvidence",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "address", "name": "", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes20",
+        "name": "",
+        "type": "bytes20"
+      }
     ],
     "name": "vouches",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "payable": false,
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
+    "inputs": [
+      
+    ],
     "name": "winnerStakeMultiplier",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "payable": false,
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "address payable",
         "name": "_beneficiary",
         "type": "address"
       },
-      { "internalType": "address", "name": "_submissionID", "type": "address" },
-      { "internalType": "uint256", "name": "_requestID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_challengeID", "type": "uint256" },
-      { "internalType": "uint256", "name": "_round", "type": "uint256" }
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_challengeId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      }
     ],
     "name": "withdrawFeesAndRewards",
-    "outputs": [],
-    "payable": false,
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [],
-    "name": "withdrawSubmission",
-    "outputs": [],
-    "payable": false,
+    "inputs": [
+      
+    ],
+    "name": "withdrawRequest",
+    "outputs": [
+      
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   }

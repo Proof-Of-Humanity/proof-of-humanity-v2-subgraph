@@ -1,0 +1,7 @@
+{
+    "network": "xdai",
+    "address": "0x31B679253D53A18Eb793e023e7EFCed5160d7fD6",
+    "start-block": 24034982,
+    "cross-chain": "0x566cE77b009534F18928857B6F1BFAc2aC68a37e",
+    "cross-chain-start-block": 24423709
+}
