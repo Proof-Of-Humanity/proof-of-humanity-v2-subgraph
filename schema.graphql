@@ -17,6 +17,7 @@ enum Status {
   Resolving
   Disputed
   Resolved
+  Withdrawn
 }
 
 enum OldSubmissionStatus {
@@ -66,7 +67,7 @@ type Humanity @entity {
   claimTime: BigInt!
   expirationTime: BigInt!
   vouching: Boolean!
-  usedVouch: Claimer
+  usedVouch: Request
   pendingRevocation: Boolean!
   claimers: [Claimer!]! @derivedFrom(field: "targetHumanity")
   requests: [Request!]! @derivedFrom(field: "humanity")
@@ -85,6 +86,7 @@ type Claimer @entity {
   disputed: Boolean!
   vouches: [Vouch!]! @derivedFrom(field: "from")
   vouchesReceived: [Vouch!]!
+  nbVouchesReceived: BigInt!
 }
 
 type Request @entity {
@@ -92,7 +94,7 @@ type Request @entity {
   humanity: Humanity!
   index: BigInt!
   requester: Bytes!
-  registration: Boolean!
+  revocation: Boolean!
   claimer: Claimer!
   status: Status!
   creationTime: BigInt!

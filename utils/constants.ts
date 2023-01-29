@@ -41,6 +41,7 @@ export class Status {
   static readonly Resolving: string = "Resolving";
   static readonly Disputed: string = "Disputed";
   static readonly Resolved: string = "Resolved";
+  static readonly Withdrawn: string = "Withdrawn";
 
   static parse(status: i32): string {
     switch (status) {
@@ -52,6 +53,8 @@ export class Status {
         return this.Disputed;
       case 3:
         return this.Resolved;
+      case 4:
+        return this.Withdrawn;
       default:
         return "Error";
     }

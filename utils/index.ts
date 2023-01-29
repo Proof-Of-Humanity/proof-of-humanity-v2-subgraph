@@ -71,15 +71,15 @@ export class New {
     humanity: Bytes,
     claimer: Bytes,
     index: BigInt,
-    registration: boolean
+    revocation: boolean
   ): Request {
     const request = new Request(genId(humanity, biToBytes(index)));
     request.humanity = humanity;
     request.claimer = claimer;
     request.index = index;
     request.requester = ZERO_ADDRESS;
-    request.registration = registration;
-    request.status = registration ? Status.Vouching : Status.Resolving;
+    request.revocation = revocation;
+    request.status = revocation ? Status.Resolving : Status.Vouching;
     request.creationTime = ZERO_BI;
     request.resolutionTime = ZERO_BI;
     request.challengePeriodEnd = ZERO_BI;

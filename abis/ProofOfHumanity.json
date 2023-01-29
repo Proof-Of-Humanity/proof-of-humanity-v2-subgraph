@@ -13,31 +13,6 @@
         "internalType": "uint256",
         "name": "disputeId",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum ProofOfHumanity.Party",
-        "name": "side",
-        "type": "uint8"
-      }
-    ],
-    "name": "AppealContribution",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "contract IArbitrator",
-        "name": "arbitrator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "disputeId",
-        "type": "uint256"
       }
     ],
     "name": "AppealCreated",
@@ -85,6 +60,92 @@
       }
     ],
     "name": "ChallengePeriodRestart",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidence",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "ClaimRequest",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "challengeId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "contributor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "contribution",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ProofOfHumanity.Party",
+        "name": "side",
+        "type": "uint8"
+      }
+    ],
+    "name": "Contribution",
     "type": "event"
   },
   {
@@ -192,12 +253,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "beneficiary",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "bytes20",
         "name": "humanityId",
         "type": "bytes20"
@@ -219,6 +274,12 @@
         "internalType": "uint256",
         "name": "round",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
       }
     ],
     "name": "FeesAndRewardsWithdrawn",
@@ -241,13 +302,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "requester",
-        "type": "address"
-      },
-      {
-        "indexed": true,
+        "indexed": false,
         "internalType": "bytes20",
         "name": "humanityId",
         "type": "bytes20"
@@ -257,21 +312,9 @@
         "internalType": "uint256",
         "name": "requestId",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "evidence",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
       }
     ],
-    "name": "HumanityClaim",
+    "name": "HumanityClaimed",
     "type": "event"
   },
   {
@@ -303,13 +346,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "requester",
-        "type": "address"
-      },
-      {
-        "indexed": true,
+        "indexed": false,
         "internalType": "bytes20",
         "name": "humanityId",
         "type": "bytes20"
@@ -319,56 +356,19 @@
         "internalType": "uint256",
         "name": "requestId",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "evidence",
-        "type": "string"
       }
     ],
-    "name": "HumanityRenewal",
+    "name": "HumanityRevoked",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "requester",
-        "type": "address"
-      },
       {
         "indexed": true,
         "internalType": "bytes20",
         "name": "humanityId",
         "type": "bytes20"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "requestId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "evidence",
-        "type": "string"
-      }
-    ],
-    "name": "HumanityRevocation",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "human",
-        "type": "address"
       }
     ],
     "name": "HumanityRevokedManually",
@@ -376,9 +376,7 @@
   },
   {
     "anonymous": false,
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "Initialized",
     "type": "event"
   },
@@ -399,6 +397,37 @@
       }
     ],
     "name": "MetaEvidence",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidence",
+        "type": "string"
+      }
+    ],
+    "name": "RenewalRequest",
     "type": "event"
   },
   {
@@ -443,44 +472,18 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "disputeId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "string",
         "name": "evidence",
         "type": "string"
       }
     ],
     "name": "RequestChallenged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "claimer",
-        "type": "address"
-      }
-    ],
-    "name": "RequestContribution",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes20",
-        "name": "humanityId",
-        "type": "bytes20"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "requestId",
-        "type": "uint256"
-      }
-    ],
-    "name": "RequestExecuted",
     "type": "event"
   },
   {
@@ -513,6 +516,37 @@
       }
     ],
     "name": "RequiredNumberOfVouchesChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidence",
+        "type": "string"
+      }
+    ],
+    "name": "RevocationRequest",
     "type": "event"
   },
   {
@@ -584,13 +618,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "voucher",
+        "name": "voucherAccount",
         "type": "address"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "vouched",
+        "name": "claimer",
         "type": "address"
       },
       {
@@ -608,14 +642,39 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "bytes20",
+        "name": "voucherHumanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "vouchedHumanityId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "requestId",
+        "type": "uint256"
+      }
+    ],
+    "name": "VouchRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "address",
-        "name": "voucher",
+        "name": "voucherAccount",
         "type": "address"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "vouched",
+        "name": "claimer",
         "type": "address"
       },
       {
@@ -657,7 +716,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_human",
+        "name": "_account",
         "type": "address"
       },
       {
@@ -667,9 +726,7 @@
       }
     ],
     "name": "addVouch",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -714,9 +771,7 @@
       }
     ],
     "name": "advanceState",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -751,8 +806,25 @@
   },
   {
     "inputs": [
-      
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      }
     ],
+    "name": "boundTo",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "challengePeriodDuration",
     "outputs": [
       {
@@ -788,9 +860,7 @@
       }
     ],
     "name": "challengeRequest",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -808,9 +878,7 @@
       }
     ],
     "name": "changeArbitrator",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -823,9 +891,7 @@
       }
     ],
     "name": "changeCrossChainProofOfHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -848,9 +914,7 @@
       }
     ],
     "name": "changeDurations",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -863,9 +927,7 @@
       }
     ],
     "name": "changeGovernor",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -883,9 +945,7 @@
       }
     ],
     "name": "changeMetaEvidence",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -898,9 +958,7 @@
       }
     ],
     "name": "changeRequestBaseDeposit",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -913,9 +971,7 @@
       }
     ],
     "name": "changeRequiredNumberOfVouches",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -938,9 +994,7 @@
       }
     ],
     "name": "changeStakeMultipliers",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -963,9 +1017,7 @@
       }
     ],
     "name": "claimHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -983,16 +1035,12 @@
       }
     ],
     "name": "claimHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "crossChainProofOfHumanity",
     "outputs": [
       {
@@ -1052,9 +1100,7 @@
       }
     ],
     "name": "executeRequest",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -1082,9 +1128,7 @@
       }
     ],
     "name": "fundAppeal",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -1097,16 +1141,12 @@
       }
     ],
     "name": "fundRequest",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "getArbitratorDataListCount",
     "outputs": [
       {
@@ -1412,9 +1452,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "governor",
     "outputs": [
       {
@@ -1435,7 +1473,7 @@
       },
       {
         "internalType": "address",
-        "name": "_owner",
+        "name": "_account",
         "type": "address"
       },
       {
@@ -1456,9 +1494,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "humanityLifespan",
     "outputs": [
       {
@@ -1474,15 +1510,15 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "_account",
         "type": "address"
       }
     ],
-    "name": "humans",
+    "name": "humanityOf",
     "outputs": [
       {
         "internalType": "bytes20",
-        "name": "",
+        "name": "humanityId",
         "type": "bytes20"
       }
     ],
@@ -1543,16 +1579,12 @@
       }
     ],
     "name": "initialize",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "initialized",
     "outputs": [
       {
@@ -1587,7 +1619,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_humanAddress",
+        "name": "_account",
         "type": "address"
       }
     ],
@@ -1603,9 +1635,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "loserStakeMultiplier",
     "outputs": [
       {
@@ -1636,9 +1666,7 @@
       }
     ],
     "name": "processVouches",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -1646,7 +1674,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_human",
+        "name": "_account",
         "type": "address"
       },
       {
@@ -1656,9 +1684,7 @@
       }
     ],
     "name": "removeVouch",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -1671,16 +1697,12 @@
       }
     ],
     "name": "renewHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "renewalPeriodDuration",
     "outputs": [
       {
@@ -1693,9 +1715,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "requestBaseDeposit",
     "outputs": [
       {
@@ -1708,9 +1728,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "requiredNumberOfVouches",
     "outputs": [
       {
@@ -1736,9 +1754,7 @@
       }
     ],
     "name": "revokeHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -1746,7 +1762,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_humanAddress",
+        "name": "_account",
         "type": "address"
       }
     ],
@@ -1780,16 +1796,12 @@
       }
     ],
     "name": "rule",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "sharedStakeMultiplier",
     "outputs": [
       {
@@ -1820,9 +1832,7 @@
       }
     ],
     "name": "submitEvidence",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -1856,9 +1866,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "winnerStakeMultiplier",
     "outputs": [
       {
@@ -1899,20 +1907,14 @@
       }
     ],
     "name": "withdrawFeesAndRewards",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "withdrawRequest",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   }

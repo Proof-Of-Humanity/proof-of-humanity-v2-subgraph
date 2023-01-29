@@ -335,9 +335,9 @@ export function withdrawSubmission(call: WithdrawSubmissionCall): void {
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
 
-  if (request.status != "Vouching") return;
+  if (request.status != Status.Vouching) return;
 
-  request.status = "Resolved";
+  request.status = Status.Withdrawn;
   request.resolutionTime = call.block.timestamp;
   request.save();
 
@@ -360,7 +360,7 @@ export function changeStateToPending(call: ChangeStateToPendingCall): void {
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.lastStatusChange = call.block.timestamp;
-  request.status = "Resolving";
+  request.status = Status.Resolving;
 
   for (let i = 0; i < claimer.vouchesReceived.length; i++) {
     const vouch = Vouch.load(claimer.vouchesReceived[i]) as Vouch;
@@ -397,7 +397,7 @@ export function challengeRequest(call: ChallengeRequestCall): void {
 
   const reason = Reason.parse(call.inputs._reason);
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
-  request.status = "Disputed";
+  request.status = Status.Disputed;
   request.usedReasons = request.usedReasons.concat([reason]);
   request.currentReason = reason;
 
@@ -455,7 +455,7 @@ export function executeRequest(call: ExecuteRequestCall): void {
   claimer.save();
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
-  request.status = "Resolved";
+  request.status = Status.Resolved;
   request.resolutionTime = call.block.timestamp;
   request.save();
 }
@@ -500,8 +500,8 @@ export function rule(call: RuleCall): void {
     request.index.minus(ONE_BI)
   );
   request.lastStatusChange = call.block.timestamp;
-  if (requestInfo.getDisputed()) request.status = "Disputed";
-  if (requestInfo.getResolved()) request.status = "Resolved";
+  if (requestInfo.getDisputed()) request.status = Status.Disputed;
+  if (requestInfo.getResolved()) request.status = Status.Resolved;
   request.currentReason = Reason.parse(requestInfo.getCurrentReason());
   request.ultimateChallenger = requestInfo.getUltimateChallenger();
   request.requesterLost = requestInfo.getRequesterLost();
@@ -546,16 +546,18 @@ export function processVouches(call: ProcessVouchesCall): void {
     if (
       request.ultimateChallenger &&
       voucher.currentRequest &&
-      (request.usedReasons[request.usedReasons.length - 1] == "Duplicate" ||
-        request.usedReasons[request.usedReasons.length - 1] == "DoesNotExist")
+      (request.usedReasons[request.usedReasons.length - 1] ==
+        Reason.Duplicate ||
+        request.usedReasons[request.usedReasons.length - 1] ==
+          Reason.DoesNotExist)
     ) {
       const voucherRequest = Request.load(
         voucher.currentRequest as Bytes
       ) as Request;
 
       if (
-        voucherRequest.status == "Vouching" ||
-        voucherRequest.status == "Resolving"
+        voucherRequest.status == Status.Vouching ||
+        voucherRequest.status == Status.Resolving
       ) {
         voucherRequest.requesterLost = true;
         voucherRequest.save();

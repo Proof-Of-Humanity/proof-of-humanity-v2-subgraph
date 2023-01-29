@@ -48,32 +48,38 @@ dataSources:
           handler: handleRequiredNumberOfVouchesChanged
         - event: StakeMultipliersChanged(uint256,uint256,uint256)
           handler: handleStakeMultipliersChanged
+        - event: CrossChainProxyChanged(address)
+          handler: handleCrossChainProxyChanged
         - event: ArbitratorChanged(address,bytes)
           handler: handleArbitratorChanged
         - event: HumanityGrantedManually(indexed bytes20,indexed address,uint64)
           handler: handleHumanityGrantedManually
-        - event: HumanityRevokedManually(indexed address)
+        - event: HumanityRevokedManually(indexed bytes20)
           handler: handleHumanityRevokedManually
-        - event: HumanityClaim(indexed address,indexed bytes20,uint256,string,string)
-          handler: handleHumanityClaim
-        - event: HumanityRenewal(indexed address,indexed bytes20,uint256,string)
-          handler: handleHumanityRenewal
-        - event: HumanityRevocation(indexed address,indexed bytes20,uint256,string)
-          handler: handleHumanityRevocation
+        - event: ClaimRequest(indexed address,indexed bytes20,uint256,string,string)
+          handler: handleClaimRequest
+        - event: RenewalRequest(indexed address,indexed bytes20,uint256,string)
+          handler: handleRenewalRequest
+        - event: RevocationRequest(indexed address,indexed bytes20,uint256,string)
+          handler: handleRevocationRequest
         - event: VouchAdded(indexed address,indexed address,bytes20)
           handler: handleVouchAdded
         - event: VouchRemoved(indexed address,indexed address,bytes20)
           handler: handleVouchRemoved
+        - event: VouchRegistered(indexed bytes20,indexed bytes20,uint256)
+          handler: handleVouchRegistered
         - event: RequestWithdrawn(bytes20,uint256)
           handler: handleRequestWithdrawn
-        - event: RequestContribution(address)
-          handler: handleRequestContribution
         - event: StateAdvanced(address)
           handler: handleStateAdvanced
-        - event: RequestChallenged(bytes20,uint256,uint256,uint8,string)
+        - event: RequestChallenged(bytes20,uint256,uint256,uint8,uint256,string)
           handler: handleRequestChallenged
-        - event: RequestExecuted(bytes20,uint256)
-          handler: handleRequestExecuted
+        - event: HumanityClaimed(bytes20,uint256)
+          handler: handleHumanityClaimed
+        - event: HumanityRevoked(bytes20,uint256)
+          handler: handleHumanityRevoked
+        - event: VouchesProcessed(bytes20,uint256,uint256)
+          handler: handleVouchesProcessed
         - event: ChallengePeriodRestart(bytes20,uint256,uint256)
           handler: handleChallengePeriodRestart
         - event: Ruling(indexed address,indexed uint256,uint256)
@@ -82,11 +88,9 @@ dataSources:
           handler: handleEvidence
         - event: AppealCreated(address,uint256)
           handler: handleAppealCreated
-        - event: AppealContribution(address,uint256,uint8)
-          handler: handleAppealContribution
-        - event: VouchesProcessed(bytes20,uint256,uint256)
-          handler: handleVouchesProcessed
-        - event: FeesAndRewardsWithdrawn(address,bytes20,uint256,uint256,uint256)
+        - event: Contribution(bytes20,uint256,uint256,uint256,address,uint256,uint8)
+          handler: handleContribution
+        - event: FeesAndRewardsWithdrawn(bytes20,uint256,uint256,uint256,address)
           handler: handleFeesAndRewardsWithdrawn
   {{/v1}}
   {{#v1}}
