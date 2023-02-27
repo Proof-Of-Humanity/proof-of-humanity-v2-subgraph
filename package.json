@@ -4,14 +4,16 @@
   "scripts": {
     "build": "graph build",
     "gen": "graph codegen --output-dir generated/",
-    "gen-mainnet-v1": "mustache config/mainnet-v1.json subgraph.template.yaml > subgraph.yaml && yarn gen",
     "gen-goerli": "mustache config/goerli.json subgraph.template.yaml > subgraph.yaml && yarn gen",
+    "gen-goerli-ext": "mustache config/goerli-ext.json subgraph.template.yaml > subgraph.yaml && yarn gen",
     "gen-opgoerli": "mustache config/opgoerli.json subgraph.template.yaml > subgraph.yaml && yarn gen",
     "gen-gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml && yarn gen",
+    "gen-mainnet-ext": "mustache config/mainnet-ext.json subgraph.template.yaml > subgraph.yaml && yarn gen",
     "deploy-goerli": "yarn gen-goerli && graph deploy --product hosted-service andreimvp/poh-goerli",
+    "deploy-goerli-ext": "yarn gen-goerli-ext && graph deploy --product hosted-service andreimvp/poh-goerli-ext",
     "deploy-opgoerli": "yarn gen-opgoerli && graph deploy --product hosted-service andreimvp/poh-opgoerli",
     "deploy-gnosis": "yarn gen-gnosis && graph deploy --product hosted-service andreimvp/poh-gnosis",
-    "deploy-mainnet-v1": "yarn gen-mainnet-v1 && graph deploy --product hosted-service andreimvp/poh-v1-in-v2-shoes"
+    "deploy-mainnet-ext": "yarn gen-mainnet-ext && graph deploy --product hosted-service andreimvp/poh-v1-in-v2-shoes"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.33.0",

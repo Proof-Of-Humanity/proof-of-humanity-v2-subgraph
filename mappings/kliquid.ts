@@ -1,3 +1,4 @@
+import { log } from "@graphprotocol/graph-ts";
 import {
   AppealPossible,
   KlerosLiquid,
@@ -8,13 +9,17 @@ import { getContract } from "../utils";
 import { biToBytes, genId } from "../utils/misc";
 
 export function handleAppealPossible(event: AppealPossible): void {
-  const pohAddress = getContract().address;
-
-  // Event not related to PoH.
-  if (pohAddress.toHexString() != event.params._arbitrable.toHexString())
+  log.warning("Arb: {} | Dispute: {}", [
+    event.params._arbitrable.toHexString(),
+    event.params._disputeID.toString(),
+  ]);
+  if (
+    getContract().address.toHexString() !=
+    event.params._arbitrable.toHexString()
+  )
     return;
 
-  const poh = ProofOfHumanity.bind(pohAddress);
+  const poh = ProofOfHumanity.bind(event.params._arbitrable);
 
   const disputeData = poh.disputeIdToData(
     event.address,
@@ -30,7 +35,7 @@ export function handleAppealPossible(event: AppealPossible): void {
 
   const arbitrator = KlerosLiquid.bind(event.address);
   const appealPeriodResult = arbitrator.appealPeriod(event.params._disputeID);
-  challenge.appealPeriodStart = appealPeriodResult.value0;
-  challenge.appealPeriodEnd = appealPeriodResult.value1;
+  challenge.appealPeriodStart = appealPeriodResult.getStart();
+  challenge.appealPeriodEnd = appealPeriodResult.getEnd();
   challenge.save();
 }

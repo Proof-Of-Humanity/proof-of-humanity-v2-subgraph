@@ -72,6 +72,7 @@ type Humanity @entity {
   claimers: [Claimer!]! @derivedFrom(field: "targetHumanity")
   requests: [Request!]! @derivedFrom(field: "humanity")
   nbRequests: BigInt!
+  nbLegacyRequests: BigInt!
   nbPendingRequests: BigInt!
 }
 
@@ -91,6 +92,7 @@ type Claimer @entity {
 
 type Request @entity {
   id: Bytes!
+  legacy: Boolean!
   humanity: Humanity!
   index: BigInt!
   requester: Bytes!

@@ -1,4 +1,4 @@
-import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { BigInt, ByteArray, Bytes, crypto } from "@graphprotocol/graph-ts";
 import {
   Challenge,
   Claimer,
@@ -18,6 +18,8 @@ import {
   ZERO_BI,
 } from "./constants";
 import { biToBytes, genId } from "./misc";
+
+const LEGACY_FLAG = Bytes.fromUTF8("legacy");
 
 export function getContract(): Contract {
   let contract = Contract.load(ZERO);
@@ -54,6 +56,7 @@ export class New {
     humanity.vouching = false;
     humanity.pendingRevocation = false;
     humanity.nbRequests = ZERO_BI;
+    humanity.nbLegacyRequests = ZERO_BI;
     humanity.nbPendingRequests = ZERO_BI;
     return humanity;
   }
@@ -64,6 +67,7 @@ export class New {
     claimer.lastRequestTime = ZERO_BI;
     claimer.disputed = false;
     claimer.vouchesReceived = [];
+    claimer.nbVouchesReceived = ZERO_BI;
     return claimer;
   }
 
@@ -71,10 +75,17 @@ export class New {
     humanity: Bytes,
     claimer: Bytes,
     index: BigInt,
-    revocation: boolean
+    revocation: boolean,
+    legacy: boolean
   ): Request {
-    const request = new Request(genId(humanity, biToBytes(index)));
+    const requestId = genId(humanity, biToBytes(index));
+    const request = new Request(
+      legacy
+        ? Bytes.fromByteArray(crypto.keccak256(requestId.concat(LEGACY_FLAG)))
+        : requestId
+    );
     request.humanity = humanity;
+    request.legacy = legacy;
     request.claimer = claimer;
     request.index = index;
     request.requester = ZERO_ADDRESS;

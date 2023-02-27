@@ -1,16 +1,11 @@
 import { Address, BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 import {
-  ArbitratorComplete,
+  RemovedForTransfer,
+  RemovedFromRequest,
+} from "../generated/ForkModule/ForkModule";
+import {
   ProofOfHumanityOld,
-  ChangeSubmissionBaseDepositCall,
-  ChangeDurationsCall,
-  ChangeRequiredNumberOfVouchesCall,
-  ChangeSharedStakeMultiplierCall,
-  ChangeWinnerStakeMultiplierCall,
-  ChangeGovernorCall,
-  ChangeLoserStakeMultiplierCall,
   AddSubmissionManuallyCall,
-  ChangeArbitratorCall,
   RemoveSubmissionManuallyCall,
   MetaEvidence,
   VouchAdded,
@@ -25,7 +20,7 @@ import {
   SubmitEvidenceCall,
   RuleCall,
   ProcessVouchesCall,
-} from "../../generated/ProofOfHumanityOld/ProofOfHumanityOld";
+} from "../generated/ProofOfHumanityOld/ProofOfHumanityOld";
 import {
   ArbitratorData,
   Claimer,
@@ -33,8 +28,8 @@ import {
   Request,
   Humanity,
   Vouch,
-} from "../../generated/schema";
-import { getContract, New } from "../../utils";
+} from "../generated/schema";
+import { getContract, New } from "../utils";
 import {
   Reason,
   ONE_BI,
@@ -44,27 +39,10 @@ import {
   ZERO_BI,
   Status,
   SubmissionStatusOld,
-} from "../../utils/constants";
-import { biToBytes, genId } from "../../utils/misc";
+} from "../utils/constants";
+import { biToBytes, genId } from "../utils/misc";
 
-export function handleArbitratorComplete(event: ArbitratorComplete): void {
-  const contract = getContract();
-  contract.address = event.address;
-  contract.governor = event.params._governor;
-  contract.requestBaseDeposit = event.params._submissionBaseDeposit;
-  contract.humanityLifespan = event.params._submissionDuration;
-  contract.renewalTime = ProofOfHumanityOld.bind(
-    event.address
-  ).renewalPeriodDuration();
-  contract.challengePeriodDuration = event.params._challengePeriodDuration;
-  contract.requiredNumberOfVouches = event.params._requiredNumberOfVouches;
-  contract.sharedStakeMultiplier = event.params._sharedStakeMultiplier;
-  contract.winnerStakeMultiplier = event.params._winnerStakeMultiplier;
-  contract.loserStakeMultiplier = event.params._loserStakeMultiplier;
-  contract.save();
-}
-
-export function handleMetaEvidence(ev: MetaEvidence): void {
+export function handleMetaEvidenceLegacy(ev: MetaEvidence): void {
   const poh = ProofOfHumanityOld.bind(ev.address);
 
   const metaEvidenceUpdates = ev.params._metaEvidenceID.div(TWO_BI);
@@ -73,6 +51,7 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
   if (ev.params._metaEvidenceID.mod(TWO_BI).equals(ZERO_BI)) {
     arbitratorData = new ArbitratorData(biToBytes(metaEvidenceUpdates));
     arbitratorData.registrationMeta = ev.params._evidence;
+    arbitratorData.metaEvidenceUpdateTime = ev.block.timestamp;
     arbitratorData.clearingMeta = "";
 
     if (metaEvidenceUpdates.equals(ZERO_BI)) {
@@ -101,81 +80,9 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
   contract.save();
 }
 
-export function changeSubmissionBaseDeposit(
-  call: ChangeSubmissionBaseDepositCall
+export function addSubmissionManuallyLegacy(
+  call: AddSubmissionManuallyCall
 ): void {
-  const contract = getContract();
-  contract.requestBaseDeposit = call.inputs._submissionBaseDeposit;
-  contract.save();
-}
-
-export function changeDurations(call: ChangeDurationsCall): void {
-  const contract = getContract();
-  contract.humanityLifespan = call.inputs._submissionDuration;
-  contract.renewalTime = call.inputs._renewalPeriodDuration;
-  contract.challengePeriodDuration = call.inputs._challengePeriodDuration;
-  contract.save();
-}
-
-export function changeRequiredNumberOfVouches(
-  call: ChangeRequiredNumberOfVouchesCall
-): void {
-  const contract = getContract();
-  contract.requiredNumberOfVouches = call.inputs._requiredNumberOfVouches;
-  contract.save();
-}
-
-export function changeSharedStakeMultiplier(
-  call: ChangeSharedStakeMultiplierCall
-): void {
-  const contract = getContract();
-  contract.sharedStakeMultiplier = call.inputs._sharedStakeMultiplier;
-  contract.save();
-}
-
-export function changeWinnerStakeMultiplier(
-  call: ChangeWinnerStakeMultiplierCall
-): void {
-  const contract = getContract();
-  contract.winnerStakeMultiplier = call.inputs._winnerStakeMultiplier;
-  contract.save();
-}
-
-export function changeLoserStakeMultiplier(
-  call: ChangeLoserStakeMultiplierCall
-): void {
-  const contract = getContract();
-  contract.loserStakeMultiplier = call.inputs._loserStakeMultiplier;
-  contract.save();
-}
-
-export function changeGovernor(call: ChangeGovernorCall): void {
-  const contract = getContract();
-  contract.governor = call.inputs._governor;
-  contract.save();
-}
-
-export function changeArbitrator(call: ChangeArbitratorCall): void {
-  const contract = getContract();
-  let metaEvidenceUpdates = contract.metaEvidenceUpdates;
-  const prevArbitratorData = ArbitratorData.load(
-    biToBytes(metaEvidenceUpdates)
-  ) as ArbitratorData;
-
-  metaEvidenceUpdates = metaEvidenceUpdates.plus(ONE_BI);
-
-  const arbitratorData = new ArbitratorData(biToBytes(metaEvidenceUpdates));
-  arbitratorData.registrationMeta = prevArbitratorData.registrationMeta;
-  arbitratorData.clearingMeta = prevArbitratorData.clearingMeta;
-  arbitratorData.arbitrator = call.inputs._arbitrator;
-  arbitratorData.arbitratorExtraData = call.inputs._arbitratorExtraData;
-  arbitratorData.save();
-
-  contract.metaEvidenceUpdates = metaEvidenceUpdates;
-  contract.save();
-}
-
-export function addSubmissionManually(call: AddSubmissionManuallyCall): void {
   const poh = ProofOfHumanityOld.bind(call.to);
   const submissionIDs = call.inputs._submissionIDs;
   const evidences = call.inputs._evidence;
@@ -193,28 +100,30 @@ export function addSubmissionManually(call: AddSubmissionManuallyCall): void {
     humanity.expirationTime = call.block.timestamp.plus(
       poh.submissionDuration()
     );
-    humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
+    humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE_BI);
     humanity.save();
 
     claimer.name = names[i];
     claimer.lastRequestTime = call.block.timestamp;
+    claimer.nbVouchesReceived = ZERO_BI;
     claimer.hasHumanity = true;
     claimer.save();
 
-    const request = newRequest(
+    const request = newLegacyRequest(
       submissionIDs[i],
-      humanity.nbRequests,
+      humanity.nbLegacyRequests,
       evidences[i],
       call,
-      true
+      false
     );
 
+    request.requester = submissionIDs[i];
     request.status = Status.Resolved;
     request.save();
   }
 }
 
-export function removeSubmissionManually(
+export function removeSubmissionManuallyLegacy(
   call: RemoveSubmissionManuallyCall
 ): void {
   const claimer = Claimer.load(call.inputs._submissionID) as Claimer;
@@ -227,7 +136,7 @@ export function removeSubmissionManually(
   claimer.save();
 }
 
-export function addSubmission(call: AddSubmissionCall): void {
+export function addSubmissionLegacy(call: AddSubmissionCall): void {
   let humanity = Humanity.load(call.from);
   if (humanity == null) humanity = New.Humanity(call.from);
 
@@ -235,62 +144,63 @@ export function addSubmission(call: AddSubmissionCall): void {
   if (claimer == null) {
     claimer = New.Claimer(call.from);
     claimer.name = call.inputs._name;
+    claimer.nbVouchesReceived = ZERO_BI;
     claimer.targetHumanity = humanity.id;
     claimer.lastRequestTime = call.block.timestamp;
   }
   claimer.targetHumanity = humanity.id;
 
-  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
+  humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE_BI);
   humanity.save();
 
-  const request = newRequest(
+  const request = newLegacyRequest(
     call.from,
-    humanity.nbRequests,
-    call.inputs._evidence,
-    call,
-    true
-  );
-
-  claimer.currentRequest = request.id;
-  claimer.save();
-}
-
-export function reapplySubmission(call: ReapplySubmissionCall): void {
-  const humanity = Humanity.load(call.from) as Humanity;
-  const claimer = Claimer.load(humanity.id) as Claimer;
-  claimer.targetHumanity = humanity.id;
-
-  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
-  humanity.save();
-
-  const request = newRequest(
-    call.from,
-    humanity.nbRequests,
-    call.inputs._evidence,
-    call,
-    true
-  );
-
-  claimer.currentRequest = request.id;
-  claimer.save();
-}
-
-export function removeSubmission(call: RemoveSubmissionCall): void {
-  const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
-  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
-  humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE_BI);
-  humanity.save();
-
-  newRequest(
-    call.inputs._submissionID,
-    humanity.nbRequests,
+    humanity.nbLegacyRequests,
     call.inputs._evidence,
     call,
     false
   );
+
+  claimer.currentRequest = request.id;
+  claimer.save();
 }
 
-export function handleVouchAdded(event: VouchAdded): void {
+export function reapplySubmissionLegacy(call: ReapplySubmissionCall): void {
+  const humanity = Humanity.load(call.from) as Humanity;
+  const claimer = Claimer.load(humanity.id) as Claimer;
+  claimer.targetHumanity = humanity.id;
+
+  humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE_BI);
+  humanity.save();
+
+  const request = newLegacyRequest(
+    call.from,
+    humanity.nbLegacyRequests,
+    call.inputs._evidence,
+    call,
+    false
+  );
+
+  claimer.currentRequest = request.id;
+  claimer.save();
+}
+
+export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
+  const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
+  humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE_BI);
+  humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE_BI);
+  humanity.save();
+
+  newLegacyRequest(
+    call.inputs._submissionID,
+    humanity.nbLegacyRequests,
+    call.inputs._evidence,
+    call,
+    true
+  );
+}
+
+export function handleVouchAddedLegacy(event: VouchAdded): void {
   const voucher = Claimer.load(event.params._voucher);
   const vouched = Claimer.load(event.params._submissionID);
   if (voucher == null || vouched == null) return;
@@ -305,10 +215,11 @@ export function handleVouchAdded(event: VouchAdded): void {
   }
 
   vouched.vouchesReceived = voucher.vouchesReceived.concat([vouchId]);
+  vouched.nbVouchesReceived = vouched.nbVouchesReceived.plus(ONE_BI);
   vouched.save();
 }
 
-export function handleVouchRemoved(event: VouchRemoved): void {
+export function handleVouchRemovedLegacy(event: VouchRemoved): void {
   const voucher = Claimer.load(event.params._voucher);
   const vouched = Claimer.load(event.params._submissionID);
   if (voucher == null || vouched == null) return;
@@ -322,16 +233,14 @@ export function handleVouchRemoved(event: VouchRemoved): void {
     if (vouched.vouchesReceived[i] != vouchId)
       newVouchees.push(vouched.vouchesReceived[i]);
   vouched.vouchesReceived = newVouchees;
+  vouched.nbVouchesReceived = vouched.nbVouchesReceived.minus(ONE_BI);
   vouched.save();
 }
 
-export function withdrawSubmission(call: WithdrawSubmissionCall): void {
+export function withdrawSubmissionLegacy(call: WithdrawSubmissionCall): void {
   const claimer = Claimer.load(call.from) as Claimer;
 
-  if (!claimer.currentRequest) {
-    log.debug("No current request: {}", [call.from.toHexString()]);
-    return;
-  }
+  if (!claimer.currentRequest) return;
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
 
@@ -346,13 +255,12 @@ export function withdrawSubmission(call: WithdrawSubmissionCall): void {
   claimer.save();
 }
 
-export function changeStateToPending(call: ChangeStateToPendingCall): void {
+export function changeStateToPendingLegacy(
+  call: ChangeStateToPendingCall
+): void {
   const claimer = Claimer.load(call.inputs._submissionID) as Claimer;
 
-  if (!claimer.currentRequest) {
-    log.debug("No current request: {}", [call.from.toHexString()]);
-    return;
-  }
+  if (!claimer.currentRequest) return;
 
   const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE_BI);
@@ -384,13 +292,10 @@ export function changeStateToPending(call: ChangeStateToPendingCall): void {
   request.save();
 }
 
-export function challengeRequest(call: ChallengeRequestCall): void {
+export function challengeRequestLegacy(call: ChallengeRequestCall): void {
   const claimer = Claimer.load(call.inputs._submissionID) as Claimer;
 
-  if (!claimer.currentRequest) {
-    log.debug("No current request: {}", [call.from.toHexString()]);
-    return;
-  }
+  if (!claimer.currentRequest) return;
 
   claimer.disputed = true;
   claimer.save();
@@ -416,7 +321,7 @@ export function challengeRequest(call: ChallengeRequestCall): void {
   request.save();
 }
 
-export function executeRequest(call: ExecuteRequestCall): void {
+export function executeRequestLegacy(call: ExecuteRequestCall): void {
   const poh = ProofOfHumanityOld.bind(call.to);
 
   const submissionInfo = poh.getSubmissionInfo(call.inputs._submissionID);
@@ -460,7 +365,7 @@ export function executeRequest(call: ExecuteRequestCall): void {
   request.save();
 }
 
-export function rule(call: RuleCall): void {
+export function ruleLegacy(call: RuleCall): void {
   const poh = ProofOfHumanityOld.bind(call.to);
 
   const disputeData = poh.arbitratorDisputeIDToDisputeData(
@@ -471,12 +376,7 @@ export function rule(call: RuleCall): void {
   const humanity = Humanity.load(disputeData.getSubmissionID()) as Humanity;
   const claimer = Claimer.load(disputeData.getSubmissionID()) as Claimer;
 
-  if (!claimer.currentRequest) {
-    log.debug("No current request: {}", [
-      disputeData.getSubmissionID().toHexString(),
-    ]);
-    return;
-  }
+  if (!claimer.currentRequest) return;
 
   const submissionInfo = poh.getSubmissionInfo(disputeData.getSubmissionID());
 
@@ -513,7 +413,7 @@ export function rule(call: RuleCall): void {
   request.save();
 }
 
-export function processVouches(call: ProcessVouchesCall): void {
+export function processVouchesLegacy(call: ProcessVouchesCall): void {
   const request = Request.load(
     genId(
       call.inputs._submissionID,
@@ -569,15 +469,10 @@ export function processVouches(call: ProcessVouchesCall): void {
   }
 }
 
-export function submitEvidence(call: SubmitEvidenceCall): void {
+export function submitEvidenceLegacy(call: SubmitEvidenceCall): void {
   const claimer = Claimer.load(call.inputs._submissionID) as Claimer;
 
-  if (!claimer.currentRequest) {
-    log.debug("No current request: {}", [
-      call.inputs._submissionID.toHexString(),
-    ]);
-    return;
-  }
+  if (!claimer.currentRequest) return;
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   const evidence = new Evidence(
@@ -593,14 +488,14 @@ export function submitEvidence(call: SubmitEvidenceCall): void {
   request.save();
 }
 
-export function newRequest(
+export function newLegacyRequest(
   claimer: Address,
   requestIndex: BigInt,
   evidenceUri: string,
   call: ethereum.Call,
-  registration: boolean
+  revocation: boolean
 ): Request {
-  const request = New.Request(claimer, claimer, requestIndex, registration);
+  const request = New.Request(claimer, claimer, requestIndex, revocation, true);
   request.creationTime = call.block.timestamp;
   request.requester = call.from;
   request.lastStatusChange = call.block.timestamp;
@@ -615,4 +510,35 @@ export function newRequest(
   evidence.save();
 
   return request;
+}
+
+export function handleRemovedForTransfer(ev: RemovedForTransfer): void {
+  const claimer = Claimer.load(ev.params.submissionID) as Claimer;
+  claimer.humanity = null;
+  claimer.hasHumanity = false;
+  claimer.save();
+
+  const humanity = Humanity.load(ev.params.submissionID) as Humanity;
+  humanity.owner = null;
+  humanity.claimed = false;
+  humanity.save();
+}
+
+export function handleRemovedFromRequest(ev: RemovedFromRequest): void {
+  const humanity = Humanity.load(ev.params.submissionID) as Humanity;
+  const request = Request.load(
+    genId(humanity.id, biToBytes(humanity.nbRequests.minus(ONE_BI)))
+  ) as Request;
+  request.status = Status.Resolved;
+  request.resolutionTime = ev.block.timestamp;
+  request.save();
+
+  const claimer = Claimer.load(ev.params.submissionID) as Claimer;
+  claimer.humanity = null;
+  claimer.hasHumanity = false;
+  claimer.save();
+
+  humanity.owner = null;
+  humanity.claimed = false;
+  humanity.save();
 }

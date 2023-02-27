@@ -1,0 +1,14 @@
+{
+    "v1": true,
+    "network": "goerli",
+    "address": "0x1B3dE9B7929870e66F8F7FBe8868622Ed3bB0C7c",
+    "start-block": 8534218,
+    "v1-address": "0x7d6e406af4FD2f7add280c24418721C374aB8663",
+    "v1-start-block": 8531967,
+    "arbitrator": "0x08db8fd559cb4e3668f994553871c7eba7c3941a",
+    "arbitrator-start-block": 8520266,
+    "cross-chain": "0x27c9C7EC137229EEb8E22d9f03084D385b424C78",
+    "cross-chain-start-block": 8534528,
+    "forkmod": "0x81145086c30392dccb1f56bf9ae5dff6983ada4b",
+    "forkmod-start-block": 8534528
+}

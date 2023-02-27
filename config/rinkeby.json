@@ -1,7 +1,0 @@
-{
-    "network": "rinkeby",
-    "address": "0x6dCe2a3dE1436E7ffC61f2Dde6A944b4cF13EA3F",
-    "start-block": 11321563,
-    "cross-chain": "0x7d6e406af4FD2f7add280c24418721C374aB8663",
-    "cross-chain-start-block": 11477433
-}

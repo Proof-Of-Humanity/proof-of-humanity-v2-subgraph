@@ -9,9 +9,9 @@ dataSources:
     name: ProofOfHumanity
     network: optimism-goerli
     source:
-      address: "0x9De81Cf9b4B46046C1A87FdC71Ae55566919bE64"
+      address: "0x363Fa6B255B9C3F7E548652075d65c62fE4E46Aa"
       abi: ProofOfHumanity
-      startBlock: 2472037
+      startBlock: 5821883
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -47,8 +47,6 @@ dataSources:
           handler: handleRequiredNumberOfVouchesChanged
         - event: StakeMultipliersChanged(uint256,uint256,uint256)
           handler: handleStakeMultipliersChanged
-        - event: CrossChainProxyChanged(address)
-          handler: handleCrossChainProxyChanged
         - event: ArbitratorChanged(address,bytes)
           handler: handleArbitratorChanged
         - event: HumanityGrantedManually(indexed bytes20,indexed address,uint64)
@@ -95,9 +93,9 @@ dataSources:
     name: CrossChainProofOfHumanity
     network: optimism-goerli
     source:
-      address: "0xEb457616C5dcd17e49e92Fc55F557dD1262a8835"
+      address: "0xE4885BDd3dbCa86Bca7A55c0D24F73Bc2A3069EA"
       abi: CrossChainProofOfHumanity
-      startBlock: 2472257
+      startBlock: 5821883
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -127,13 +125,32 @@ dataSources:
           handler: handleGatewayAdded
         - event: GatewayRemoved(indexed address)
           handler: handleGatewayRemoved
-        # - event: UpdateInitiated(indexed bytes20,indexed address,uint160,address,bool)
-        #   handler: handleUpdateInitiated
         - event: UpdateReceived(indexed bytes20,indexed address,uint160,bool)
           handler: handleUpdateReceived
         - event: TransferInitiated(indexed bytes20,indexed address,uint160,address,bytes32)
           handler: handleTransferInitiated
-        # - event: TransferRetry(bytes32)
-        #   handler: handleTransferRetry
         - event: TransferReceived(indexed bytes20,indexed address,uint160,bytes32)
           handler: handleTransferReceived
+  - kind: ethereum
+    name: KlerosLiquid
+    network: "optimism-goerli"
+    source:
+      address: "0xf22c6c228e4240199b4c645d06903723df606768"
+      abi: KlerosLiquid
+      startBlock: 5821883
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Contract
+        - Challenge
+      abis:
+        - name: KlerosLiquid
+          file: ./abis/KlerosLiquid.json
+        - name: ProofOfHumanity
+          file: ./abis/ProofOfHumanity.json
+      eventHandlers:
+        - event: AppealPossible(indexed uint256,indexed address)
+          handler: handleAppealPossible
+      file: ./mappings/kliquid.ts

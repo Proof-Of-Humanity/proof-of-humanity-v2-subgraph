@@ -816,7 +816,7 @@
     "outputs": [
       {
         "internalType": "address",
-        "name": "account",
+        "name": "",
         "type": "address"
       }
     ],
@@ -1135,9 +1135,14 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_claimer",
-        "type": "address"
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requestId",
+        "type": "uint256"
       }
     ],
     "name": "fundRequest",

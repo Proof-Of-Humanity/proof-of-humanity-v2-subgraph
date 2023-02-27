@@ -29,6 +29,7 @@ import {
   HumanityClaimed,
   HumanityRevoked,
   VouchRegistered,
+  CrossChainProxyChanged,
 } from "../generated/ProofOfHumanity/ProofOfHumanity";
 import {
   ArbitratorData,
@@ -74,7 +75,7 @@ export function handleInitialized(ev: Initialized): void {
   const arbitratorDataItem = poh.arbitratorDataList(ZERO_BI);
   arbitratorData.arbitrator = arbitratorDataItem.getArbitrator();
   arbitratorData.arbitratorExtraData = arbitratorDataItem.getArbitratorExtraData();
-  arbitratorData.metaEvidenceUpdateTime = ZERO_BI;
+  arbitratorData.metaEvidenceUpdateTime = ev.block.timestamp;
   arbitratorData.registrationMeta = "";
   arbitratorData.clearingMeta = "";
   arbitratorData.save();
@@ -233,9 +234,9 @@ export function handleHumanityRevokedManually(
   if (
     // 2e20f5b8 = keccak(processVouches(bytes20,uint256,uint256))[:10]
     ev.transaction.input.toHexString().slice(0, 10) == "0x2e20f5b8" &&
-    claimer.currentRequest != null
+    claimer.currentRequest
   ) {
-    const request = Request.load(claimer.currentRequest) as Request;
+    const request = Request.load(claimer.currentRequest as Bytes) as Request;
     request.requesterLost = true;
     request.save();
   }
@@ -249,8 +250,6 @@ export function handleHumanityRevokedManually(
 export function handleClaimRequest(ev: ClaimRequest): void {
   let humanity = Humanity.load(ev.params.humanityId);
   if (humanity == null) humanity = New.Humanity(ev.params.humanityId);
-  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
-  humanity.save();
 
   let claimer = Claimer.load(ev.params.requester);
   if (claimer == null) {
@@ -270,6 +269,8 @@ export function handleClaimRequest(ev: ClaimRequest): void {
     false
   );
 
+  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
+  humanity.save();
   claimer.currentRequest = request.id;
   claimer.save();
 
@@ -283,9 +284,6 @@ export function handleRenewalRequest(ev: RenewalRequest): void {
   const claimer = Claimer.load(ev.params.requester) as Claimer;
   claimer.targetHumanity = humanity.id;
 
-  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
-  humanity.save();
-
   const request = newRequest(
     humanity.id,
     claimer.id,
@@ -295,6 +293,8 @@ export function handleRenewalRequest(ev: RenewalRequest): void {
     false
   );
 
+  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
+  humanity.save();
   claimer.currentRequest = request.id;
   claimer.save();
 
@@ -305,9 +305,6 @@ export function handleRenewalRequest(ev: RenewalRequest): void {
 
 export function handleRevocationRequest(ev: RevocationRequest): void {
   const humanity = Humanity.load(ev.params.humanityId) as Humanity;
-  humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE_BI);
-  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
-  humanity.save();
 
   newRequest(
     humanity.id,
@@ -317,6 +314,10 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
     ev,
     true
   );
+
+  humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE_BI);
+  humanity.nbRequests = humanity.nbRequests.plus(ONE_BI);
+  humanity.save();
 
   const counter = getCounter();
   counter.pendingRevocations = counter.pendingRevocations.plus(ONE_BI);
@@ -409,7 +410,7 @@ export function handleVouchRegistered(ev: VouchRegistered): void {
 }
 
 export function handleStateAdvanced(ev: StateAdvanced): void {
-  const claimer = Claimer.load(ev.params.claimer) as Claimer;
+  const claimer = Claimer.load(ev.params.claimer as Bytes) as Claimer;
 
   const humanity = Humanity.load(claimer.targetHumanity as Bytes) as Humanity;
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE_BI);
@@ -453,14 +454,18 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
   challenge.reason = reason;
   challenge.challenger = ev.transaction.from;
   challenge.disputeId = ev.params.disputeId;
+  challenge.creationTime = ev.block.timestamp;
   challenge.nbRounds = ONE_BI;
   challenge.save();
 
   request.nbChallenges = request.nbChallenges.plus(ONE_BI);
   request.save();
 
-  const round = New.Round(challenge.id, ONE_BI);
+  let round = Round.load(genId(challenge.id, ZERO)) as Round;
   round.creationTime = ev.block.timestamp;
+  round.save();
+
+  round = New.Round(challenge.id, ONE_BI);
   round.save();
 
   const counter = getCounter();
@@ -541,6 +546,12 @@ export function handleAppealCreated(ev: AppealCreated): void {
   const challenge = Challenge.load(
     genId(request.id, biToBytes(disputeData.getChallengeId()))
   ) as Challenge;
+  const round = Round.load(
+    genId(challenge.id, biToBytes(challenge.nbRounds))
+  ) as Round;
+  round.creationTime = ev.block.timestamp;
+  round.save();
+
   challenge.nbRounds = challenge.nbRounds.plus(ONE_BI);
   challenge.save();
 
@@ -550,8 +561,6 @@ export function handleAppealCreated(ev: AppealCreated): void {
 }
 
 export function handleHumanityClaimed(ev: HumanityClaimed): void {
-  const contract = getContract();
-
   const humanity = Humanity.load(ev.params.humanityId) as Humanity;
   const request = Request.load(
     genId(humanity.id, biToBytes(ev.params.requestId))
@@ -568,7 +577,9 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
 
   humanity.claimed = true;
   humanity.owner = claimer.id;
-  humanity.expirationTime = ev.block.timestamp.plus(contract.humanityLifespan);
+  humanity.expirationTime = ev.block.timestamp.plus(
+    getContract().humanityLifespan
+  );
   humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE_BI);
   humanity.save();
 }
@@ -609,15 +620,14 @@ export function handleVouchesProcessed(ev: VouchesProcessed): void {
 }
 
 export function handleContribution(ev: ContributionEv): void {
-  const round = Round.load(
-    genId(
-      genId(
-        genId(ev.params.humanityId, biToBytes(ev.params.requestId)),
-        biToBytes(ev.params.challengeId)
-      ),
-      biToBytes(ev.params.round)
-    )
-  ) as Round;
+  const challengeId = genId(
+    genId(ev.params.humanityId, biToBytes(ev.params.requestId)),
+    biToBytes(ev.params.challengeId)
+  );
+  let round = Round.load(genId(challengeId, biToBytes(ev.params.round)));
+  if (round == null) {
+    round = New.Round(challengeId, ev.params.round);
+  }
 
   let contribution = Contribution.load(genId(round.id, ev.params.contributor));
   if (contribution == null) {
@@ -658,7 +668,7 @@ export function handleFeesAndRewardsWithdrawn(
   ) as Round;
 
   if (
-    ev.params.beneficiary == request.ultimateChallenger &&
+    ev.params.beneficiary == (request.ultimateChallenger as Bytes) &&
     ev.params.challengeId == ZERO_BI &&
     ev.params.round == ZERO_BI
   )
@@ -697,7 +707,7 @@ export function handleEvidence(ev: EvidenceEvent): void {
   request.save();
 }
 
-export function newRequest(
+function newRequest(
   humanityId: Bytes,
   claimer: Bytes,
   requestIndex: BigInt,
@@ -705,7 +715,13 @@ export function newRequest(
   ev: ethereum.Event,
   revocation: boolean
 ): Request {
-  const request = New.Request(humanityId, claimer, requestIndex, revocation);
+  const request = New.Request(
+    humanityId,
+    claimer,
+    requestIndex,
+    revocation,
+    false
+  );
   request.creationTime = ev.block.timestamp;
   request.requester = ev.transaction.from;
   request.lastStatusChange = ev.block.timestamp;
@@ -720,12 +736,12 @@ export function newRequest(
   evidence.save();
 
   const challenge = New.Challenge(request.id, ZERO_BI);
-  challenge.creationTime = ev.block.timestamp;
   challenge.save();
 
-  const round = New.Round(challenge.id, ZERO_BI);
-  round.creationTime = ev.block.timestamp;
-  round.save();
+  if (Round.load(genId(challenge.id, ZERO)) == null) {
+    const round = New.Round(challenge.id, ZERO_BI);
+    round.save();
+  }
 
   return request;
 }

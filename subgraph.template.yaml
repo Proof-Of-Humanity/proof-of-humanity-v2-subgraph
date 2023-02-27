@@ -1,11 +1,10 @@
-specVersion: 0.0.4
+specVersion: 0.0.1
 description: Proof of Humanity subgraph
 features:
   - fullTextSearch
 schema:
   file: ./schema.graphql
 dataSources:
-  {{^v1}}
   - kind: ethereum
     name: ProofOfHumanity
     network: {{network}}
@@ -48,8 +47,6 @@ dataSources:
           handler: handleRequiredNumberOfVouchesChanged
         - event: StakeMultipliersChanged(uint256,uint256,uint256)
           handler: handleStakeMultipliersChanged
-        - event: CrossChainProxyChanged(address)
-          handler: handleCrossChainProxyChanged
         - event: ArbitratorChanged(address,bytes)
           handler: handleArbitratorChanged
         - event: HumanityGrantedManually(indexed bytes20,indexed address,uint64)
@@ -92,83 +89,6 @@ dataSources:
           handler: handleContribution
         - event: FeesAndRewardsWithdrawn(bytes20,uint256,uint256,uint256,address)
           handler: handleFeesAndRewardsWithdrawn
-  {{/v1}}
-  {{#v1}}
-  - kind: ethereum
-    name: ProofOfHumanityOld
-    network: mainnet
-    source:
-      address: "{{v1-address}}"
-      abi: ProofOfHumanityOld
-      startBlock: {{v1-start-block}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./v1/mappings/index.ts
-      entities:
-        - Contract
-        - ArbitratorData
-        - Soul
-        - Claimer
-        - Request
-        - Vouch
-        - Evidence
-        - Counter
-      abis:
-        - name: ProofOfHumanityOld
-          file: ./abis/ProofOfHumanityOld.json
-      eventHandlers:
-        - event: ArbitratorComplete(address,indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
-          handler: handleArbitratorComplete
-        - event: MetaEvidence(indexed uint256,string)
-          handler: handleMetaEvidence
-        - event: VouchAdded(indexed address,indexed address)
-          handler: handleVouchAdded
-        - event: VouchRemoved(indexed address,indexed address)
-          handler: handleVouchRemoved
-      callHandlers:
-        - function: changeSubmissionBaseDeposit(uint256)
-          handler: changeSubmissionBaseDeposit
-        - function: changeDurations(uint64,uint64,uint64)
-          handler: changeDurations
-        - function: changeRequiredNumberOfVouches(uint64)
-          handler: changeRequiredNumberOfVouches
-        - function: changeSharedStakeMultiplier(uint256)
-          handler: changeSharedStakeMultiplier
-        - function: changeWinnerStakeMultiplier(uint256)
-          handler: changeWinnerStakeMultiplier
-        - function: changeLoserStakeMultiplier(uint256)
-          handler: changeLoserStakeMultiplier
-        - function: changeGovernor(address)
-          handler: changeGovernor
-        - function: changeArbitrator(address,bytes)
-          handler: changeArbitrator
-        - function: addSubmissionManually(address[],string[],string[])
-          handler: addSubmissionManually
-        - function: removeSubmissionManually(address)
-          handler: removeSubmissionManually
-        - function: addSubmission(string,string)
-          handler: addSubmission
-        - function: reapplySubmission(string,string)
-          handler: reapplySubmission
-        - function: removeSubmission(address,string)
-          handler: removeSubmission
-        - function: withdrawSubmission()
-          handler: withdrawSubmission
-        - function: changeStateToPending(address,address[],bytes[],uint256[])
-          handler: changeStateToPending
-        - function: challengeRequest(address,uint8,address,string)
-          handler: challengeRequest
-        - function: executeRequest(address)
-          handler: executeRequest
-        - function: processVouches(address,uint256,uint256)
-          handler: processVouches
-        - function: rule(uint256,uint256)
-          handler: rule
-        - function: submitEvidence(address,string)
-          handler: submitEvidence
-  {{/v1}}
   - kind: ethereum
     name: CrossChainProofOfHumanity
     network: {{network}}
@@ -205,13 +125,115 @@ dataSources:
           handler: handleGatewayAdded
         - event: GatewayRemoved(indexed address)
           handler: handleGatewayRemoved
-        # - event: UpdateInitiated(indexed bytes20,indexed address,uint160,address,bool)
-        #   handler: handleUpdateInitiated
         - event: UpdateReceived(indexed bytes20,indexed address,uint160,bool)
           handler: handleUpdateReceived
         - event: TransferInitiated(indexed bytes20,indexed address,uint160,address,bytes32)
           handler: handleTransferInitiated
-        # - event: TransferRetry(bytes32)
-        #   handler: handleTransferRetry
         - event: TransferReceived(indexed bytes20,indexed address,uint160,bytes32)
           handler: handleTransferReceived
+  - kind: ethereum
+    name: KlerosLiquid
+    network: "{{network}}"
+    source:
+      address: "{{arbitrator}}"
+      abi: KlerosLiquid
+      startBlock: {{arbitrator-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Contract
+        - Challenge
+      abis:
+        - name: KlerosLiquid
+          file: ./abis/KlerosLiquid.json
+        - name: ProofOfHumanity
+          file: ./abis/ProofOfHumanity.json
+      eventHandlers:
+        - event: AppealPossible(indexed uint256,indexed address)
+          handler: handleAppealPossible
+      file: ./mappings/kliquid.ts
+  {{#v1}}
+  - kind: ethereum
+    name: ProofOfHumanityOld
+    network: {{network}}
+    source:
+      address: "{{v1-address}}"
+      abi: ProofOfHumanityOld
+      startBlock: {{v1-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/legacy.ts
+      entities:
+        - Contract
+        - ArbitratorData
+        - Soul
+        - Claimer
+        - Request
+        - Vouch
+        - Evidence
+        - Counter
+      abis:
+        - name: ProofOfHumanityOld
+          file: ./abis/ProofOfHumanityOld.json
+      eventHandlers:
+        - event: MetaEvidence(indexed uint256,string)
+          handler: handleMetaEvidenceLegacy
+        - event: VouchAdded(indexed address,indexed address)
+          handler: handleVouchAddedLegacy
+        - event: VouchRemoved(indexed address,indexed address)
+          handler: handleVouchRemovedLegacy
+      callHandlers:
+        - function: addSubmissionManually(address[],string[],string[])
+          handler: addSubmissionManuallyLegacy
+        - function: removeSubmissionManually(address)
+          handler: removeSubmissionManuallyLegacy
+        - function: addSubmission(string,string)
+          handler: addSubmissionLegacy
+        - function: reapplySubmission(string,string)
+          handler: reapplySubmissionLegacy
+        - function: removeSubmission(address,string)
+          handler: removeSubmissionLegacy
+        - function: withdrawSubmission()
+          handler: withdrawSubmissionLegacy
+        - function: changeStateToPending(address,address[],bytes[],uint256[])
+          handler: changeStateToPendingLegacy
+        - function: challengeRequest(address,uint8,address,string)
+          handler: challengeRequestLegacy
+        - function: executeRequest(address)
+          handler: executeRequestLegacy
+        - function: processVouches(address,uint256,uint256)
+          handler: processVouchesLegacy
+        - function: rule(uint256,uint256)
+          handler: ruleLegacy
+        - function: submitEvidence(address,string)
+          handler: submitEvidenceLegacy
+  - kind: ethereum
+    name: ForkModule
+    network: {{network}}
+    source:
+      address: "{{forkmod}}"
+      abi: ForkModule
+      startBlock: {{forkmod-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/legacy.ts
+      entities:
+        - Soul
+        - Claimer
+        - Request
+        - Counter
+      abis:
+        - name: ForkModule
+          file: ./abis/ForkModule.json
+      eventHandlers:
+        - event: RemovedForTransfer(indexed address)
+          handler: handleRemovedForTransfer
+        - event: RemovedFromRequest(indexed address)
+          handler: handleRemovedFromRequest
+{{/v1}}
