@@ -109,6 +109,7 @@ export class New {
 
   static Challenge(request: Bytes, index: BigInt): Challenge {
     const challenge = new Challenge(genId(request, biToBytes(index)));
+    challenge.index = index;
     challenge.request = request;
     challenge.reason = Reason.None;
     challenge.challenger = ZERO_ADDRESS;
@@ -123,6 +124,7 @@ export class New {
 
   static Round(challenge: Bytes, index: BigInt): Round {
     const round = new Round(genId(challenge, biToBytes(index)));
+    round.index = index;
     round.challenge = challenge;
     round.creationTime = ZERO_BI;
     round.requesterFunds = ZERO_BI;

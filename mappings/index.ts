@@ -29,7 +29,6 @@ import {
   HumanityClaimed,
   HumanityRevoked,
   VouchRegistered,
-  CrossChainProxyChanged,
 } from "../generated/ProofOfHumanity/ProofOfHumanity";
 import {
   ArbitratorData,

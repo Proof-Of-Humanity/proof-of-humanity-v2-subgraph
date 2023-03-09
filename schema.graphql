@@ -118,6 +118,7 @@ type Request @entity {
 
 type Challenge @entity {
   id: Bytes!
+  index: BigInt!
   request: Request!
   reason: Reason!
   challenger: Bytes
@@ -132,6 +133,7 @@ type Challenge @entity {
 
 type Round @entity {
   id: Bytes!
+  index: BigInt!
   challenge: Challenge!
   creationTime: BigInt!
   requesterFunds: BigInt!
