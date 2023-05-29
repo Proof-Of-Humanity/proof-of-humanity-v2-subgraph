@@ -197,21 +197,27 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "humanityLifespan",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
         "indexed": false,
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "renewalPeriodDuration",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
         "indexed": false,
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "challengePeriodDuration",
-        "type": "uint64"
+        "type": "uint40"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint40",
+        "name": "failedRevocationCooldown",
+        "type": "uint40"
       }
     ],
     "name": "DurationsChanged",
@@ -334,9 +340,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "expirationTime",
-        "type": "uint64"
+        "type": "uint40"
       }
     ],
     "name": "HumanityGrantedManually",
@@ -510,9 +516,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "requiredNumberOfVouches",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "name": "RequiredNumberOfVouchesChanged",
@@ -745,9 +751,9 @@
       {
         "components": [
           {
-            "internalType": "uint64",
+            "internalType": "uint40",
             "name": "expirationTime",
-            "type": "uint64"
+            "type": "uint40"
           },
           {
             "internalType": "uint8",
@@ -828,9 +834,9 @@
     "name": "challengePeriodDuration",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "",
-        "type": "uint64"
+        "type": "uint40"
       }
     ],
     "stateMutability": "view",
@@ -844,9 +850,9 @@
         "type": "bytes20"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint96",
         "name": "_requestId",
-        "type": "uint64"
+        "type": "uint96"
       },
       {
         "internalType": "enum ProofOfHumanity.Reason",
@@ -898,19 +904,24 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_humanityLifespan",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_renewalPeriodDuration",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_challengePeriodDuration",
-        "type": "uint64"
+        "type": "uint40"
+      },
+      {
+        "internalType": "uint40",
+        "name": "_failedRevocationCooldown",
+        "type": "uint40"
       }
     ],
     "name": "changeDurations",
@@ -965,9 +976,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "_requiredNumberOfVouches",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "name": "changeRequiredNumberOfVouches",
@@ -1005,24 +1016,6 @@
         "name": "_humanityId",
         "type": "bytes20"
       },
-      {
-        "internalType": "string",
-        "name": "_evidence",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_name",
-        "type": "string"
-      }
-    ],
-    "name": "claimHumanity",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
         "internalType": "string",
         "name": "_evidence",
@@ -1105,20 +1098,28 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "failedRevocationCooldown",
+    "outputs": [
+      {
+        "internalType": "uint40",
+        "name": "",
+        "type": "uint40"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
-        "internalType": "bytes20",
-        "name": "_humanityId",
-        "type": "bytes20"
+        "internalType": "address",
+        "name": "_arbitrator",
+        "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "_requestId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_challengeId",
+        "name": "_disputeId",
         "type": "uint256"
       },
       {
@@ -1291,14 +1292,14 @@
         "type": "bool"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint48",
         "name": "nbPendingRequests",
-        "type": "uint64"
+        "type": "uint48"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "expirationTime",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
         "internalType": "address",
@@ -1355,7 +1356,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "requesterLost",
+        "name": "punishedVouch",
         "type": "bool"
       },
       {
@@ -1374,9 +1375,9 @@
         "type": "uint16"
       },
       {
-        "internalType": "uint64",
-        "name": "challengePeriodEnd",
-        "type": "uint64"
+        "internalType": "uint40",
+        "name": "challengePeriodStart",
+        "type": "uint40"
       },
       {
         "internalType": "address payable",
@@ -1482,9 +1483,9 @@
         "type": "address"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_expirationTime",
-        "type": "uint64"
+        "type": "uint40"
       }
     ],
     "name": "grantManually",
@@ -1503,9 +1504,9 @@
     "name": "humanityLifespan",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "",
-        "type": "uint64"
+        "type": "uint40"
       }
     ],
     "stateMutability": "view",
@@ -1533,6 +1534,11 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_wNative",
+        "type": "address"
+      },
+      {
         "internalType": "contract IArbitrator",
         "name": "_arbitrator",
         "type": "address"
@@ -1558,19 +1564,24 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_humanityLifespan",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_renewalPeriodDuration",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_challengePeriodDuration",
-        "type": "uint64"
+        "type": "uint40"
+      },
+      {
+        "internalType": "uint40",
+        "name": "_failedRevocationCooldown",
+        "type": "uint40"
       },
       {
         "internalType": "uint256[3]",
@@ -1578,9 +1589,9 @@
         "type": "uint256[3]"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "_requiredNumberOfVouches",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "name": "initialize",
@@ -1711,9 +1722,9 @@
     "name": "renewalPeriodDuration",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "",
-        "type": "uint64"
+        "type": "uint40"
       }
     ],
     "stateMutability": "view",
@@ -1737,9 +1748,9 @@
     "name": "requiredNumberOfVouches",
     "outputs": [
       {
-        "internalType": "uint64",
+        "internalType": "uint32",
         "name": "",
-        "type": "uint64"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
@@ -1774,14 +1785,14 @@
     "name": "revokeManually",
     "outputs": [
       {
-        "internalType": "uint64",
-        "name": "expirationTime",
-        "type": "uint64"
-      },
-      {
         "internalType": "bytes20",
         "name": "humanityId",
         "type": "bytes20"
+      },
+      {
+        "internalType": "uint40",
+        "name": "expirationTime",
+        "type": "uint40"
       }
     ],
     "stateMutability": "nonpayable",
@@ -1826,9 +1837,9 @@
         "type": "bytes20"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint96",
         "name": "_requestId",
-        "type": "uint256"
+        "type": "uint96"
       },
       {
         "internalType": "string",
@@ -1865,6 +1876,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wNative",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

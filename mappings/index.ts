@@ -53,7 +53,7 @@ import {
   ZERO,
   submitEvidenceSig,
 } from "../utils/constants";
-import { biToBytes, genId, genId3 } from "../utils/misc";
+import { biToBytes, genId, genId3, i32ToBytes } from "../utils/misc";
 
 export function handleInitialized(ev: Initialized): void {
   const poh = ProofOfHumanity.bind(ev.address);
@@ -144,6 +144,7 @@ export function handleDurationsChanged(ev: DurationsChanged): void {
   contract.humanityLifespan = ev.params.humanityLifespan;
   contract.renewalTime = ev.params.renewalPeriodDuration;
   contract.challengePeriodDuration = ev.params.challengePeriodDuration;
+  contract.failedRevocationCooldown = ev.params.failedRevocationCooldown;
   contract.save();
 }
 
@@ -372,6 +373,15 @@ export function handleRequestWithdrawn(ev: RequestWithdrawn): void {
   claimer.currentRequest = ZERO;
   claimer.save();
 
+  const round = Round.load(genId(genId(request.id, ZERO), ZERO)) as Round;
+  for (let i = 0; i < round.nbContributions.toI32(); i++) {
+    const contribution = Contribution.load(
+      round.contributions[i]
+    ) as Contribution;
+    contribution.requestResolved = true;
+    contribution.save();
+  }
+
   const counter = getCounter();
   counter.vouching = counter.vouching.minus(ONE_BI);
   counter.save();
@@ -581,6 +591,22 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
   );
   humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE_BI);
   humanity.save();
+
+  for (let i = 0; i < request.nbChallenges.toI32(); i++) {
+    const challenge = Challenge.load(
+      genId(request.id, i32ToBytes(i))
+    ) as Challenge;
+    for (let j = 0; j < challenge.nbRounds.toI32(); j++) {
+      const round = Round.load(genId(challenge.id, i32ToBytes(i))) as Round;
+      for (let k = 0; k < round.nbContributions.toI32(); k++) {
+        const contribution = Contribution.load(
+          round.contributions[k]
+        ) as Contribution;
+        contribution.requestResolved = true;
+        contribution.save();
+      }
+    }
+  }
 }
 
 export function handleHumanityRevoked(ev: HumanityRevoked): void {
@@ -601,6 +627,22 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
   humanity.owner = null;
   humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE_BI);
   humanity.save();
+
+  for (let i = 0; i < request.nbChallenges.toI32(); i++) {
+    const challenge = Challenge.load(
+      genId(request.id, i32ToBytes(i))
+    ) as Challenge;
+    for (let j = 0; j < challenge.nbRounds.toI32(); j++) {
+      const round = Round.load(genId(challenge.id, i32ToBytes(i))) as Round;
+      for (let k = 0; k < round.nbContributions.toI32(); k++) {
+        const contribution = Contribution.load(
+          round.contributions[k]
+        ) as Contribution;
+        contribution.requestResolved = true;
+        contribution.save();
+      }
+    }
+  }
 }
 
 export function handleVouchesProcessed(ev: VouchesProcessed): void {

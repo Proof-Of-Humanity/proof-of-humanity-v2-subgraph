@@ -42,6 +42,7 @@ type Contract @entity {
   requestBaseDeposit: BigInt!
   humanityLifespan: BigInt!
   renewalTime: BigInt!
+  failedRevocationCooldown: BigInt!
   challengePeriodDuration: BigInt!
   requiredNumberOfVouches: BigInt!
   sharedStakeMultiplier: BigInt!
@@ -158,6 +159,7 @@ type Contribution @entity {
   contributor: Bytes!
   forRequester: BigInt!
   forChallenger: BigInt!
+  requestResolved: Boolean!
 }
 
 type Evidence @entity(immutable: true) {

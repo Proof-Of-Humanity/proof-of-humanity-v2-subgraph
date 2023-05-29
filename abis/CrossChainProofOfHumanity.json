@@ -48,9 +48,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint160",
+        "internalType": "uint40",
         "name": "expirationTime",
-        "type": "uint160"
+        "type": "uint40"
       },
       {
         "indexed": false,
@@ -85,9 +85,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint160",
+        "internalType": "uint40",
         "name": "expirationTime",
-        "type": "uint160"
+        "type": "uint40"
       },
       {
         "indexed": false,
@@ -97,19 +97,6 @@
       }
     ],
     "name": "TransferReceived",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "transferHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "TransferRetry",
     "type": "event"
   },
   {
@@ -129,21 +116,21 @@
       },
       {
         "indexed": false,
-        "internalType": "uint160",
+        "internalType": "uint40",
         "name": "expirationTime",
-        "type": "uint160"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "gateway",
-        "type": "address"
+        "type": "uint40"
       },
       {
         "indexed": false,
         "internalType": "bool",
         "name": "claimed",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "gateway",
+        "type": "address"
       }
     ],
     "name": "UpdateInitiated",
@@ -166,9 +153,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint160",
+        "internalType": "uint40",
         "name": "expirationTime",
-        "type": "uint160"
+        "type": "uint40"
       },
       {
         "indexed": false,
@@ -194,10 +181,27 @@
       }
     ],
     "name": "addBridgeGateway",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      }
+    ],
+    "name": "boundTo",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -233,9 +237,7 @@
       }
     ],
     "name": "changeGovernor",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -248,16 +250,12 @@
       }
     ],
     "name": "changeProofOfHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "governor",
     "outputs": [
       {
@@ -280,9 +278,9 @@
     "name": "humanityMapping",
     "outputs": [
       {
-        "internalType": "bool",
-        "name": "isHomeChain",
-        "type": "bool"
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
       },
       {
         "internalType": "uint40",
@@ -290,14 +288,33 @@
         "type": "uint40"
       },
       {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
         "internalType": "uint40",
         "name": "lastTransferTime",
         "type": "uint40"
+      },
+      {
+        "internalType": "bool",
+        "name": "isHomeChain",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      }
+    ],
+    "name": "humanityOf",
+    "outputs": [
+      {
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
       }
     ],
     "stateMutability": "view",
@@ -336,16 +353,12 @@
       }
     ],
     "name": "initialize",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "initialized",
     "outputs": [
       {
@@ -380,7 +393,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_owner",
+        "name": "_account",
         "type": "address"
       }
     ],
@@ -396,9 +409,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "proofOfHumanity",
     "outputs": [
       {
@@ -423,9 +434,9 @@
         "type": "bytes20"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_expirationTime",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
         "internalType": "bytes32",
@@ -434,9 +445,7 @@
       }
     ],
     "name": "receiveTransfer",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -453,9 +462,9 @@
         "type": "bytes20"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "_expirationTime",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
         "internalType": "bool",
@@ -464,9 +473,7 @@
       }
     ],
     "name": "receiveUpdate",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -498,29 +505,7 @@
       }
     ],
     "name": "removeBridgeGateway",
-    "outputs": [
-      
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes20",
-        "name": "_humanityId",
-        "type": "bytes20"
-      },
-      {
-        "internalType": "address",
-        "name": "_bridgeGateway",
-        "type": "address"
-      }
-    ],
-    "name": "retryFailedTransfer",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -533,16 +518,12 @@
       }
     ],
     "name": "setTransferCooldown",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      
-    ],
+    "inputs": [],
     "name": "transferCooldown",
     "outputs": [
       {
@@ -563,9 +544,7 @@
       }
     ],
     "name": "transferHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -585,9 +564,9 @@
         "type": "bytes20"
       },
       {
-        "internalType": "uint64",
+        "internalType": "uint40",
         "name": "humanityExpirationTime",
-        "type": "uint64"
+        "type": "uint40"
       },
       {
         "internalType": "bytes32",
@@ -617,9 +596,7 @@
       }
     ],
     "name": "updateHumanity",
-    "outputs": [
-      
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   }

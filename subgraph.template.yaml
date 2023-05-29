@@ -41,15 +41,15 @@ dataSources:
           handler: handleGovernorChanged
         - event: RequestBaseDepositChanged(uint256)
           handler: handleRequestBaseDepositChanged
-        - event: DurationsChanged(uint64,uint64,uint64)
+        - event: DurationsChanged(uint40,uint40,uint40,uint40)
           handler: handleDurationsChanged
-        - event: RequiredNumberOfVouchesChanged(uint64)
+        - event: RequiredNumberOfVouchesChanged(uint32)
           handler: handleRequiredNumberOfVouchesChanged
         - event: StakeMultipliersChanged(uint256,uint256,uint256)
           handler: handleStakeMultipliersChanged
         - event: ArbitratorChanged(address,bytes)
           handler: handleArbitratorChanged
-        - event: HumanityGrantedManually(indexed bytes20,indexed address,uint64)
+        - event: HumanityGrantedManually(indexed bytes20,indexed address,uint40)
           handler: handleHumanityGrantedManually
         - event: HumanityRevokedManually(indexed bytes20)
           handler: handleHumanityRevokedManually
@@ -125,11 +125,11 @@ dataSources:
           handler: handleGatewayAdded
         - event: GatewayRemoved(indexed address)
           handler: handleGatewayRemoved
-        - event: UpdateReceived(indexed bytes20,indexed address,uint160,bool)
+        - event: UpdateReceived(indexed bytes20,indexed address,uint40,bool)
           handler: handleUpdateReceived
-        - event: TransferInitiated(indexed bytes20,indexed address,uint160,address,bytes32)
+        - event: TransferInitiated(indexed bytes20,indexed address,uint40,address,bytes32)
           handler: handleTransferInitiated
-        - event: TransferReceived(indexed bytes20,indexed address,uint160,bytes32)
+        - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
           handler: handleTransferReceived
   - kind: ethereum
     name: KlerosLiquid

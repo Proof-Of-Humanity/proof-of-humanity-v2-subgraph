@@ -1,0 +1,9 @@
+{
+    "network": "chiado",
+    "address": "0x0",
+    "start-block": 0,
+    "cross-chain": "0x0",
+    "cross-chain-start-block": 0,
+    "arbitrator": "0x0",
+    "arbitrator-start-block": 0
+}

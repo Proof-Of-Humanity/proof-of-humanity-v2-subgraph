@@ -1,7 +1,9 @@
 {
     "network": "xdai",
-    "address": "0x31B679253D53A18Eb793e023e7EFCed5160d7fD6",
-    "start-block": 24034982,
-    "cross-chain": "0x566cE77b009534F18928857B6F1BFAc2aC68a37e",
-    "cross-chain-start-block": 24423709
+    "address": "0xa59974FDc4728178D6CdEa305228D4482146f2FD",
+    "start-block": 27179549,
+    "cross-chain": "0x18eb287827FE441f9cF621C5f8be453c6b976E3B",
+    "cross-chain-start-block": 27179549,
+    "arbitrator": "0x0dca05ce497045d29489b0adc4e82f7d068b3dcf",
+    "arbitrator-start-block": 27179549
 }

@@ -33,6 +33,10 @@ export function biToBytes(bi: BigInt): Bytes {
   return bi.isZero() ? ZERO : Bytes.fromByteArray(ByteArray.fromBigInt(bi));
 }
 
+export function i32ToBytes(nb: i32): Bytes {
+  return nb == 0 ? ZERO : Bytes.fromByteArray(ByteArray.fromI32(nb));
+}
+
 export function genId(a: Bytes, b: Bytes): Bytes {
   return Bytes.fromByteArray(crypto.keccak256(a.concat(b)));
 }

@@ -38,6 +38,7 @@ export class New {
     contract.requestBaseDeposit = ZERO_BI;
     contract.humanityLifespan = ZERO_BI;
     contract.renewalTime = ZERO_BI;
+    contract.failedRevocationCooldown = ZERO_BI;
     contract.challengePeriodDuration = ZERO_BI;
     contract.requiredNumberOfVouches = ZERO_BI;
     contract.sharedStakeMultiplier = ZERO_BI;
@@ -142,6 +143,7 @@ export class New {
     contribution.contributor = contributor;
     contribution.forRequester = ZERO_BI;
     contribution.forChallenger = ZERO_BI;
+    contribution.requestResolved = false;
     return contribution;
   }
 }
