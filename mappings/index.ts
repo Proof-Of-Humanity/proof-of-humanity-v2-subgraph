@@ -64,6 +64,7 @@ export function handleInitialized(ev: Initialized): void {
   contract.requestBaseDeposit = poh.requestBaseDeposit();
   contract.humanityLifespan = poh.humanityLifespan();
   contract.renewalTime = poh.renewalPeriodDuration();
+  contract.failedRevocationCooldown = poh.failedRevocationCooldown();
   contract.challengePeriodDuration = poh.challengePeriodDuration();
   contract.requiredNumberOfVouches = poh.requiredNumberOfVouches();
   contract.sharedStakeMultiplier = poh.sharedStakeMultiplier();
