@@ -1,4 +1,4 @@
 {
   "extends": "@graphprotocol/graph-ts/tsconfig",
-  "include": ["v1", "mappings", "generated", "generated"]
+  "include": ["v1", "mappings", "generated"]
 }

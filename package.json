@@ -12,13 +12,15 @@
     "deploy-goerli": "yarn gen-goerli && graph deploy --product hosted-service andreimvp/poh-goerli",
     "deploy-goerli-ext": "yarn gen-goerli-ext && graph deploy --product hosted-service andreimvp/poh-goerli-ext",
     "deploy-chiado": "yarn gen-chiado && graph deploy --product hosted-service andreimvp/poh-chiado",
+    "deploy-chiado-goldsky": "yarn gen-chiado && goldsky subgraph deploy --overwrite poh-chiado/latest",
     "deploy-gnosis": "yarn gen-gnosis && graph deploy --product hosted-service andreimvp/poh-gnosis",
     "deploy-mainnet-ext": "yarn gen-mainnet-ext && graph deploy --product hosted-service andreimvp/poh-v1-in-v2-shoes"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "^0.33.0",
-    "@graphprotocol/graph-ts": "^0.27.0",
+    "@goldskycom/cli": "^1.10.0",
+    "@graphprotocol/graph-cli": "^0.51.0",
+    "@graphprotocol/graph-ts": "^0.31.0",
     "mustache": "^4.2.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.9.5"
   }
 }
