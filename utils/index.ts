@@ -1,75 +1,59 @@
-import { BigInt, ByteArray, Bytes, crypto } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import {
   Challenge,
   Claimer,
   Contract,
   Contribution,
-  Counter,
   Request,
   Round,
   Humanity,
+  RequesterFund,
+  ChallengerFund,
+  Registration,
 } from "../generated/schema";
-import {
-  Party,
-  Reason,
-  Status,
-  ZERO,
-  ZERO_ADDRESS,
-  ZERO_BI,
-} from "./constants";
-import { biToBytes, genId } from "./misc";
+import { ZERO_B, ZERO, ONE_B, TWO_B } from "./constants";
+import { biToBytes, hash } from "./misc";
+import { PartyUtil, ReasonUtil, StatusUtil } from "./enums";
 
 const LEGACY_FLAG = Bytes.fromUTF8("legacy");
 
 export function getContract(): Contract {
-  let contract = Contract.load(ZERO);
-  return contract == null ? New.Contract() : contract;
+  let contract = Contract.load(ZERO_B);
+  return contract == null ? new Contract(ZERO_B) : contract;
 }
 
-export function getCounter(): Counter {
-  return Counter.load(ZERO) as Counter;
-}
-
-export class New {
-  static Contract(): Contract {
-    const contract = new Contract(ZERO);
-    contract.address = ZERO_ADDRESS;
-    contract.governor = ZERO_ADDRESS;
-    contract.requestBaseDeposit = ZERO_BI;
-    contract.humanityLifespan = ZERO_BI;
-    contract.renewalTime = ZERO_BI;
-    contract.failedRevocationCooldown = ZERO_BI;
-    contract.challengePeriodDuration = ZERO_BI;
-    contract.requiredNumberOfVouches = ZERO_BI;
-    contract.sharedStakeMultiplier = ZERO_BI;
-    contract.winnerStakeMultiplier = ZERO_BI;
-    contract.loserStakeMultiplier = ZERO_BI;
-    contract.metaEvidenceUpdates = ZERO_BI;
-    contract.latestArbitratorData = ZERO;
-    return contract;
-  }
-
+export class Factory {
   static Humanity(id: Bytes): Humanity {
-    const humanity = new Humanity(id);
-    humanity.claimed = false;
-    humanity.claimTime = ZERO_BI;
-    humanity.expirationTime = ZERO_BI;
-    humanity.vouching = false;
-    humanity.pendingRevocation = false;
-    humanity.nbRequests = ZERO_BI;
-    humanity.nbLegacyRequests = ZERO_BI;
-    humanity.nbPendingRequests = ZERO_BI;
+    let humanity = Humanity.load(id);
+    if (humanity == null) {
+      humanity = new Humanity(id);
+      humanity.vouching = false;
+      humanity.pendingRevocation = false;
+      humanity.nbRequests = ZERO;
+      humanity.nbLegacyRequests = ZERO;
+      humanity.nbPendingRequests = ZERO;
+    }
     return humanity;
   }
 
-  static Claimer(id: Bytes): Claimer {
-    const claimer = new Claimer(id);
-    claimer.hasHumanity = false;
-    claimer.lastRequestTime = ZERO_BI;
-    claimer.disputed = false;
-    claimer.vouchesReceived = [];
-    claimer.nbVouchesReceived = ZERO_BI;
+  static Claimer(account: Address, name: string | null): Claimer {
+    let claimer = Claimer.load(account);
+    if (claimer == null) {
+      claimer = new Claimer(account);
+      claimer.nbVouchesReceived = ZERO;
+      claimer.name = name;
+    }
     return claimer;
+  }
+
+  static Registration(pohId: Bytes, claimer: Address): Registration {
+    let registration = Registration.load(pohId);
+    if (registration == null) {
+      registration = new Registration(pohId);
+      registration.humanity = pohId;
+      registration.claimer = claimer;
+    }
+    return registration;
   }
 
   static Request(
@@ -79,71 +63,105 @@ export class New {
     revocation: boolean,
     legacy: boolean
   ): Request {
-    const requestId = genId(humanity, biToBytes(index));
-    const request = new Request(
-      legacy
-        ? Bytes.fromByteArray(crypto.keccak256(requestId.concat(LEGACY_FLAG)))
-        : requestId
-    );
-    request.humanity = humanity;
-    request.legacy = legacy;
-    request.claimer = claimer;
-    request.index = index;
-    request.requester = ZERO_ADDRESS;
-    request.revocation = revocation;
-    request.status = revocation ? Status.Resolving : Status.Vouching;
-    request.creationTime = ZERO_BI;
-    request.resolutionTime = ZERO_BI;
-    request.challengePeriodEnd = ZERO_BI;
-    request.usedReasons = [];
-    request.currentReason = Reason.None;
-    request.ultimateChallenger = ZERO_ADDRESS;
-    request.lastStatusChange = ZERO_BI;
-    request.requesterLost = false;
-    request.vouches = [];
-    request.lastProcessedVouchIndex = ZERO_BI;
-    request.arbitratorData = biToBytes(getContract().metaEvidenceUpdates);
-    request.nbEvidence = ZERO_BI;
-    request.nbChallenges = ZERO_BI;
+    const requestId = legacy
+      ? hash(hash(humanity.concat(biToBytes(index))).concat(LEGACY_FLAG))
+      : hash(humanity.concat(biToBytes(index)));
+    let request = Request.load(requestId);
+    if (request == null) {
+      request = new Request(requestId);
+      request.humanity = humanity;
+      request.legacy = legacy;
+      request.claimer = claimer;
+      request.index = index;
+      request.requester = revocation ? Address.zero() : claimer;
+      request.revocation = revocation;
+      request.status = revocation ? StatusUtil.resolving : StatusUtil.vouching;
+      request.creationTime = ZERO;
+      request.resolutionTime = ZERO;
+      request.challengePeriodEnd = ZERO;
+      request.ultimateChallenger = Address.zero();
+      request.lastStatusChange = ZERO;
+      request.arbitratorHistory = getContract()
+        .latestArbitratorHistory as string;
+      request.nbChallenges = ZERO;
+    }
     return request;
   }
 
-  static Challenge(request: Bytes, index: BigInt): Challenge {
-    const challenge = new Challenge(genId(request, biToBytes(index)));
-    challenge.index = index;
-    challenge.request = request;
-    challenge.reason = Reason.None;
-    challenge.challenger = ZERO_ADDRESS;
-    challenge.creationTime = ZERO_BI;
-    challenge.disputeId = ZERO_BI;
-    challenge.ruling = Party.None;
-    challenge.appealPeriodStart = ZERO_BI;
-    challenge.appealPeriodEnd = ZERO_BI;
-    challenge.nbRounds = ZERO_BI;
+  static Challenge(requestId: Bytes, index: BigInt): Challenge {
+    const challengeId = hash(requestId.concat(biToBytes(index)));
+    let challenge = Challenge.load(challengeId);
+    if (challenge == null) {
+      challenge = new Challenge(challengeId);
+      challenge.index = index;
+      challenge.request = requestId;
+      challenge.reason = ReasonUtil.none;
+      challenge.challenger = Address.zero();
+      challenge.creationTime = ZERO;
+      challenge.disputeId = ZERO;
+      challenge.ruling = PartyUtil.none;
+      challenge.appealPeriodStart = ZERO;
+      challenge.appealPeriodEnd = ZERO;
+      challenge.nbRounds = ZERO;
+    }
     return challenge;
   }
 
-  static Round(challenge: Bytes, index: BigInt): Round {
-    const round = new Round(genId(challenge, biToBytes(index)));
-    round.index = index;
-    round.challenge = challenge;
-    round.creationTime = ZERO_BI;
-    round.requesterFunds = ZERO_BI;
-    round.challengerFunds = ZERO_BI;
-    round.requesterPaid = false;
-    round.challengerPaid = false;
-    round.feeRewards = ZERO_BI;
-    round.nbContributions = ZERO_BI;
+  static Round(challengeId: Bytes, index: BigInt): Round {
+    const roundId = hash(challengeId.concat(biToBytes(index)));
+    let round = Round.load(roundId);
+    if (round == null) {
+      round = new Round(roundId);
+      round.index = index;
+      round.challenge = challengeId;
+      round.creationTime = ZERO;
+
+      const requesterFund = Factory.RequesterFund(roundId);
+      round.requesterFund = requesterFund.id;
+
+      const challengerFund = Factory.ChallengerFund(roundId);
+      round.challengerFund = challengerFund.id;
+    }
     return round;
   }
 
-  static Contribution(round: Bytes, contributor: Bytes): Contribution {
-    const contribution = new Contribution(genId(round, contributor));
-    contribution.round = round;
-    contribution.contributor = contributor;
-    contribution.forRequester = ZERO_BI;
-    contribution.forChallenger = ZERO_BI;
-    contribution.requestResolved = false;
+  static RequesterFund(roundId: Bytes): RequesterFund {
+    const fundId = hash(roundId.concat(ONE_B));
+    let fund = RequesterFund.load(fundId);
+    if (fund == null) {
+      fund = new RequesterFund(fundId);
+      fund.amount = ZERO;
+      fund.feeRewards = ZERO;
+
+      const round = Round.load(roundId) as Round;
+      round.requesterFund = fundId;
+      round.save();
+    }
+    return fund;
+  }
+
+  static ChallengerFund(roundId: Bytes): ChallengerFund {
+    const fundId = hash(roundId.concat(TWO_B));
+    let fund = ChallengerFund.load(fundId);
+    if (fund == null) {
+      fund = new ChallengerFund(fundId);
+      fund.amount = ZERO;
+      fund.feeRewards = ZERO;
+
+      const round = Round.load(roundId) as Round;
+      round.challengerFund = fundId;
+      round.save();
+    }
+    return fund;
+  }
+
+  static Contribution(fundId: Bytes, contributor: Bytes): Contribution {
+    let contribution = new Contribution(hash(fundId.concat(contributor)));
+    if (contribution == null) {
+      contribution = new Contribution(hash(fundId.concat(contributor)));
+      contribution.contributor = contributor;
+      contribution.amount = ZERO;
+    }
     return contribution;
   }
 }

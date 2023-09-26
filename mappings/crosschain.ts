@@ -8,11 +8,12 @@ import {
 } from "../generated/CrossChainProofOfHumanity/CrossChainProofOfHumanity";
 import {
   CrossChainGateway,
-  CrossChainHumanity,
+  CrossChainRegistration,
   InTransfer,
   OutTransfer,
 } from "../generated/schema";
-import { ZERO_BI } from "../utils/constants";
+import { ZERO } from "../utils/constants";
+import { Factory } from "../utils";
 
 export function handleGatewayAdded(ev: GatewayAdded): void {
   const gateway = new CrossChainGateway(ev.params.bridgeGateway);
@@ -25,23 +26,34 @@ export function handleGatewayRemoved(ev: GatewayRemoved): void {
 }
 
 export function handleUpdateReceived(ev: UpdateReceived): void {
-  let humanity = CrossChainHumanity.load(ev.params.humanityId);
-  if (humanity == null) humanity = new CrossChainHumanity(ev.params.humanityId);
-  humanity.claimed = ev.params.claimed;
-  humanity.owner = ev.params.owner;
-  humanity.expirationTime = ev.params.expirationTime;
-  humanity.lastReceivedTransferTimestamp = ev.block.timestamp;
-  humanity.save();
+  let registration = CrossChainRegistration.load(ev.params.humanityId);
+  if (registration == null)
+    registration = new CrossChainRegistration(ev.params.humanityId);
+  if (ev.params.claimed) {
+    const claimer = Factory.Claimer(ev.params.owner, null);
+    claimer.save();
+
+    registration.claimer = claimer.id;
+    registration.expirationTime = ev.params.expirationTime;
+    registration.lastReceivedTransferTimestamp = ev.block.timestamp;
+    registration.save();
+  } else {
+    store.remove("CrossChainRegistration", ev.params.humanityId.toHex());
+  }
 }
 
 export function handleTransferInitiated(ev: TransferInitiated): void {
-  let humanity = CrossChainHumanity.load(ev.params.humanityId);
-  if (humanity == null) humanity = new CrossChainHumanity(ev.params.humanityId);
-  humanity.claimed = true;
-  humanity.owner = ev.params.owner;
-  humanity.expirationTime = ev.params.expirationTime;
-  humanity.lastReceivedTransferTimestamp = ZERO_BI;
-  humanity.save();
+  let registration = CrossChainRegistration.load(ev.params.humanityId);
+  if (registration == null)
+    registration = new CrossChainRegistration(ev.params.humanityId);
+
+  const claimer = Factory.Claimer(ev.params.owner, null);
+  claimer.save();
+
+  registration.claimer = claimer.id;
+  registration.expirationTime = ev.params.expirationTime;
+  registration.lastReceivedTransferTimestamp = ZERO;
+  registration.save();
 
   let transfer = OutTransfer.load(ev.params.humanityId);
   if (transfer == null) transfer = new OutTransfer(ev.params.humanityId);

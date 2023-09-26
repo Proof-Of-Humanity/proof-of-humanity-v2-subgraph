@@ -7,11 +7,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: ProofOfHumanity
-    network: xdai
+    network: goerli
     source:
-      address: "0xa59974FDc4728178D6CdEa305228D4482146f2FD"
+      address: "0xe53c6d2258C77b34B90e6FE7038e30A7C8f16152"
       abi: ProofOfHumanity
-      startBlock: 27179549
+      startBlock: 9706403
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -37,27 +37,19 @@ dataSources:
           handler: handleInitialized
         - event: MetaEvidence(indexed uint256,string)
           handler: handleMetaEvidence
-        - event: GovernorChanged(address)
-          handler: handleGovernorChanged
         - event: RequestBaseDepositChanged(uint256)
           handler: handleRequestBaseDepositChanged
         - event: DurationsChanged(uint40,uint40,uint40,uint40)
           handler: handleDurationsChanged
-        - event: RequiredNumberOfVouchesChanged(uint32)
-          handler: handleRequiredNumberOfVouchesChanged
-        - event: StakeMultipliersChanged(uint256,uint256,uint256)
-          handler: handleStakeMultipliersChanged
         - event: ArbitratorChanged(address,bytes)
           handler: handleArbitratorChanged
-        - event: HumanityGrantedManually(indexed bytes20,indexed address,uint40)
-          handler: handleHumanityGrantedManually
-        - event: HumanityRevokedManually(indexed bytes20)
-          handler: handleHumanityRevokedManually
-        - event: ClaimRequest(indexed address,indexed bytes20,uint256,string,string)
+        - event: HumanityGrantedDirectly(indexed bytes20,indexed address,uint40)
+          handler: handleHumanityGrantedDirectly
+        - event: HumanityDischargedDirectly(indexed bytes20)
+          handler: handleHumanityDischargedDirectly
+        - event: ClaimRequest(indexed address,indexed bytes20,uint256,string)
           handler: handleClaimRequest
-        - event: RenewalRequest(indexed address,indexed bytes20,uint256,string)
-          handler: handleRenewalRequest
-        - event: RevocationRequest(indexed address,indexed bytes20,uint256,string)
+        - event: RevocationRequest(indexed address,indexed bytes20,uint256)
           handler: handleRevocationRequest
         - event: VouchAdded(indexed address,indexed address,bytes20)
           handler: handleVouchAdded
@@ -69,7 +61,7 @@ dataSources:
           handler: handleRequestWithdrawn
         - event: StateAdvanced(address)
           handler: handleStateAdvanced
-        - event: RequestChallenged(bytes20,uint256,uint256,uint8,uint256,string)
+        - event: RequestChallenged(bytes20,uint256,uint256,uint8,uint256)
           handler: handleRequestChallenged
         - event: HumanityClaimed(bytes20,uint256)
           handler: handleHumanityClaimed
@@ -91,11 +83,11 @@ dataSources:
           handler: handleFeesAndRewardsWithdrawn
   - kind: ethereum
     name: CrossChainProofOfHumanity
-    network: xdai
+    network: goerli
     source:
-      address: "0x18eb287827FE441f9cF621C5f8be453c6b976E3B"
+      address: "0x27c9C7EC137229EEb8E22d9f03084D385b424C78"
       abi: CrossChainProofOfHumanity
-      startBlock: 27179549
+      startBlock: 9706403
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -133,11 +125,11 @@ dataSources:
           handler: handleTransferReceived
   - kind: ethereum
     name: KlerosLiquid
-    network: "xdai"
+    network: "goerli"
     source:
-      address: "0x0dca05ce497045d29489b0adc4e82f7d068b3dcf"
+      address: "0x1128eD55ab2d796fa92D2F8E1f336d745354a77A"
       abi: KlerosLiquid
-      startBlock: 27179549
+      startBlock: 9706403
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

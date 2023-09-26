@@ -1,23 +1,14 @@
-import { log } from "@graphprotocol/graph-ts";
 import {
   AppealPossible,
   KlerosLiquid,
 } from "../generated/KlerosLiquid/KlerosLiquid";
 import { ProofOfHumanity } from "../generated/ProofOfHumanity/ProofOfHumanity";
 import { Challenge } from "../generated/schema";
-import { getContract } from "../utils";
-import { biToBytes, genId } from "../utils/misc";
+import { biToBytes, hash } from "../utils/misc";
+import { ProofOfHumanityAddress } from "../utils/hardcoded";
 
 export function handleAppealPossible(event: AppealPossible): void {
-  log.warning("Arb: {} | Dispute: {}", [
-    event.params._arbitrable.toHexString(),
-    event.params._disputeID.toString(),
-  ]);
-  if (
-    getContract().address.toHexString() !=
-    event.params._arbitrable.toHexString()
-  )
-    return;
+  if (!ProofOfHumanityAddress.equals(event.params._arbitrable)) return;
 
   const poh = ProofOfHumanity.bind(event.params._arbitrable);
 
@@ -27,9 +18,12 @@ export function handleAppealPossible(event: AppealPossible): void {
   );
 
   const challenge = Challenge.load(
-    genId(
-      genId(disputeData.getHumanityId(), biToBytes(disputeData.getRequestId())),
-      biToBytes(disputeData.getChallengeId())
+    hash(
+      hash(
+        disputeData
+          .getHumanityId()
+          .concat(biToBytes(disputeData.getRequestId()))
+      ).concat(biToBytes(disputeData.getChallengeId()))
     )
   ) as Challenge;
 

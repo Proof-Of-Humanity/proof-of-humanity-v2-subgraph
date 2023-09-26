@@ -86,12 +86,6 @@
       {
         "indexed": false,
         "internalType": "string",
-        "name": "evidence",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
         "name": "name",
         "type": "string"
       }
@@ -331,6 +325,19 @@
         "internalType": "bytes20",
         "name": "humanityId",
         "type": "bytes20"
+      }
+    ],
+    "name": "HumanityDischargedDirectly",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
       },
       {
         "indexed": true,
@@ -345,7 +352,7 @@
         "type": "uint40"
       }
     ],
-    "name": "HumanityGrantedManually",
+    "name": "HumanityGrantedDirectly",
     "type": "event"
   },
   {
@@ -365,19 +372,6 @@
       }
     ],
     "name": "HumanityRevoked",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes20",
-        "name": "humanityId",
-        "type": "bytes20"
-      }
-    ],
-    "name": "HumanityRevokedManually",
     "type": "event"
   },
   {
@@ -425,12 +419,6 @@
         "internalType": "uint256",
         "name": "requestId",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "evidence",
-        "type": "string"
       }
     ],
     "name": "RenewalRequest",
@@ -481,12 +469,6 @@
         "internalType": "uint256",
         "name": "disputeId",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "evidence",
-        "type": "string"
       }
     ],
     "name": "RequestChallenged",
@@ -544,12 +526,6 @@
         "internalType": "uint256",
         "name": "requestId",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "evidence",
-        "type": "string"
       }
     ],
     "name": "RevocationRequest",
@@ -789,7 +765,7 @@
         "type": "uint256"
       }
     ],
-    "name": "arbitratorDataList",
+    "name": "arbitratorDataHistory",
     "outputs": [
       {
         "internalType": "uint96",
@@ -827,6 +803,59 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      }
+    ],
+    "name": "ccDischargeHumanity",
+    "outputs": [
+      {
+        "internalType": "bytes20",
+        "name": "humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "uint40",
+        "name": "expirationTime",
+        "type": "uint40"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_humanityId",
+        "type": "bytes20"
+      },
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint40",
+        "name": "_expirationTime",
+        "type": "uint40"
+      }
+    ],
+    "name": "ccGrantHumanity",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -885,7 +914,7 @@
     ],
     "name": "changeArbitrator",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -898,7 +927,7 @@
     ],
     "name": "changeCrossChainProofOfHumanity",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -926,7 +955,7 @@
     ],
     "name": "changeDurations",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -939,7 +968,7 @@
     ],
     "name": "changeGovernor",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -957,7 +986,7 @@
     ],
     "name": "changeMetaEvidence",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -970,7 +999,7 @@
     ],
     "name": "changeRequestBaseDeposit",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -983,7 +1012,7 @@
     ],
     "name": "changeRequiredNumberOfVouches",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1006,7 +1035,7 @@
     ],
     "name": "changeStakeMultipliers",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1153,7 +1182,7 @@
   },
   {
     "inputs": [],
-    "name": "getArbitratorDataListCount",
+    "name": "getArbitratorDataHistoryCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1471,35 +1500,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes20",
-        "name": "_humanityId",
-        "type": "bytes20"
-      },
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint40",
-        "name": "_expirationTime",
-        "type": "uint40"
-      }
-    ],
-    "name": "grantManually",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "success",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "humanityLifespan",
     "outputs": [
@@ -1596,7 +1596,7 @@
     ],
     "name": "initialize",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1772,30 +1772,6 @@
     "name": "revokeHumanity",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "revokeManually",
-    "outputs": [
-      {
-        "internalType": "bytes20",
-        "name": "humanityId",
-        "type": "bytes20"
-      },
-      {
-        "internalType": "uint40",
-        "name": "expirationTime",
-        "type": "uint40"
-      }
-    ],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

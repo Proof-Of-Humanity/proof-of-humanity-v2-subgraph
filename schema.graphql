@@ -1,30 +1,228 @@
-enum Party {
-  None
-  Requester
-  Challenger
+type Party @entity {
+  # none / requester / challenger
+  id: ID!
+  count: BigInt!
+  challengesWon: [Challenge!]! @derivedFrom(field: "ruling")
 }
 
-enum Reason {
-  None
-  IncorrectSubmission
-  Deceased
-  Duplicate
-  DoesNotExist
+type Reason @entity {
+  # none / incorrectSubmission / deceased / duplicate / doesNotExist
+  id: ID!
+  count: BigInt!
+  challenges: [Challenge!]! @derivedFrom(field: "reason")
 }
 
-enum Status {
-  Vouching
-  Resolving
-  Disputed
-  Resolved
-  Withdrawn
+type Status @entity {
+  # vouching / resolving / disputed / resolved / withdrawn
+  id: ID!
+  count: BigInt!
+  requests: [Request!]! @derivedFrom(field: "status")
 }
 
-enum OldSubmissionStatus {
-  None
-  Vouching
-  PendingRegistration
-  PendingRemoval
+type Contract @entity {
+  # address
+  id: Bytes!
+  baseDeposit: BigInt!
+  humanityLifespan: BigInt!
+  renewalPeriodDuration: BigInt!
+  challengePeriodDuration: BigInt!
+  requiredNumberOfVouches: BigInt!
+  latestArbitratorHistory: ArbitratorHistory
+}
+
+type ArbitratorHistory @entity {
+  # arbHistId
+  id: ID!
+  arbitrator: Bytes!
+  extraData: Bytes!
+  registrationMeta: String!
+  clearingMeta: String!
+  updateTime: BigInt!
+  requests: [Request!]! @derivedFrom(field: "arbitratorHistory")
+}
+
+type Registration @entity {
+  # hash(pohId//claimer)
+  id: Bytes!
+  humanity: Humanity!
+  claimer: Claimer!
+  expirationTime: BigInt!
+}
+
+type Humanity @entity {
+  # pohId
+  id: Bytes!
+  registration: Registration @derivedFrom(field: "humanity")
+  vouching: Boolean!
+  usedVouch: VouchInProcess @derivedFrom(field: "humanity")
+  pendingRevocation: Boolean!
+  requests: [Request!]! @derivedFrom(field: "humanity")
+  claimerName: String
+  nbRequests: BigInt!
+  nbLegacyRequests: BigInt!
+  nbPendingRequests: BigInt!
+}
+
+type Claimer @entity {
+  # address
+  id: Bytes!
+  name: String
+  currentRequest: Request
+  registration: Registration @derivedFrom(field: "claimer")
+  vouches: [Vouch!]! @derivedFrom(field: "from")
+  vouchesReceived: [Vouch!]! @derivedFrom(field: "for")
+  nbVouchesReceived: BigInt!
+}
+
+type Request @entity {
+  # hash(pohId//i)
+  id: Bytes!
+  legacy: Boolean!
+  humanity: Humanity!
+  index: BigInt!
+  status: Status!
+  requester: Bytes!
+  revocation: Boolean!
+  claimer: Claimer!
+  creationTime: BigInt!
+  resolutionTime: BigInt!
+  lastStatusChange: BigInt!
+  challengePeriodEnd: BigInt!
+  ultimateChallenger: Challenger
+  arbitratorHistory: ArbitratorHistory!
+  evidenceGroup: EvidenceGroup! @derivedFrom(field: "request")
+  vouches: [VouchInProcess!]! @derivedFrom(field: "request")
+  nbChallenges: BigInt!
+  challenges: [Challenge!]! @derivedFrom(field: "request")
+  contributors: [Bytes!]!
+}
+
+type Challenger @entity {
+  # address
+  id: Bytes!
+  wins: [Request!]! @derivedFrom(field: "ultimateChallenger")
+  challenges: [Challenge!]! @derivedFrom(field: "challenger")
+}
+
+type Challenge @entity {
+  # hash(request.id//i)
+  id: Bytes!
+  index: BigInt!
+  request: Request!
+  reason: Reason!
+  challenger: Challenger!
+  creationTime: BigInt!
+  disputeId: BigInt!
+  ruling: Party!
+  appealPeriodStart: BigInt!
+  appealPeriodEnd: BigInt!
+  nbRounds: BigInt!
+  rounds: [Round!]! @derivedFrom(field: "challenge")
+}
+
+type Round @entity {
+  # hash(challenge.id//i)
+  id: Bytes!
+  index: BigInt!
+  creationTime: BigInt!
+  challenge: Challenge!
+  requesterFund: RequesterFund!
+  challengerFund: ChallengerFund!
+}
+
+interface Fund {
+  # hash(round.id//party)
+  id: Bytes!
+  amount: BigInt!
+  feeRewards: BigInt!
+  contributions: [Contribution!]! @derivedFrom(field: "fund")
+  round: Round!
+}
+
+type RequesterFund implements Fund @entity {
+  id: Bytes!
+  amount: BigInt!
+  feeRewards: BigInt!
+  contributions: [Contribution!]! @derivedFrom(field: "fund")
+  round: Round! @derivedFrom(field: "requesterFund")
+}
+
+type ChallengerFund implements Fund @entity {
+  id: Bytes!
+  amount: BigInt!
+  round: Round! @derivedFrom(field: "challengerFund")
+  feeRewards: BigInt!
+  contributions: [Contribution!]! @derivedFrom(field: "fund")
+}
+
+type Contribution @entity {
+  # hash(fund.id//contributor)
+  id: Bytes!
+  fund: Fund!
+  contributor: Bytes!
+  amount: BigInt!
+}
+
+type Vouch @entity {
+  # hash(claimer.id//pohId//voucher.id)
+  id: Bytes!
+  from: Claimer!
+  humanity: Humanity!
+  for: Claimer!
+}
+
+type VouchInProcess @entity {
+  # hash(vouch.id)
+  id: Bytes!
+  vouch: Vouch!
+  humanity: Humanity!
+  from: Humanity!
+  request: Request!
+}
+
+type EvidenceGroup @entity {
+  # evidenceGroupId
+  id: Bytes!
+  request: Request!
+  length: BigInt!
+  evidence: [Evidence!]! @derivedFrom(field: "group")
+}
+
+type Evidence @entity(immutable: true) {
+  # hash(groupId//i)
+  id: Bytes!
+  group: EvidenceGroup!
+  creationTime: BigInt!
+  uri: String!
+  submitter: Bytes!
+}
+
+type CrossChainRegistration @entity {
+  # pohId
+  id: Bytes!
+  claimer: Claimer!
+  expirationTime: BigInt!
+  lastReceivedTransferTimestamp: BigInt!
+}
+
+type OutTransfer @entity(immutable: true) {
+  # pohId
+  id: Bytes!
+  foreignProxy: Bytes!
+  transferHash: Bytes!
+  transferTimestamp: BigInt!
+}
+
+type InTransfer @entity(immutable: true) {
+  # transfer hash
+  id: Bytes!
+  humanityId: Bytes!
+}
+
+type CrossChainGateway @entity {
+  # gateway address
+  id: Bytes!
+  foreignProxy: Bytes!
 }
 
 type _Schema_
@@ -34,175 +232,3 @@ type _Schema_
     algorithm: rank
     include: [{ entity: "Claimer", fields: [{ name: "name" }] }]
   )
-
-type Contract @entity {
-  id: Bytes!
-  address: Bytes!
-  governor: Bytes!
-  requestBaseDeposit: BigInt!
-  humanityLifespan: BigInt!
-  renewalTime: BigInt!
-  failedRevocationCooldown: BigInt!
-  challengePeriodDuration: BigInt!
-  requiredNumberOfVouches: BigInt!
-  sharedStakeMultiplier: BigInt!
-  winnerStakeMultiplier: BigInt!
-  loserStakeMultiplier: BigInt!
-  metaEvidenceUpdates: BigInt!
-  latestArbitratorData: ArbitratorData!
-}
-
-type ArbitratorData @entity {
-  id: Bytes!
-  registrationMeta: String!
-  clearingMeta: String!
-  arbitrator: Bytes!
-  arbitratorExtraData: Bytes!
-  metaEvidenceUpdateTime: BigInt!
-}
-
-type Humanity @entity {
-  id: Bytes!
-  owner: Claimer
-  claimed: Boolean!
-  claimTime: BigInt!
-  expirationTime: BigInt!
-  vouching: Boolean!
-  usedVouch: Request
-  pendingRevocation: Boolean!
-  claimers: [Claimer!]! @derivedFrom(field: "targetHumanity")
-  requests: [Request!]! @derivedFrom(field: "humanity")
-  nbRequests: BigInt!
-  nbLegacyRequests: BigInt!
-  nbPendingRequests: BigInt!
-}
-
-type Claimer @entity {
-  id: Bytes!
-  name: String
-  humanity: Humanity
-  targetHumanity: Humanity
-  hasHumanity: Boolean!
-  currentRequest: Request
-  lastRequestTime: BigInt!
-  disputed: Boolean!
-  vouches: [Vouch!]! @derivedFrom(field: "from")
-  vouchesReceived: [Vouch!]!
-  nbVouchesReceived: BigInt!
-}
-
-type Request @entity {
-  id: Bytes!
-  legacy: Boolean!
-  humanity: Humanity!
-  index: BigInt!
-  requester: Bytes!
-  revocation: Boolean!
-  claimer: Claimer!
-  status: Status!
-  creationTime: BigInt!
-  resolutionTime: BigInt!
-  challengePeriodEnd: BigInt!
-  usedReasons: [Reason!]!
-  currentReason: Reason!
-  ultimateChallenger: Bytes
-  lastStatusChange: BigInt!
-  requesterLost: Boolean!
-  vouches: [Vouch!]!
-  lastProcessedVouchIndex: BigInt!
-  arbitratorData: ArbitratorData!
-  evidence: [Evidence!]! @derivedFrom(field: "request")
-  nbEvidence: BigInt!
-  challenges: [Challenge!]! @derivedFrom(field: "request")
-  nbChallenges: BigInt!
-}
-
-type Challenge @entity {
-  id: Bytes!
-  index: BigInt!
-  request: Request!
-  reason: Reason!
-  challenger: Bytes
-  creationTime: BigInt!
-  disputeId: BigInt!
-  ruling: Party!
-  appealPeriodStart: BigInt!
-  appealPeriodEnd: BigInt!
-  rounds: [Round!]! @derivedFrom(field: "challenge")
-  nbRounds: BigInt!
-}
-
-type Round @entity {
-  id: Bytes!
-  index: BigInt!
-  challenge: Challenge!
-  creationTime: BigInt!
-  requesterFunds: BigInt!
-  challengerFunds: BigInt!
-  requesterPaid: Boolean!
-  challengerPaid: Boolean!
-  feeRewards: BigInt!
-  contributions: [Contribution!]! @derivedFrom(field: "round")
-  nbContributions: BigInt!
-}
-
-type Vouch @entity(immutable: true) {
-  id: Bytes!
-  for: Claimer!
-  humanity: Humanity!
-  from: Claimer!
-}
-
-type Contribution @entity {
-  id: Bytes!
-  round: Round!
-  contributor: Bytes!
-  forRequester: BigInt!
-  forChallenger: BigInt!
-  requestResolved: Boolean!
-}
-
-type Evidence @entity(immutable: true) {
-  id: Bytes!
-  request: Request!
-  creationTime: BigInt!
-  URI: String!
-  sender: Bytes!
-}
-
-type Counter @entity {
-  id: Bytes!
-  vouching: BigInt!
-  pendingClaims: BigInt!
-  challengedClaims: BigInt!
-  registered: BigInt!
-  pendingRevocations: BigInt!
-  challengedRevocation: BigInt!
-  removed: BigInt!
-  expired: BigInt!
-}
-
-type CrossChainHumanity @entity {
-  id: Bytes!
-  owner: Claimer
-  claimed: Boolean!
-  expirationTime: BigInt!
-  lastReceivedTransferTimestamp: BigInt!
-}
-
-type OutTransfer @entity(immutable: true) {
-  id: Bytes!
-  foreignProxy: Bytes!
-  transferHash: Bytes!
-  transferTimestamp: BigInt!
-}
-
-type InTransfer @entity(immutable: true) {
-  id: Bytes!
-  humanityId: Bytes!
-}
-
-type CrossChainGateway @entity {
-  id: Bytes!
-  foreignProxy: Bytes!
-}

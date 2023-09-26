@@ -37,27 +37,19 @@ dataSources:
           handler: handleInitialized
         - event: MetaEvidence(indexed uint256,string)
           handler: handleMetaEvidence
-        - event: GovernorChanged(address)
-          handler: handleGovernorChanged
         - event: RequestBaseDepositChanged(uint256)
           handler: handleRequestBaseDepositChanged
         - event: DurationsChanged(uint40,uint40,uint40,uint40)
           handler: handleDurationsChanged
-        - event: RequiredNumberOfVouchesChanged(uint32)
-          handler: handleRequiredNumberOfVouchesChanged
-        - event: StakeMultipliersChanged(uint256,uint256,uint256)
-          handler: handleStakeMultipliersChanged
         - event: ArbitratorChanged(address,bytes)
           handler: handleArbitratorChanged
-        - event: HumanityGrantedManually(indexed bytes20,indexed address,uint40)
-          handler: handleHumanityGrantedManually
-        - event: HumanityRevokedManually(indexed bytes20)
-          handler: handleHumanityRevokedManually
-        - event: ClaimRequest(indexed address,indexed bytes20,uint256,string,string)
+        - event: HumanityGrantedDirectly(indexed bytes20,indexed address,uint40)
+          handler: handleHumanityGrantedDirectly
+        - event: HumanityDischargedDirectly(indexed bytes20)
+          handler: handleHumanityDischargedDirectly
+        - event: ClaimRequest(indexed address,indexed bytes20,uint256,string)
           handler: handleClaimRequest
-        - event: RenewalRequest(indexed address,indexed bytes20,uint256,string)
-          handler: handleRenewalRequest
-        - event: RevocationRequest(indexed address,indexed bytes20,uint256,string)
+        - event: RevocationRequest(indexed address,indexed bytes20,uint256)
           handler: handleRevocationRequest
         - event: VouchAdded(indexed address,indexed address,bytes20)
           handler: handleVouchAdded
@@ -69,7 +61,7 @@ dataSources:
           handler: handleRequestWithdrawn
         - event: StateAdvanced(address)
           handler: handleStateAdvanced
-        - event: RequestChallenged(bytes20,uint256,uint256,uint8,uint256,string)
+        - event: RequestChallenged(bytes20,uint256,uint256,uint8,uint256)
           handler: handleRequestChallenged
         - event: HumanityClaimed(bytes20,uint256)
           handler: handleHumanityClaimed
@@ -133,7 +125,7 @@ dataSources:
           handler: handleTransferReceived
   - kind: ethereum
     name: KlerosLiquid
-    network: "{{network}}"
+    network: {{network}}
     source:
       address: "{{arbitrator}}"
       abi: KlerosLiquid
@@ -154,7 +146,7 @@ dataSources:
         - event: AppealPossible(indexed uint256,indexed address)
           handler: handleAppealPossible
       file: ./mappings/kliquid.ts
-  {{#v1}}
+  {{#v1-address}}
   - kind: ethereum
     name: ProofOfHumanityOld
     network: {{network}}
@@ -211,29 +203,4 @@ dataSources:
           handler: ruleLegacy
         - function: submitEvidence(address,string)
           handler: submitEvidenceLegacy
-  - kind: ethereum
-    name: ForkModule
-    network: {{network}}
-    source:
-      address: "{{forkmod}}"
-      abi: ForkModule
-      startBlock: {{forkmod-start-block}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./mappings/legacy.ts
-      entities:
-        - Soul
-        - Claimer
-        - Request
-        - Counter
-      abis:
-        - name: ForkModule
-          file: ./abis/ForkModule.json
-      eventHandlers:
-        - event: RemovedForTransfer(indexed address)
-          handler: handleRemovedForTransfer
-        - event: RemovedFromRequest(indexed address)
-          handler: handleRemovedFromRequest
-{{/v1}}
+  {{/v1-address}}
