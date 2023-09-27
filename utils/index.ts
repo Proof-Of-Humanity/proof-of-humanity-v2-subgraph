@@ -84,6 +84,7 @@ export class Factory {
       request.arbitratorHistory = getContract()
         .latestArbitratorHistory as string;
       request.nbChallenges = ZERO;
+      request.contributors = [];
     }
     return request;
   }
@@ -100,8 +101,6 @@ export class Factory {
       challenge.creationTime = ZERO;
       challenge.disputeId = ZERO;
       challenge.ruling = PartyUtil.none;
-      challenge.appealPeriodStart = ZERO;
-      challenge.appealPeriodEnd = ZERO;
       challenge.nbRounds = ZERO;
     }
     return challenge;

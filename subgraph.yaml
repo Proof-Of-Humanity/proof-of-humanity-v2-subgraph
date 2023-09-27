@@ -123,26 +123,3 @@ dataSources:
           handler: handleTransferInitiated
         - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
           handler: handleTransferReceived
-  - kind: ethereum
-    name: KlerosLiquid
-    network: "goerli"
-    source:
-      address: "0x1128eD55ab2d796fa92D2F8E1f336d745354a77A"
-      abi: KlerosLiquid
-      startBlock: 9706403
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - Contract
-        - Challenge
-      abis:
-        - name: KlerosLiquid
-          file: ./abis/KlerosLiquid.json
-        - name: ProofOfHumanity
-          file: ./abis/ProofOfHumanity.json
-      eventHandlers:
-        - event: AppealPossible(indexed uint256,indexed address)
-          handler: handleAppealPossible
-      file: ./mappings/kliquid.ts

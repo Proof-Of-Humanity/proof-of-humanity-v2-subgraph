@@ -114,8 +114,6 @@ type Challenge @entity {
   creationTime: BigInt!
   disputeId: BigInt!
   ruling: Party!
-  appealPeriodStart: BigInt!
-  appealPeriodEnd: BigInt!
   nbRounds: BigInt!
   rounds: [Round!]! @derivedFrom(field: "challenge")
 }
