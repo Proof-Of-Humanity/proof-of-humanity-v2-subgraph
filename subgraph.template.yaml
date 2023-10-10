@@ -150,11 +150,15 @@ dataSources:
           file: ./abis/ProofOfHumanityOld.json
       eventHandlers:
         - event: MetaEvidence(indexed uint256,string)
-          handler: handleMetaEvidenceLegacy
+          handler: handleMetaEvidence
         - event: VouchAdded(indexed address,indexed address)
-          handler: handleVouchAddedLegacy
+          handler: handleVouchAdded
         - event: VouchRemoved(indexed address,indexed address)
-          handler: handleVouchRemovedLegacy
+          handler: handleVouchRemoved
+        - event: Ruling(indexed address,indexed uint256,uint256)
+          handler: handleRuling
+        - event: Evidence(indexed address,indexed uint256,indexed address,string)
+          handler: handleEvidence
       callHandlers:
         - function: addSubmissionManually(address[],string[],string[])
           handler: addSubmissionManuallyLegacy
@@ -176,8 +180,4 @@ dataSources:
           handler: executeRequestLegacy
         - function: processVouches(address,uint256,uint256)
           handler: processVouchesLegacy
-        - function: rule(uint256,uint256)
-          handler: ruleLegacy
-        - function: submitEvidence(address,string)
-          handler: submitEvidenceLegacy
   {{/v1-address}}

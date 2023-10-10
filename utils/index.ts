@@ -1,25 +1,29 @@
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { Address, BigInt, ByteArray, Bytes } from "@graphprotocol/graph-ts";
 import {
-  Challenge,
   Claimer,
   Contract,
-  Contribution,
   Request,
-  Round,
   Humanity,
-  RequesterFund,
-  ChallengerFund,
   Registration,
+  EvidenceGroup,
 } from "../generated/schema";
-import { ZERO_B, ZERO, ONE_B, TWO_B } from "./constants";
+import { ZERO_B, ZERO, ONE } from "./constants";
 import { biToBytes, hash } from "./misc";
-import { PartyUtil, ReasonUtil, StatusUtil } from "./enums";
+import { StatusUtil } from "./enums";
 
-const LEGACY_FLAG = Bytes.fromUTF8("legacy");
+export const LEGACY_FLAG = Bytes.fromUTF8("legacy");
 
 export function getContract(): Contract {
   let contract = Contract.load(ZERO_B);
-  return contract == null ? new Contract(ZERO_B) : contract;
+  if (contract == null) {
+    contract = new Contract(ZERO_B);
+    contract.humanityLifespan = ZERO;
+    contract.renewalPeriodDuration = ZERO;
+    contract.challengePeriodDuration = ZERO;
+    contract.requiredNumberOfVouches = ZERO;
+    contract.baseDeposit = ZERO;
+  }
+  return contract;
 }
 
 export class Factory {
@@ -56,26 +60,49 @@ export class Factory {
     return registration;
   }
 
-  static Request(
-    humanity: Bytes,
-    claimer: Bytes,
-    index: BigInt,
-    revocation: boolean,
-    legacy: boolean
-  ): Request {
-    const requestId = legacy
-      ? hash(hash(humanity.concat(biToBytes(index))).concat(LEGACY_FLAG))
-      : hash(humanity.concat(biToBytes(index)));
+  static Request(pohId: Bytes, index: BigInt): Request {
+    let requestId: Bytes;
+    let evGroupId: Bytes;
+    if (index.ge(ZERO)) {
+      requestId = hash(pohId.concat(biToBytes(index)));
+      evGroupId = hash(
+        ByteArray.fromHexString(pohId.toHex())
+          .concat(new ByteArray(32 - index.byteLength))
+          .concat(ByteArray.fromBigInt(index))
+      );
+      let evidenceGroup = EvidenceGroup.load(evGroupId);
+      if (evidenceGroup == null) {
+        evidenceGroup = new EvidenceGroup(evGroupId);
+        evidenceGroup.length = ZERO;
+        evidenceGroup.save();
+      }
+    } else {
+      requestId = hash(
+        pohId.concat(biToBytes(index.plus(ONE).abs()).concat(LEGACY_FLAG))
+      );
+      evGroupId = biToBytes(
+        index
+          .plus(ONE)
+          .abs()
+          .plus(BigInt.fromByteArray(pohId))
+      );
+      let evidenceGroup = EvidenceGroup.load(evGroupId);
+      if (evidenceGroup == null) {
+        evidenceGroup = new EvidenceGroup(evGroupId);
+        evidenceGroup.length = ZERO;
+        evidenceGroup.save();
+      }
+    }
+
     let request = Request.load(requestId);
     if (request == null) {
       request = new Request(requestId);
-      request.humanity = humanity;
-      request.legacy = legacy;
-      request.claimer = claimer;
+      request.humanity = pohId;
+      request.claimer = Address.zero();
       request.index = index;
-      request.requester = revocation ? Address.zero() : claimer;
-      request.revocation = revocation;
-      request.status = revocation ? StatusUtil.resolving : StatusUtil.vouching;
+      request.requester = Address.zero();
+      request.revocation = false;
+      request.status = StatusUtil.vouching;
       request.creationTime = ZERO;
       request.resolutionTime = ZERO;
       request.challengePeriodEnd = ZERO;
@@ -85,82 +112,8 @@ export class Factory {
         .latestArbitratorHistory as string;
       request.nbChallenges = ZERO;
       request.contributors = [];
+      request.evidenceGroup = evGroupId;
     }
     return request;
-  }
-
-  static Challenge(requestId: Bytes, index: BigInt): Challenge {
-    const challengeId = hash(requestId.concat(biToBytes(index)));
-    let challenge = Challenge.load(challengeId);
-    if (challenge == null) {
-      challenge = new Challenge(challengeId);
-      challenge.index = index;
-      challenge.request = requestId;
-      challenge.reason = ReasonUtil.none;
-      challenge.challenger = Address.zero();
-      challenge.creationTime = ZERO;
-      challenge.disputeId = ZERO;
-      challenge.ruling = PartyUtil.none;
-      challenge.nbRounds = ZERO;
-    }
-    return challenge;
-  }
-
-  static Round(challengeId: Bytes, index: BigInt): Round {
-    const roundId = hash(challengeId.concat(biToBytes(index)));
-    let round = Round.load(roundId);
-    if (round == null) {
-      round = new Round(roundId);
-      round.index = index;
-      round.challenge = challengeId;
-      round.creationTime = ZERO;
-
-      const requesterFund = Factory.RequesterFund(roundId);
-      round.requesterFund = requesterFund.id;
-
-      const challengerFund = Factory.ChallengerFund(roundId);
-      round.challengerFund = challengerFund.id;
-    }
-    return round;
-  }
-
-  static RequesterFund(roundId: Bytes): RequesterFund {
-    const fundId = hash(roundId.concat(ONE_B));
-    let fund = RequesterFund.load(fundId);
-    if (fund == null) {
-      fund = new RequesterFund(fundId);
-      fund.amount = ZERO;
-      fund.feeRewards = ZERO;
-
-      const round = Round.load(roundId) as Round;
-      round.requesterFund = fundId;
-      round.save();
-    }
-    return fund;
-  }
-
-  static ChallengerFund(roundId: Bytes): ChallengerFund {
-    const fundId = hash(roundId.concat(TWO_B));
-    let fund = ChallengerFund.load(fundId);
-    if (fund == null) {
-      fund = new ChallengerFund(fundId);
-      fund.amount = ZERO;
-      fund.feeRewards = ZERO;
-
-      const round = Round.load(roundId) as Round;
-      round.challengerFund = fundId;
-      round.save();
-    }
-    return fund;
-  }
-
-  static Contribution(fundId: Bytes, contributor: Bytes): Contribution {
-    let contribution = new Contribution(hash(fundId.concat(contributor)));
-    if (contribution == null) {
-      contribution = new Contribution(hash(fundId.concat(contributor)));
-      contribution.contributor = contributor;
-      contribution.amount = ZERO;
-    }
-    return contribution;
   }
 }

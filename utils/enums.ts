@@ -6,6 +6,12 @@ export class PartyUtil {
   static readonly requester: string = "requester";
   static readonly challenger: string = "challenger";
 
+  constructor() {
+    PartyUtil.createIfNew(PartyUtil.none);
+    PartyUtil.createIfNew(PartyUtil.requester);
+    PartyUtil.createIfNew(PartyUtil.challenger);
+  }
+
   static parse(party: i32): string {
     switch (party) {
       case 0:
@@ -46,6 +52,14 @@ export class StatusUtil {
   static readonly disputed: string = "disputed";
   static readonly resolved: string = "resolved";
   static readonly withdrawn: string = "withdrawn";
+
+  constructor() {
+    StatusUtil.createIfNew(StatusUtil.vouching);
+    StatusUtil.createIfNew(StatusUtil.resolving);
+    StatusUtil.createIfNew(StatusUtil.disputed);
+    StatusUtil.createIfNew(StatusUtil.resolved);
+    StatusUtil.createIfNew(StatusUtil.withdrawn);
+  }
 
   static parse(status: i32): string {
     switch (status) {
@@ -91,6 +105,14 @@ export class ReasonUtil {
   static readonly deceased: string = "deceased";
   static readonly duplicate: string = "duplicate";
   static readonly doesNotExist: string = "doesNotExist";
+
+  constructor() {
+    ReasonUtil.createIfNew(ReasonUtil.none);
+    ReasonUtil.createIfNew(ReasonUtil.incorrectSubmission);
+    ReasonUtil.createIfNew(ReasonUtil.deceased);
+    ReasonUtil.createIfNew(ReasonUtil.duplicate);
+    ReasonUtil.createIfNew(ReasonUtil.doesNotExist);
+  }
 
   static parse(reason: i32): string {
     switch (reason) {

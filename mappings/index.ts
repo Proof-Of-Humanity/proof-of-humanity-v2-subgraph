@@ -1,4 +1,11 @@
-import { Address, BigInt, Bytes, log, store } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  BigInt,
+  ByteArray,
+  Bytes,
+  log,
+  store,
+} from "@graphprotocol/graph-ts";
 import {
   MetaEvidence,
   VouchAdded,
@@ -38,6 +45,8 @@ import {
   EvidenceGroup,
   VouchInProcess,
   Contribution,
+  RequesterFund,
+  ChallengerFund,
 } from "../generated/schema";
 import { getContract, Factory } from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO, ZERO_B } from "../utils/constants";
@@ -64,13 +73,17 @@ export function handleInitialized(ev: Initialized): void {
 
   contract.latestArbitratorHistory = arbitratorHistory.id;
   contract.save();
+
+  new ReasonUtil();
+  new StatusUtil();
+  new PartyUtil();
 }
 
 export function handleMetaEvidence(ev: MetaEvidence): void {
   const metaEvidenceUpdates = ev.params._metaEvidenceID.div(TWO);
 
   let arbitratorHistory: ArbitratorHistory;
-  if (metaEvidenceUpdates.equals(ZERO)) {
+  if (metaEvidenceUpdates.mod(TWO).equals(ZERO)) {
     if (metaEvidenceUpdates.equals(ZERO)) {
       arbitratorHistory = ArbitratorHistory.load(
         ZERO.toString()
@@ -164,21 +177,12 @@ export function handleClaimRequest(ev: ClaimRequest): void {
   const humanity = Factory.Humanity(ev.params.humanityId);
   const claimer = Factory.Claimer(ev.params.requester, ev.params.name);
 
-  const request = Factory.Request(
-    humanity.id,
-    claimer.id,
-    humanity.nbRequests,
-    false,
-    false
-  );
+  const request = Factory.Request(humanity.id, humanity.nbRequests);
+  request.claimer = claimer.id;
+  request.requester = claimer.id;
   request.creationTime = ev.block.timestamp;
   request.lastStatusChange = ev.block.timestamp;
   request.save();
-
-  const evidenceGroup = new EvidenceGroup(request.id);
-  evidenceGroup.request = request.id;
-  evidenceGroup.length = ZERO;
-  evidenceGroup.save();
 
   claimer.currentRequest = request.id;
   claimer.save();
@@ -191,22 +195,14 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
   const humanity = Humanity.load(ev.params.humanityId) as Humanity;
   const registration = Registration.load(ev.params.humanityId) as Registration;
 
-  const request = Factory.Request(
-    humanity.id,
-    registration.claimer,
-    humanity.nbRequests,
-    true,
-    false
-  );
+  const request = Factory.Request(humanity.id, humanity.nbRequests);
+  request.claimer = registration.claimer;
+  request.revocation = true;
+  request.status = StatusUtil.resolving;
   request.creationTime = ev.block.timestamp;
   request.requester = ev.transaction.from;
   request.lastStatusChange = ev.block.timestamp;
   request.save();
-
-  const evidenceGroup = new EvidenceGroup(request.id);
-  evidenceGroup.request = request.id;
-  evidenceGroup.length = ZERO;
-  evidenceGroup.save();
 
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
   humanity.nbRequests = humanity.nbRequests.plus(ONE);
@@ -353,6 +349,7 @@ export function handleRuling(ev: Ruling): void {
   ) as Request;
   request.resolutionTime = ev.block.timestamp;
   request.status = StatusUtil.resolved;
+  request.winnerParty = ruling;
 
   const challenge = Challenge.load(
     hash(request.id.concat(biToBytes(disputeData.getChallengeId())))
@@ -399,6 +396,7 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
     hash(humanity.id.concat(biToBytes(ev.params.requestId)))
   ) as Request;
   request.status = StatusUtil.resolved;
+  request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
   request.save();
 
@@ -425,6 +423,7 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
     hash(humanity.id.concat(biToBytes(ev.params.requestId)))
   ) as Request;
   request.status = StatusUtil.resolved;
+  request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
   request.save();
 
@@ -451,33 +450,65 @@ export function handleVouchesProcessed(ev: VouchesProcessed): void {
 }
 
 export function handleContribution(ev: ContributionEv): void {
-  const request = Request.load(
-    hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
-  ) as Request;
+  const request = Factory.Request(ev.params.humanityId, ev.params.requestId);
+  const challengeId = hash(request.id.concat(biToBytes(ev.params.challengeId)));
+  let challenge = Challenge.load(challengeId);
+  if (challenge == null) {
+    challenge = new Challenge(challengeId);
+    challenge.index = ev.params.challengeId;
+    challenge.request = request.id;
+    challenge.reason = ReasonUtil.none;
+    challenge.challenger = Address.zero();
+    challenge.creationTime = ZERO;
+    challenge.disputeId = ZERO;
+    challenge.ruling = PartyUtil.none;
+    challenge.nbRounds = ZERO;
+    challenge.save();
+  }
 
-  const challenge = Factory.Challenge(request.id, ev.params.challengeId);
-  challenge.save();
-
-  const round = Factory.Round(challenge.id, ev.params.round);
-  round.save();
+  const roundId = hash(challenge.id.concat(biToBytes(ev.params.round)));
+  let round = Round.load(roundId);
+  if (round == null) {
+    round = new Round(roundId);
+    round.index = ev.params.round;
+    round.challenge = challenge.id;
+    round.creationTime = ZERO;
+  }
 
   let fundId: Bytes;
   if (PartyUtil.parse(ev.params.side) == PartyUtil.requester) {
-    const fund = Factory.RequesterFund(round.id);
+    fundId = hash(round.id.concat(ONE_B));
+    let fund = RequesterFund.load(fundId);
+    if (fund == null) {
+      fund = new RequesterFund(fundId);
+      fund.amount = ZERO;
+      fund.feeRewards = ZERO;
+      round.requesterFund = fundId;
+    }
     fund.amount = fund.amount.plus(ev.params.contribution);
     fund.save();
-
-    fundId = fund.id;
   } else {
-    const fund = Factory.ChallengerFund(round.id);
+    fundId = hash(round.id.concat(TWO_B));
+    let fund = ChallengerFund.load(fundId);
+    if (fund == null) {
+      fund = new ChallengerFund(fundId);
+      fund.amount = ZERO;
+      fund.feeRewards = ZERO;
+      round.challengerFund = fundId;
+    }
     fund.amount = fund.amount.plus(ev.params.contribution);
     fund.save();
-
-    fundId = fund.id;
   }
+  round.save();
 
-  const contribution = Factory.Contribution(fundId, ev.params.contributor);
-  contribution.amount = contribution.amount.plus(ev.params.contribution);
+  const contributionId = hash(fundId.concat(ev.params.contributor));
+  let contribution = Contribution.load(contributionId);
+  if (contribution == null) {
+    contribution = new Contribution(contributionId);
+    contribution.contributor = ev.params.contributor;
+    contribution.amount = ev.params.contribution;
+  } else contribution.amount = contribution.amount.plus(ev.params.contribution);
+  contribution.fund = fundId;
   contribution.save();
 }
 
@@ -504,9 +535,14 @@ export function handleFeesAndRewardsWithdrawn(
 }
 
 export function handleEvidence(ev: EvidenceEv): void {
-  const group = EvidenceGroup.load(
-    biToBytes(ev.params._evidenceGroupID)
-  ) as EvidenceGroup;
+  const group = EvidenceGroup.load(biToBytes(ev.params._evidenceGroupID));
+
+  if (group == null) {
+    log.error("evidence group {} not found", [
+      ev.params._evidenceGroupID.toString(),
+    ]);
+    return;
+  }
 
   const evidence = new Evidence(hash(group.id.concat(biToBytes(group.length))));
   evidence.creationTime = ev.block.timestamp;

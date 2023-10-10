@@ -1,0 +1,11 @@
+{
+    "network": "sepolia",
+    "address": "0x31B679253D53A18Eb793e023e7EFCed5160d7fD6",
+    "start-block": 4437955,
+    "v1-address": "0xC986062173bed7ee228FfBcaD22951856a625998",
+    "v1-start-block": 4437955,
+    "cross-chain": "0x0000000000000000000000000000000000000000",
+    "cross-chain-start-block": 4437955,
+    "forkmod": "0xEb457616C5dcd17e49e92Fc55F557dD1262a8835",
+    "forkmod-start-block": 4437955
+}

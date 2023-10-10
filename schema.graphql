@@ -77,7 +77,6 @@ type Claimer @entity {
 type Request @entity {
   # hash(pohId//i)
   id: Bytes!
-  legacy: Boolean!
   humanity: Humanity!
   index: BigInt!
   status: Status!
@@ -89,8 +88,9 @@ type Request @entity {
   lastStatusChange: BigInt!
   challengePeriodEnd: BigInt!
   ultimateChallenger: Challenger
+  winnerParty: Party
   arbitratorHistory: ArbitratorHistory!
-  evidenceGroup: EvidenceGroup! @derivedFrom(field: "request")
+  evidenceGroup: EvidenceGroup!
   vouches: [VouchInProcess!]! @derivedFrom(field: "request")
   nbChallenges: BigInt!
   challenges: [Challenge!]! @derivedFrom(field: "request")
@@ -110,7 +110,7 @@ type Challenge @entity {
   index: BigInt!
   request: Request!
   reason: Reason!
-  challenger: Challenger!
+  challenger: Challenger
   creationTime: BigInt!
   disputeId: BigInt!
   ruling: Party!
@@ -125,7 +125,7 @@ type Round @entity {
   creationTime: BigInt!
   challenge: Challenge!
   requesterFund: RequesterFund!
-  challengerFund: ChallengerFund!
+  challengerFund: ChallengerFund
 }
 
 interface Fund {
@@ -181,8 +181,8 @@ type VouchInProcess @entity {
 type EvidenceGroup @entity {
   # evidenceGroupId
   id: Bytes!
-  request: Request!
   length: BigInt!
+  request: Request! @derivedFrom(field: "evidenceGroup")
   evidence: [Evidence!]! @derivedFrom(field: "group")
 }
 
