@@ -384,7 +384,7 @@ export function handleEvidence(ev: EvidenceEv): void {
   let group = EvidenceGroup.load(evGroupId);
   if (group == null) {
     group = new EvidenceGroup(evGroupId);
-    group.length = ONE;
+    group.length = ZERO;
   }
   group.length = group.length.plus(ONE);
   group.save();

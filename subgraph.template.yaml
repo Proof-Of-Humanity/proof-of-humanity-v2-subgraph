@@ -2,6 +2,7 @@ specVersion: 0.0.1
 description: Proof of Humanity subgraph
 features:
   - fullTextSearch
+  - nonFatalErrors
 schema:
   file: ./schema.graphql
 dataSources:
@@ -81,6 +82,7 @@ dataSources:
           handler: handleContribution
         - event: FeesAndRewardsWithdrawn(bytes20,uint256,uint256,uint256,address)
           handler: handleFeesAndRewardsWithdrawn
+  {{#cross-chain}}
   - kind: ethereum
     name: CrossChainProofOfHumanity
     network: {{network}}
@@ -123,6 +125,7 @@ dataSources:
           handler: handleTransferInitiated
         - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
           handler: handleTransferReceived
+  {{/cross-chain}}
   {{#v1-address}}
   - kind: ethereum
     name: ProofOfHumanityOld

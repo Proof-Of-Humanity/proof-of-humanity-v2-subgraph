@@ -1,7 +1,0 @@
-{
-    "network": "goerli",
-    "address": "0xe53c6d2258C77b34B90e6FE7038e30A7C8f16152",
-    "start-block": 9706403,
-    "cross-chain": "0x27c9C7EC137229EEb8E22d9f03084D385b424C78",
-    "cross-chain-start-block": 9706403
-}

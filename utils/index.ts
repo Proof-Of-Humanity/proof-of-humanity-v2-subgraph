@@ -7,16 +7,16 @@ import {
   Registration,
   EvidenceGroup,
 } from "../generated/schema";
-import { ZERO_B, ZERO, ONE } from "./constants";
+import { ZERO, ONE } from "./constants";
 import { biToBytes, hash } from "./misc";
 import { StatusUtil } from "./enums";
 
 export const LEGACY_FLAG = Bytes.fromUTF8("legacy");
 
 export function getContract(): Contract {
-  let contract = Contract.load(ZERO_B);
+  let contract = Contract.load(new Bytes(1));
   if (contract == null) {
-    contract = new Contract(ZERO_B);
+    contract = new Contract(new Bytes(1));
     contract.humanityLifespan = ZERO;
     contract.renewalPeriodDuration = ZERO;
     contract.challengePeriodDuration = ZERO;
@@ -63,6 +63,7 @@ export class Factory {
   static Request(pohId: Bytes, index: BigInt): Request {
     let requestId: Bytes;
     let evGroupId: Bytes;
+
     if (index.ge(ZERO)) {
       requestId = hash(pohId.concat(biToBytes(index)));
       evGroupId = hash(
@@ -78,13 +79,14 @@ export class Factory {
       }
     } else {
       requestId = hash(
-        pohId.concat(biToBytes(index.plus(ONE).abs()).concat(LEGACY_FLAG))
+        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(LEGACY_FLAG)
       );
       evGroupId = biToBytes(
         index
           .plus(ONE)
           .abs()
-          .plus(BigInt.fromByteArray(pohId))
+          .plus(BigInt.fromByteArray(pohId)),
+        20
       );
       let evidenceGroup = EvidenceGroup.load(evGroupId);
       if (evidenceGroup == null) {

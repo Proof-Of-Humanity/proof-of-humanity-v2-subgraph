@@ -4,16 +4,10 @@
   "scripts": {
     "build": "graph build",
     "gen": "graph codegen --output-dir generated/",
-    "auth": "graph auth --studio 3184981ffcf028aa2a874918b1f592aa",
-    "gen-goerli": "mustache config/goerli.json subgraph.template.yaml > subgraph.yaml && mustache config/goerli.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
-    "gen-sepolia-ext": "mustache config/sepolia-ext.json subgraph.template.yaml > subgraph.yaml && mustache config/sepolia-ext.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
-    "gen-gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml && yarn gen",
-    "gen-mainnet-ext": "mustache config/mainnet-ext.json subgraph.template.yaml > subgraph.yaml && yarn gen",
-    "deploy-goerli": "yarn gen-goerli && graph deploy --studio poh-subgraph-goerli",
-    "deploy-goerli-hs": "yarn gen-goerli && graph deploy --product hosted-service andreimvp/poh-goerli",
-    "deploy-sepolia-ext": "yarn gen-sepolia-ext && graph deploy --studio proof-of-humanity-sepolia",
-    "deploy-gnosis": "yarn gen-gnosis && graph deploy --product hosted-service andreimvp/poh-gnosis",
-    "deploy-mainnet-ext": "yarn gen-mainnet-ext && graph deploy --product hosted-service andreimvp/poh-v1-in-v2-shoes"
+    "gen-sepolia": "mustache config/sepolia.json subgraph.template.yaml > subgraph.yaml && mustache config/sepolia.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
+    "gen-gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml && mustache config/gnosis.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
+    "deploy-sepolia": "yarn gen-sepolia && graph deploy --studio proof-of-humanity-sepolia",
+    "deploy-gnosis": "yarn gen-gnosis && graph deploy --studio proof-of-humanity-gnosis"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.51.0",

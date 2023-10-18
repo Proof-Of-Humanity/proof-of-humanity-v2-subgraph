@@ -1,11 +1,4 @@
-import {
-  Address,
-  BigInt,
-  ByteArray,
-  Bytes,
-  log,
-  store,
-} from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes, log, store } from "@graphprotocol/graph-ts";
 import {
   MetaEvidence,
   VouchAdded,
@@ -125,6 +118,8 @@ export function handleRequestBaseDepositChanged(
 export function handleDurationsChanged(ev: DurationsChanged): void {
   const contract = getContract();
   contract.humanityLifespan = ev.params.humanityLifespan;
+  contract.renewalPeriodDuration = ev.params.renewalPeriodDuration;
+  contract.challengePeriodDuration = ev.params.challengePeriodDuration;
   contract.save();
 }
 
@@ -535,13 +530,20 @@ export function handleFeesAndRewardsWithdrawn(
 }
 
 export function handleEvidence(ev: EvidenceEv): void {
-  const group = EvidenceGroup.load(biToBytes(ev.params._evidenceGroupID));
+  let group = EvidenceGroup.load(
+    Bytes.fromUint8Array(
+      biToBytes(ev.params._evidenceGroupID)
+        .slice(0, 32)
+        .reverse()
+    )
+  );
 
   if (group == null) {
-    log.error("evidence group {} not found", [
-      ev.params._evidenceGroupID.toString(),
+    group = new EvidenceGroup(biToBytes(ev.params._evidenceGroupID));
+    group.length = ZERO;
+    log.info("evidence group {} not found", [
+      ev.params._evidenceGroupID.toHex(),
     ]);
-    return;
   }
 
   const evidence = new Evidence(hash(group.id.concat(biToBytes(group.length))));
