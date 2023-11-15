@@ -1,9 +1,9 @@
 {
     "network": "sepolia",
-    "address": "0xf43460a06964947aD1DC59665175af4c5f1C8306",
-    "start-block": 4511828,
-    "v1-address": "0xD60484D65B59a378E907ae6543ec4005508ceda6",
-    "v1-start-block": 4511800,
-    "cross-chain": "0x918E7d86D286bB1E9f77da621717c9BF0385992C",
-    "cross-chain-start-block": 4511858
+    "address": "0x29defF3DbEf6f79ef20d3fe4f9CFa0547acCeC0D",
+    "start-block": 4640829,
+    "v1-address": "0x08Db8FD559cb4e3668f994553871c7eBa7c3941a",
+    "v1-start-block": 4641635,
+    "cross-chain": "0xd134748B972A320a73EfDe3AfF7a68718F6bA92c",
+    "cross-chain-start-block": 4640829
 }

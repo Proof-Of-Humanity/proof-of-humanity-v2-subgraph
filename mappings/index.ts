@@ -24,6 +24,8 @@ import {
   HumanityGrantedDirectly,
   HumanityDischargedDirectly,
   RequestBaseDepositChanged,
+  RenewalRequest,
+  RequiredNumberOfVouchesChanged,
 } from "../generated/ProofOfHumanity/ProofOfHumanity";
 import {
   Challenge,
@@ -42,7 +44,7 @@ import {
   ChallengerFund,
 } from "../generated/schema";
 import { getContract, Factory } from "../utils";
-import { ONE, ONE_B, TWO, TWO_B, ZERO, ZERO_B } from "../utils/constants";
+import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
 import { biToBytes, hash } from "../utils/misc";
 import { ProofOfHumanity } from "../utils/hardcoded";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
@@ -76,7 +78,7 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
   const metaEvidenceUpdates = ev.params._metaEvidenceID.div(TWO);
 
   let arbitratorHistory: ArbitratorHistory;
-  if (metaEvidenceUpdates.mod(TWO).equals(ZERO)) {
+  if (ev.params._metaEvidenceID.mod(TWO).equals(ZERO)) {
     if (metaEvidenceUpdates.equals(ZERO)) {
       arbitratorHistory = ArbitratorHistory.load(
         ZERO.toString()
@@ -120,6 +122,14 @@ export function handleDurationsChanged(ev: DurationsChanged): void {
   contract.humanityLifespan = ev.params.humanityLifespan;
   contract.renewalPeriodDuration = ev.params.renewalPeriodDuration;
   contract.challengePeriodDuration = ev.params.challengePeriodDuration;
+  contract.save();
+}
+
+export function handleRequiredNumberOfVouchesChanged(
+  ev: RequiredNumberOfVouchesChanged
+): void {
+  const contract = getContract();
+  contract.requiredNumberOfVouches = ev.params.requiredNumberOfVouches;
   contract.save();
 }
 
@@ -171,6 +181,24 @@ export function handleHumanityDischargedDirectly(
 export function handleClaimRequest(ev: ClaimRequest): void {
   const humanity = Factory.Humanity(ev.params.humanityId);
   const claimer = Factory.Claimer(ev.params.requester, ev.params.name);
+
+  const request = Factory.Request(humanity.id, humanity.nbRequests);
+  request.claimer = claimer.id;
+  request.requester = claimer.id;
+  request.creationTime = ev.block.timestamp;
+  request.lastStatusChange = ev.block.timestamp;
+  request.save();
+
+  claimer.currentRequest = request.id;
+  claimer.save();
+
+  humanity.nbRequests = humanity.nbRequests.plus(ONE);
+  humanity.save();
+}
+
+export function handleRenewalRequest(ev: RenewalRequest): void {
+  const humanity = Humanity.load(ev.params.humanityId) as Humanity;
+  const claimer = Claimer.load(ev.params.requester) as Claimer;
 
   const request = Factory.Request(humanity.id, humanity.nbRequests);
   request.claimer = claimer.id;
@@ -278,6 +306,7 @@ export function handleVouchRegistered(ev: VouchRegistered): void {
   const vouchInProcess = new VouchInProcess(vouchId);
   vouchInProcess.vouch = vouchId;
   vouchInProcess.request = request.id;
+  vouchInProcess.humanity = ev.params.vouchedHumanityId;
   vouchInProcess.save();
 }
 
@@ -315,9 +344,9 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
   request.nbChallenges = request.nbChallenges.plus(ONE);
   request.save();
 
-  const round = Round.load(challenge.id.concat(ZERO_B)) as Round;
-  round.creationTime = ev.block.timestamp;
-  round.save();
+  // const round = challenge.rounds.load().at(-1);
+  // round.creationTime = ev.block.timestamp;
+  // round.save();
 }
 
 export function handleChallengePeriodRestart(ev: ChallengePeriodRestart): void {

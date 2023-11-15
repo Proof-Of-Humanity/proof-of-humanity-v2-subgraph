@@ -102,16 +102,20 @@ export class StatusUtil {
 export class ReasonUtil {
   static readonly none: string = "none";
   static readonly incorrectSubmission: string = "incorrectSubmission";
+  static readonly identityTheft: string = "identityTheft";
+  static readonly sybilAttack: string = "sybilAttack";
   static readonly deceased: string = "deceased";
-  static readonly duplicate: string = "duplicate";
-  static readonly doesNotExist: string = "doesNotExist";
+  // static readonly duplicate: string = "duplicate";
+  // static readonly doesNotExist: string = "doesNotExist";
 
   constructor() {
     ReasonUtil.createIfNew(ReasonUtil.none);
     ReasonUtil.createIfNew(ReasonUtil.incorrectSubmission);
+    ReasonUtil.createIfNew(ReasonUtil.identityTheft);
+    ReasonUtil.createIfNew(ReasonUtil.sybilAttack);
     ReasonUtil.createIfNew(ReasonUtil.deceased);
-    ReasonUtil.createIfNew(ReasonUtil.duplicate);
-    ReasonUtil.createIfNew(ReasonUtil.doesNotExist);
+    // ReasonUtil.createIfNew(ReasonUtil.duplicate);
+    // ReasonUtil.createIfNew(ReasonUtil.doesNotExist);
   }
 
   static parse(reason: i32): string {
@@ -121,11 +125,11 @@ export class ReasonUtil {
       case 1:
         return this.incorrectSubmission;
       case 2:
-        return this.deceased;
+        return this.identityTheft;
       case 3:
-        return this.duplicate;
+        return this.sybilAttack;
       case 4:
-        return this.doesNotExist;
+        return this.deceased;
       default:
         return "error";
     }

@@ -42,6 +42,8 @@ dataSources:
           handler: handleRequestBaseDepositChanged
         - event: DurationsChanged(uint40,uint40,uint40,uint40)
           handler: handleDurationsChanged
+        - event: RequiredNumberOfVouchesChanged(uint32)
+          handler: handleRequiredNumberOfVouchesChanged
         - event: ArbitratorChanged(address,bytes)
           handler: handleArbitratorChanged
         - event: HumanityGrantedDirectly(indexed bytes20,indexed address,uint40)
@@ -50,6 +52,8 @@ dataSources:
           handler: handleHumanityDischargedDirectly
         - event: ClaimRequest(indexed address,indexed bytes20,uint256,string)
           handler: handleClaimRequest
+        - event: RenewalRequest(indexed address,indexed bytes20,uint256)
+          handler: handleRenewalRequest
         - event: RevocationRequest(indexed address,indexed bytes20,uint256)
           handler: handleRevocationRequest
         - event: VouchAdded(indexed address,indexed address,bytes20)

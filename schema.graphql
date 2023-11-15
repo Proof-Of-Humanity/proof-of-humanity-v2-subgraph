@@ -6,7 +6,7 @@ type Party @entity {
 }
 
 type Reason @entity {
-  # none / incorrectSubmission / deceased / duplicate / doesNotExist
+  # none / incorrectSubmission / identityTheft / sybilAttack / deceased
   id: ID!
   count: BigInt!
   challenges: [Challenge!]! @derivedFrom(field: "reason")
@@ -174,7 +174,6 @@ type VouchInProcess @entity {
   id: Bytes!
   vouch: Vouch!
   humanity: Humanity!
-  from: Humanity!
   request: Request!
 }
 

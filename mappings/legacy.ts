@@ -29,7 +29,7 @@ import {
   Challenge,
   EvidenceGroup,
 } from "../generated/schema";
-import { getContract, Factory, LEGACY_FLAG } from "../utils";
+import { Factory, LEGACY_FLAG } from "../utils";
 import { biToBytes, hash } from "../utils/misc";
 import { ZERO, ONE, TWO } from "../utils/constants";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
@@ -38,7 +38,7 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
   const metaEvidenceUpdates = ev.params._metaEvidenceID.div(TWO);
 
   let arbitratorHistory: ArbitratorHistory;
-  if (metaEvidenceUpdates.mod(TWO).equals(ZERO)) {
+  if (ev.params._metaEvidenceID.mod(TWO).equals(ZERO)) {
     if (metaEvidenceUpdates.equals(ZERO)) {
       arbitratorHistory = new ArbitratorHistory("legacy#" + ZERO.toString());
       arbitratorHistory.arbitrator = Address.zero();
@@ -63,10 +63,6 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
   }
   arbitratorHistory.updateTime = ev.block.timestamp;
   arbitratorHistory.save();
-
-  const contract = getContract();
-  contract.latestArbitratorHistory = arbitratorHistory.id;
-  contract.save();
 
   new ReasonUtil();
   new StatusUtil();
@@ -369,9 +365,9 @@ export function processVouchesLegacy(call: ProcessVouchesCall): void {
     )
       continue;
 
-    const reason = request.challenges.load().at(-1).reason;
-    if (reason == ReasonUtil.duplicate || reason == ReasonUtil.doesNotExist)
-      store.remove("Registration", voucherRegistration.id.toHex());
+    // const reason = request.challenges.load().at(-1).reason;
+    // if (reason == ReasonUtil.duplicate || reason == ReasonUtil.doesNotExist)
+    //   store.remove("Registration", voucherRegistration.id.toHex());
   }
 }
 
