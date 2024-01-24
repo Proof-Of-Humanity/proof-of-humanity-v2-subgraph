@@ -54,7 +54,7 @@ type Humanity @entity {
   id: Bytes!
   registration: Registration @derivedFrom(field: "humanity")
   vouching: Boolean!
-  usedVouch: VouchInProcess @derivedFrom(field: "humanity")
+  usedVouch: VouchInProcess @derivedFrom(field: "voucher")
   pendingRevocation: Boolean!
   requests: [Request!]! @derivedFrom(field: "humanity")
   claimerName: String
@@ -173,7 +173,8 @@ type VouchInProcess @entity {
   # hash(vouch.id)
   id: Bytes!
   vouch: Vouch!
-  humanity: Humanity!
+  processed: Boolean!
+  voucher: Humanity!
   request: Request!
 }
 

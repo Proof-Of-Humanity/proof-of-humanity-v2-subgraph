@@ -306,7 +306,8 @@ export function handleVouchRegistered(ev: VouchRegistered): void {
   const vouchInProcess = new VouchInProcess(vouchId);
   vouchInProcess.vouch = vouchId;
   vouchInProcess.request = request.id;
-  vouchInProcess.humanity = ev.params.vouchedHumanityId;
+  vouchInProcess.processed = false;
+  vouchInProcess.voucher = voucher.id;
   vouchInProcess.save();
 }
 
@@ -458,19 +459,19 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
 }
 
 export function handleVouchesProcessed(ev: VouchesProcessed): void {
-  (Request.load(
-    hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
-  ) as Request).vouches
-    .load()
-    .forEach(function(vouch) {
-      store.remove(
-        "VouchInProcess",
-        (Humanity.load(vouch.humanity) as Humanity).usedVouch
-          .load()
-          .at(0)
-          .id.toHex()
-      );
-    });
+  const vouches = store.loadRelated(
+    "Request",
+    hash(
+      ev.params.humanityId.concat(biToBytes(ev.params.requestId))
+    ).toHexString(), // recipe.id is Bytes
+    "vouches"
+  );
+
+  for (let i = 0; i < vouches.length; i++) {
+    const vouch = changetype<VouchInProcess>(vouches[i]);
+    vouch.processed = true;
+    vouch.save();
+  }
 }
 
 export function handleContribution(ev: ContributionEv): void {
