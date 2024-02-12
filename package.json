@@ -10,7 +10,7 @@
     "deploy-gnosis": "yarn gen-gnosis && graph deploy --studio proof-of-humanity-gnosis"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "^0.61.0",
+    "@graphprotocol/graph-cli": "^0.67.4",
     "@graphprotocol/graph-ts": "^0.31.0",
     "mustache": "^4.2.0"
   }
