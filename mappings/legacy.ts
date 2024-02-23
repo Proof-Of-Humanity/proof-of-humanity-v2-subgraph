@@ -232,6 +232,8 @@ export function changeStateToPendingLegacy(
       const vouchInProcess = new VouchInProcess(vouch.id);
       vouchInProcess.vouch = vouch.id;
       vouchInProcess.request = request.id;
+      vouchInProcess.voucher = voucherRegistration.id;
+      vouchInProcess.processed = false;
       vouchInProcess.save();
     }
   }
@@ -347,16 +349,11 @@ export function processVouchesLegacy(call: ProcessVouchesCall): void {
 
   for (let i = 0; i < vouches.length; i++) {
     const vouch = vouches[i];
-    store.remove(
-      "VouchInProcess",
-      (Humanity.load(vouch.humanity) as Humanity).usedVouch
-        .load()
-        .at(0)
-        .id.toHex()
-    );
+    vouch.processed = true;
+    vouch.save();
 
     const voucherRegistration = Registration.load(
-      vouch.humanity
+      vouch.voucher
     ) as Registration;
 
     if (
