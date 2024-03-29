@@ -3,6 +3,10 @@ description: Proof of Humanity subgraph
 features:
   - fullTextSearch
   - nonFatalErrors
+  - grafting
+graft:
+  base: Qmcd8wMAeAR3bZb6i6c4YbrysV4teUQpWLQh3TL4hsDTTL
+  block: 5527028 # Block number
 schema:
   file: ./schema.graphql
 dataSources:

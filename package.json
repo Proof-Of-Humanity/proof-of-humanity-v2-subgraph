@@ -6,8 +6,10 @@
     "gen": "graph codegen --output-dir generated/",
     "gen-sepolia": "mustache config/sepolia.json subgraph.template.yaml > subgraph.yaml && mustache config/sepolia.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml && mustache config/gnosis.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
+    "gen-chiado": "mustache config/chiado.json subgraph.template.yaml > subgraph.yaml && mustache config/chiado.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "deploy-sepolia": "yarn gen-sepolia && graph deploy --studio proof-of-humanity-sepolia",
-    "deploy-gnosis": "yarn gen-gnosis && graph deploy --studio proof-of-humanity-gnosis"
+    "deploy-gnosis": "yarn gen-gnosis && graph deploy --studio proof-of-humanity-gnosis",
+    "deploy-chiado": "yarn gen-chiado && graph deploy --studio proof-of-humanity-chiado"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.61.0",

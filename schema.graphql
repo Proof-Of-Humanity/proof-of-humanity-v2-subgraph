@@ -203,7 +203,7 @@ type CrossChainRegistration @entity {
   lastReceivedTransferTimestamp: BigInt!
 }
 
-type OutTransfer @entity(immutable: true) {
+type OutTransfer @entity {
   # pohId
   id: Bytes!
   foreignProxy: Bytes!

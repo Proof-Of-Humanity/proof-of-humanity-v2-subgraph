@@ -5,4 +5,4 @@ generated
 build
 v1/build
 
-subgraph.template.back.*.yaml
+subgraph.template.*.yaml
