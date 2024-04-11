@@ -2,6 +2,7 @@
   "name": "poh-subgraph",
   "license": "UNLICENSED",
   "scripts": {
+    "goldsky-login": "env-cmd -f .env.local goldsky login --token=${GOLDSKY_API_TOKEN}",
     "build": "graph build",
     "gen": "graph codegen --output-dir generated/",
     "gen-sepolia": "mustache config/sepolia.json subgraph.template.yaml > subgraph.yaml && mustache config/sepolia.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
@@ -9,11 +10,12 @@
     "gen-chiado": "mustache config/chiado.json subgraph.template.yaml > subgraph.yaml && mustache config/chiado.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "deploy-sepolia": "yarn gen-sepolia && graph deploy --studio proof-of-humanity-sepolia",
     "deploy-gnosis": "yarn gen-gnosis && graph deploy --studio proof-of-humanity-gnosis",
-    "deploy-chiado": "yarn gen-chiado && graph deploy --studio proof-of-humanity-chiado"
+    "deploy-chiado": "yarn gen-chiado && yarn build && yarn goldsky-login && goldsky subgraph delete proof-of-humanity-chiado/1.0.0 && goldsky subgraph deploy proof-of-humanity-chiado/1.0.0 --path ./build"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "^0.61.0",
     "@graphprotocol/graph-ts": "^0.31.0",
-    "mustache": "^4.2.0"
+    "mustache": "^4.2.0",
+    "env-cmd": "^10.1.0"
   }
 }

@@ -6,3 +6,5 @@ build
 v1/build
 
 subgraph.template.*.yaml
+
+.env.*

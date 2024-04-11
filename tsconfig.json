@@ -1,4 +1,9 @@
 {
   "extends": "@graphprotocol/graph-ts/tsconfig",
-  "include": ["v1", "mappings", "generated"]
+  "include": ["v1", "mappings", "generated"],
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "CommonJS",
+    "sourceMap": true
+  }
 }

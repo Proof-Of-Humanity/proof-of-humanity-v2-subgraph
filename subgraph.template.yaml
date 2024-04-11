@@ -3,10 +3,6 @@ description: Proof of Humanity subgraph
 features:
   - fullTextSearch
   - nonFatalErrors
-  - grafting
-graft:
-  base: Qmcd8wMAeAR3bZb6i6c4YbrysV4teUQpWLQh3TL4hsDTTL
-  block: 5527028 # Block number
 schema:
   file: ./schema.graphql
 dataSources:
@@ -127,6 +123,8 @@ dataSources:
           handler: handleGatewayAdded
         - event: GatewayRemoved(indexed address)
           handler: handleGatewayRemoved
+        - event: UpdateInitiated(indexed bytes20,indexed address,uint40,bool,address)
+          handler: handleUpdateInitiated
         - event: UpdateReceived(indexed bytes20,indexed address,uint40,bool)
           handler: handleUpdateReceived
         - event: TransferInitiated(indexed bytes20,indexed address,uint40,address,bytes32)
