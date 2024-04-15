@@ -2,14 +2,15 @@
   "name": "poh-subgraph",
   "license": "UNLICENSED",
   "scripts": {
+    "thegraph-login": "env-cmd -f .env.local graph auth --studio=${THEGRAPH_API_TOKEN}",
     "goldsky-login": "env-cmd -f .env.local goldsky login --token=${GOLDSKY_API_TOKEN}",
     "build": "graph build",
     "gen": "graph codegen --output-dir generated/",
     "gen-sepolia": "mustache config/sepolia.json subgraph.template.yaml > subgraph.yaml && mustache config/sepolia.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml && mustache config/gnosis.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-chiado": "mustache config/chiado.json subgraph.template.yaml > subgraph.yaml && mustache config/chiado.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
-    "deploy-sepolia": "yarn gen-sepolia && graph deploy --studio proof-of-humanity-sepolia",
-    "deploy-gnosis": "yarn gen-gnosis && graph deploy --studio proof-of-humanity-gnosis",
+    "deploy-sepolia":  "yarn thegraph-login && yarn gen-sepolia && yarn build && graph deploy --studio proof-of-humanity-sepolia",
+    "deploy-gnosis": "yarn thegraph-login && yarn gen-gnosis && yarn build && graph deploy --studio proof-of-humanity-gnosis",
     "deploy-chiado": "yarn gen-chiado && yarn build && yarn goldsky-login && goldsky subgraph delete proof-of-humanity-chiado/1.0.0 && goldsky subgraph deploy proof-of-humanity-chiado/1.0.0 --path ./build"
   },
   "devDependencies": {
