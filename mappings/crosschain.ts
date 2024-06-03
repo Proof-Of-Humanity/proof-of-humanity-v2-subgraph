@@ -1,4 +1,4 @@
-import { store } from "@graphprotocol/graph-ts";
+import { Address, Bytes, store } from "@graphprotocol/graph-ts";
 import {
   UpdateReceived,
   TransferInitiated,
@@ -14,10 +14,12 @@ import {
   Humanity,
   InTransfer,
   OutTransfer,
+  Request,
 } from "../generated/schema";
-import { TWO, ZERO } from "../utils/constants";
+import { ONE, TWO, ZERO } from "../utils/constants";
 import { Factory } from "../utils";
 import { PartyUtil, StatusUtil } from "../utils/enums";
+import { biToBytes, hash } from "../utils/misc";
 
 export function handleGatewayAdded(ev: GatewayAdded): void {
   const gateway = new CrossChainGateway(ev.params.bridgeGateway);
@@ -30,7 +32,8 @@ export function handleGatewayRemoved(ev: GatewayRemoved): void {
 }
 
 export function handleUpdateInitiated(ev: UpdateInitiated): void {
-  const humanity = Humanity.load(ev.params.humanityId) as Humanity;
+  const humanity = Humanity.load(ev.params.humanityId as Bytes);
+  if (!humanity) return ;
   const request = Factory.Request(humanity.id, TWO.neg());
   const claimer = Claimer.load(ev.params.owner) as Claimer;
   request.claimer = claimer.id;
@@ -64,6 +67,32 @@ export function handleUpdateReceived(ev: UpdateReceived): void {
     const claimer = Factory.Claimer(ev.params.owner, null);
     claimer.save();
 
+    //--------------------------------- Transfer completed -------------------
+    let humanity = Humanity.load(ev.params.humanityId as Bytes);
+    if (humanity) {
+      let reqArray = humanity.requests.load();
+      if (reqArray.length > 0) {
+        let iReqOut = -1;
+
+        for (let i = 0; i < reqArray.length; i++) {
+          let currentReq = Request.load(reqArray[i].id);
+          let referredReq = (iReqOut >= 0)? Request.load(reqArray[iReqOut].id): null;
+          if (currentReq!.status == StatusUtil.transferring) {
+            if (!!referredReq && currentReq!.lastStatusChange.ge(referredReq.lastStatusChange) || iReqOut == -1) {
+              iReqOut = i;
+            }
+          }
+        }
+        const request = Request.load(reqArray[iReqOut].id);
+        if (request) {
+          request.lastStatusChange = ev.block.timestamp;
+          request.status = StatusUtil.transferred;
+          request.save();
+        }
+      }
+    }
+    //------------------------------------------------------------------------
+
     registration.claimer = claimer.id;
     registration.expirationTime = ev.params.expirationTime;
     registration.lastReceivedTransferTimestamp = ev.block.timestamp;
@@ -94,6 +123,40 @@ export function handleTransferInitiated(ev: TransferInitiated): void {
     ev.params.gateway
   ) as CrossChainGateway).foreignProxy;
   transfer.save();
+
+  //--------------------------------- Transfer initiated -------------------
+  let humanity = Humanity.load(ev.params.humanityId as Bytes);
+  if (humanity) {
+    let reqArray = humanity.requests.load();
+    if (reqArray.length > 0) {
+      let iReqOut = -1;
+
+      for (let i = 0; i < reqArray.length; i++) {
+        let currentReq = Request.load(reqArray[i].id);
+        let referredReq = (iReqOut >= 0)? Request.load(reqArray[iReqOut].id): null;
+        if (currentReq!.requester.toHex() == currentReq!.claimer.toHex() && currentReq!.requester.toHex() == ev.params.owner.toHex()) {
+          if (
+            !currentReq!.revocation && 
+            currentReq!.status == StatusUtil.resolved
+          ) {
+            if (
+              (!!referredReq && 
+              currentReq!.lastStatusChange.ge(referredReq.lastStatusChange)) || 
+              (iReqOut == -1)
+            ) {
+              iReqOut = i;
+            }
+          }
+        }
+      }
+      const request = Request.load(reqArray[iReqOut].id);
+      if (request) {
+        request.lastStatusChange = ev.block.timestamp;
+        request.status = StatusUtil.transferring;
+        request.save();
+      }
+    }
+  }
 }
 
 export function handleTransferReceived(ev: TransferReceived): void {

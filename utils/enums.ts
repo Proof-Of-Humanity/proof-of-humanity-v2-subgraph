@@ -52,6 +52,8 @@ export class StatusUtil {
   static readonly disputed: string = "disputed";
   static readonly resolved: string = "resolved";
   static readonly withdrawn: string = "withdrawn";
+  static readonly transferring: string = "transferring";
+  static readonly transferred: string = "transferred";
 
   constructor() {
     StatusUtil.createIfNew(StatusUtil.vouching);
@@ -59,6 +61,8 @@ export class StatusUtil {
     StatusUtil.createIfNew(StatusUtil.disputed);
     StatusUtil.createIfNew(StatusUtil.resolved);
     StatusUtil.createIfNew(StatusUtil.withdrawn);
+    StatusUtil.createIfNew(StatusUtil.transferring);
+    StatusUtil.createIfNew(StatusUtil.transferred);
   }
 
   static parse(status: i32): string {
@@ -73,6 +77,10 @@ export class StatusUtil {
         return this.resolved;
       case 4:
         return this.withdrawn;
+      case 5:
+        return this.transferring;
+      case 6:
+        return this.transferred;
       default:
         return "error";
     }
