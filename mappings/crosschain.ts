@@ -33,23 +33,26 @@ export function handleGatewayRemoved(ev: GatewayRemoved): void {
 export function handleUpdateInitiated(ev: UpdateInitiated): void {
   const humanity = Humanity.load(ev.params.humanityId as Bytes);
   if (!humanity) return ;
-  const request = Factory.Request(humanity.id, humanity.nbBridgedRequests.neg());
-  const claimer = Claimer.load(ev.params.owner) as Claimer;
-  request.claimer = claimer.id;
-  request.requester = claimer.id;
-  request.creationTime = ev.block.timestamp;
-  request.lastStatusChange = ev.block.timestamp;
-  request.status = ev.params.claimed? StatusUtil.resolved : StatusUtil.withdrawn;
-  request.winnerParty = PartyUtil.requester;
-  request.resolutionTime = ev.block.timestamp;
-  
-  request.save();
+  if (humanity.inTransfer) {
+    const request = Factory.Request(humanity.id, humanity.nbBridgedRequests.neg());
+    const claimer = Claimer.load(ev.params.owner) as Claimer;
+    request.claimer = claimer.id;
+    request.requester = claimer.id;
+    request.creationTime = ev.block.timestamp;
+    request.lastStatusChange = ev.block.timestamp;
+    request.status = ev.params.claimed? StatusUtil.resolved : StatusUtil.withdrawn;
+    request.winnerParty = PartyUtil.requester;
+    request.resolutionTime = ev.block.timestamp;
+    
+    request.save();
 
-  claimer.currentRequest = request.id;
-  claimer.save();
+    claimer.currentRequest = request.id;
+    claimer.save();
 
-  humanity.nbBridgedRequests = humanity.nbBridgedRequests.plus(ONE);
-  humanity.save(); 
+    humanity.nbBridgedRequests = humanity.nbBridgedRequests.plus(ONE);
+    humanity.inTransfer = false;
+    humanity.save(); 
+  }
 }
 
 export function handleUpdateReceived(ev: UpdateReceived): void {
@@ -160,4 +163,9 @@ export function handleTransferReceived(ev: TransferReceived): void {
   const transfer = new InTransfer(ev.params.transferHash);
   transfer.humanityId = ev.params.humanityId;
   transfer.save();
+
+  const humanity = Humanity.load(ev.params.humanityId as Bytes);
+  if (!humanity) return ;
+  humanity.inTransfer = true;
+  humanity.save();
 }

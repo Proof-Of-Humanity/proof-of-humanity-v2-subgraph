@@ -62,6 +62,7 @@ type Humanity @entity {
   nbLegacyRequests: BigInt!
   nbPendingRequests: BigInt!
   nbBridgedRequests: BigInt!
+  inTransfer: Boolean!
 }
 
 type Claimer @entity {

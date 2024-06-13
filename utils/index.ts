@@ -38,6 +38,7 @@ export class Factory {
       humanity.nbLegacyRequests = ZERO;
       humanity.nbPendingRequests = ZERO;
       humanity.nbBridgedRequests = ZERO_Bridged;
+      humanity.inTransfer = false;
     }
     return humanity;
   }
