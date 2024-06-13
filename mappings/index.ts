@@ -352,7 +352,7 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
 
 export function handleChallengePeriodRestart(ev: ChallengePeriodRestart): void {
   const request = Request.load(
-    ev.params.humanityId.concat(biToBytes(ev.params.requestId))
+    hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
   ) as Request;
   request.status = StatusUtil.resolving;
   request.save();
