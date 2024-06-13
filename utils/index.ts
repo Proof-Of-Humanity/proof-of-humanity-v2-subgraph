@@ -7,11 +7,12 @@ import {
   Registration,
   EvidenceGroup,
 } from "../generated/schema";
-import { ZERO, ONE } from "./constants";
+import { ZERO, ONE, ZERO_Bridged } from "./constants";
 import { biToBytes, hash } from "./misc";
 import { StatusUtil } from "./enums";
 
 export const LEGACY_FLAG = Bytes.fromUTF8("legacy");
+export const BRIDGED_FLAG = Bytes.fromUTF8("bridged");
 
 export function getContract(): Contract {
   let contract = Contract.load(new Bytes(1));
@@ -36,6 +37,7 @@ export class Factory {
       humanity.nbRequests = ZERO;
       humanity.nbLegacyRequests = ZERO;
       humanity.nbPendingRequests = ZERO;
+      humanity.nbBridgedRequests = ZERO_Bridged;
     }
     return humanity;
   }
@@ -71,12 +73,17 @@ export class Factory {
           .concat(new ByteArray(32 - index.byteLength))
           .concat(ByteArray.fromBigInt(index))
       );
-      let evidenceGroup = EvidenceGroup.load(evGroupId);
-      if (evidenceGroup == null) {
-        evidenceGroup = new EvidenceGroup(evGroupId);
-        evidenceGroup.length = ZERO;
-        evidenceGroup.save();
-      }
+    } else if (index.le(ZERO_Bridged.neg())) {
+      requestId = hash(
+        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(BRIDGED_FLAG)
+      );
+      evGroupId = biToBytes(
+        index
+          .plus(ONE)
+          .abs()
+          .plus(BigInt.fromByteArray(pohId)),
+        20
+      );
     } else {
       requestId = hash(
         pohId.concat(biToBytes(index.plus(ONE).abs())).concat(LEGACY_FLAG)
@@ -88,12 +95,12 @@ export class Factory {
           .plus(BigInt.fromByteArray(pohId)),
         20
       );
-      let evidenceGroup = EvidenceGroup.load(evGroupId);
-      if (evidenceGroup == null) {
-        evidenceGroup = new EvidenceGroup(evGroupId);
-        evidenceGroup.length = ZERO;
-        evidenceGroup.save();
-      }
+    }
+    let evidenceGroup = EvidenceGroup.load(evGroupId);
+    if (evidenceGroup == null) {
+      evidenceGroup = new EvidenceGroup(evGroupId);
+      evidenceGroup.length = ZERO;
+      evidenceGroup.save();
     }
 
     let request = Request.load(requestId);
