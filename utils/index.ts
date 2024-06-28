@@ -6,6 +6,7 @@ import {
   Humanity,
   Registration,
   EvidenceGroup,
+  ArbitratorHistory,
 } from "../generated/schema";
 import { ZERO, ONE, ZERO_Bridged } from "./constants";
 import { biToBytes, hash } from "./misc";
@@ -13,6 +14,12 @@ import { StatusUtil } from "./enums";
 
 export const LEGACY_FLAG = Bytes.fromUTF8("legacy");
 export const BRIDGED_FLAG = Bytes.fromUTF8("bridged");
+
+function getLatestArbitratorHistory(): string {
+  const arbitratorHistory: ArbitratorHistory = 
+    ArbitratorHistory.load("legacy#" + ZERO.toString()) as ArbitratorHistory;
+  return arbitratorHistory.id as string;
+}
 
 export function getContract(): Contract {
   let contract = Contract.load(new Bytes(1));
@@ -119,7 +126,8 @@ export class Factory {
       request.ultimateChallenger = Address.zero();
       request.lastStatusChange = ZERO;
       request.arbitratorHistory = getContract()
-        .latestArbitratorHistory as string;
+        .latestArbitratorHistory? getContract()
+        .latestArbitratorHistory as string : getLatestArbitratorHistory() as string;
       request.nbChallenges = ZERO;
       request.contributors = [];
       request.evidenceGroup = evGroupId;

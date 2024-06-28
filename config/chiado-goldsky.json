@@ -1,7 +1,7 @@
 {
     "network": "chiado",
-    "address": "0x2505C87AA36d9ed18514Ea7473Ac58aeDeb50849",
-    "start-block": 8943793,
-    "cross-chain": "0xBEd896A3DEa0E065F05Ba83Fa63322c7b9d67838",
-    "cross-chain-start-block": 8944663
+    "address": "0x2F0f39c3CF5cffc0DeACEb69d3fD883734D67687",
+    "start-block": 10533260,
+    "cross-chain": "0x2f33051DF37Edf2286E3b2B3c7883E1A13D82071",
+    "cross-chain-start-block": 10533290
 }
