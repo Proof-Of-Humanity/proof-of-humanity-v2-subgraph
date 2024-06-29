@@ -1,4 +1,4 @@
-specVersion: 0.0.4
+specVersion: 0.0.1
 description: Proof of Humanity subgraph
 features:
   - fullTextSearch
@@ -12,11 +12,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: ProofOfHumanityOld
-    network: mainnet
+    network: {{network}}
     source:
-      address: "0xC5E9dDebb09Cd64DfaCab4011A0D5cEDaf7c9BDb"
+      address: "{{v1-address}}"
       abi: ProofOfHumanityOld
-      startBlock: 12011577
+      startBlock: {{v1-start-block}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

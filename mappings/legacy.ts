@@ -131,7 +131,7 @@ export function reapplySubmissionLegacy(call: ReapplySubmissionCall): void {
   humanity.save();
 
   const claimer = Claimer.load(call.from) as Claimer;
-  const request = Factory.Request(humanity.id, humanity.nbLegacyRequests);
+  const request = Factory.Request(humanity.id, humanity.nbLegacyRequests.neg());
   request.claimer = claimer.id;
   request.requester = call.from;
   request.creationTime = call.block.timestamp;
@@ -159,8 +159,8 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
 }
 
 export function handleVouchAdded(event: VouchAdded): void {
-  const voucher = Claimer.load(event.params._voucher);
-  const claimer = Claimer.load(event.params._submissionID);
+  const voucher = Claimer.load(event.params._voucher) as Claimer | null;
+  const claimer = Claimer.load(event.params._submissionID) as Claimer | null;
   if (voucher == null || claimer == null) return;
 
   const vouchId = hash(voucher.id.concat(claimer.id));
@@ -177,24 +177,25 @@ export function handleVouchAdded(event: VouchAdded): void {
 }
 
 export function handleVouchRemoved(event: VouchRemoved): void {
-  const voucher = Claimer.load(event.params._voucher);
-  const claimer = Claimer.load(event.params._submissionID);
+  const voucher = Claimer.load(event.params._voucher) as Claimer | null;
+  const claimer = Claimer.load(event.params._submissionID) as Claimer | null;
   if (voucher == null || claimer == null) return;
 
   const vouchId = hash(voucher.id.concat(claimer.id));
   if (Vouch.load(vouchId) == null) return;
 
-  store.remove("Vouch", vouchId.toString());
+  store.remove("Vouch", vouchId.toHexString());
   claimer.nbVouchesReceived = claimer.nbVouchesReceived.minus(ONE);
   claimer.save();
 }
 
 export function withdrawSubmissionLegacy(call: WithdrawSubmissionCall): void {
-  const claimer = Claimer.load(call.from) as Claimer;
-  if (!claimer.currentRequest) return;
+  const claimer = Claimer.load(call.from) as Claimer | null;
+  if (!claimer) return;
+  if (!claimer.currentRequest) return; 
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
-  if (request.status != StatusUtil.vouching) return;
+  if (request.status != StatusUtil.vouching) return; 
 
   request.status = StatusUtil.withdrawn;
   request.resolutionTime = call.block.timestamp;
@@ -218,23 +219,26 @@ export function changeStateToPendingLegacy(
   const vouchesReceived = claimer.vouchesReceived.load();
   for (let i = 0; i < vouchesReceived.length; i++) {
     const vouch = vouchesReceived[i];
-    const voucher = Humanity.load(vouch.humanity) as Humanity;
-    const voucherRegistration = Registration.load(
-      vouch.humanity
-    ) as Registration;
+    if (vouch !== null) {
+      const voucher = Humanity.load(vouch.humanity) as Humanity;
 
-    if (
-      voucherRegistration != null &&
-      voucher.usedVouch == null &&
-      voucherRegistration.claimer.notEqual(voucher.id) &&
-      call.block.timestamp.lt(voucherRegistration.expirationTime)
-    ) {
-      const vouchInProcess = new VouchInProcess(vouch.id);
-      vouchInProcess.vouch = vouch.id;
-      vouchInProcess.request = request.id;
-      vouchInProcess.voucher = voucherRegistration.id;
-      vouchInProcess.processed = false;
-      vouchInProcess.save();
+      const voucherRegistration = Registration.load(
+        vouch.humanity
+      ) as Registration | null;
+
+      if (
+        voucherRegistration != null &&
+        voucher.usedVouch == null &&
+        voucherRegistration.claimer.notEqual(voucher.id) &&
+        call.block.timestamp.lt(voucherRegistration.expirationTime)
+      ) {
+        const vouchInProcess = new VouchInProcess(vouch.id);
+        vouchInProcess.vouch = vouch.id;
+        vouchInProcess.request = request.id;
+        vouchInProcess.voucher = voucherRegistration.id;
+        vouchInProcess.processed = false;
+        vouchInProcess.save();
+      }
     }
   }
 }
@@ -296,9 +300,10 @@ export function handleRuling(ev: RulingEv): void {
   const humanity = Humanity.load(disputeData.getSubmissionID()) as Humanity;
   const request = Request.load(
     hash(
-      humanity.id.concat(
-        biToBytes(humanity.nbLegacyRequests.neg()).concat(LEGACY_FLAG)
-      )
+      humanity.id
+      .concat(
+        biToBytes(humanity.nbLegacyRequests.minus(ONE))
+      ).concat(LEGACY_FLAG)
     )
   ) as Request;
   request.resolutionTime = ev.block.timestamp;
@@ -306,9 +311,12 @@ export function handleRuling(ev: RulingEv): void {
 
   const challenge = Challenge.load(
     hash(request.id.concat(biToBytes(disputeData.getChallengeID())))
-  ) as Challenge;
-  challenge.ruling = ruling;
-  challenge.save();
+  ) as Challenge | null; 
+  //if (challenge == null) return; // v0.0.19
+  if (challenge != null) { // v0.0.20
+    challenge.ruling = ruling;
+    challenge.save();
+  }
 
   const submissionInfo = poh.getSubmissionInfo(disputeData.getSubmissionID());
   if (request.revocation) {
@@ -318,7 +326,7 @@ export function handleRuling(ev: RulingEv): void {
       store.remove("Registration", humanity.id.toHex());
       request.winnerParty = PartyUtil.requester;
     }
-  } else if (ruling == PartyUtil.challenger) {
+  } else if ((ruling == PartyUtil.challenger) && (challenge != null)) {
     request.ultimateChallenger = challenge.challenger;
     request.winnerParty = PartyUtil.challenger;
   } else if (submissionInfo.getRegistered()) {
@@ -338,11 +346,12 @@ export function handleRuling(ev: RulingEv): void {
 }
 
 export function processVouchesLegacy(call: ProcessVouchesCall): void {
-  const request = Request.load(
+  const request = Request.load( 
     hash(
-      call.inputs._submissionID.concat(
-        biToBytes(call.inputs._requestID.plus(ONE).neg()).concat(LEGACY_FLAG)
-      )
+      call.inputs._submissionID
+      .concat(
+        biToBytes(call.inputs._requestID.abs())
+      ).concat(LEGACY_FLAG)
     )
   ) as Request;
   const vouches = request.vouches.load();
