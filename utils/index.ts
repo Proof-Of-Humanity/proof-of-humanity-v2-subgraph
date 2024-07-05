@@ -85,23 +85,45 @@ export class Factory {
       requestId = hash(
         pohId.concat(biToBytes(index.plus(ONE).abs())).concat(BRIDGED_FLAG)
       );
-      evGroupId = biToBytes(
-        index
-          .plus(ONE)
-          .abs()
-          .plus(BigInt.fromByteArray(pohId)),
-        20
+      // A transferred profile will not have evidenceGroup since it does not exist on 
+      // the contract and thus, no event is triggered which therefore means that 
+      // function handleEvidence on mappings/index.ts will not be called.  
+      // We sum the index to the pohId to avoid it confuse with the evidence it might have 
+      // if it was originally a legacy profile, registered on v1.
+      evGroupId = Bytes.fromUint8Array( 
+        ByteArray.fromBigInt(
+          BigInt.fromByteArray(
+            biToBytes(
+              index
+              //.plus(ZERO_Bridged) 
+              // If we sum the ZERO_Bridged constant, it will cancel the index sum this id will 
+              // coincide with the corresponding to evidence group from v1 (if it happens to be 
+              // a legacy registered profile)
+              .abs(), 
+              20
+            )
+          )
+          .plus(BigInt.fromByteArray(pohId))
+        )
+        .slice(0,20)
       );
     } else {
       requestId = hash(
         pohId.concat(biToBytes(index.plus(ONE).abs())).concat(LEGACY_FLAG)
       );
-      evGroupId = biToBytes(
-        index
-          .plus(ONE)
-          .abs()
-          .plus(BigInt.fromByteArray(pohId)),
-        20
+      evGroupId = Bytes.fromUint8Array(
+        ByteArray.fromBigInt(
+          BigInt.fromByteArray(
+            biToBytes(
+              index
+              .plus(ONE)
+              .abs(), 
+              20
+            )
+          )
+          .plus(BigInt.fromByteArray(pohId))
+        )
+        .slice(0,20)
       );
     }
     let evidenceGroup = EvidenceGroup.load(evGroupId);

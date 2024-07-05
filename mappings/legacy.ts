@@ -311,9 +311,9 @@ export function handleRuling(ev: RulingEv): void {
 
   const challenge = Challenge.load(
     hash(request.id.concat(biToBytes(disputeData.getChallengeID())))
-  ) as Challenge | null; 
-  //if (challenge == null) return; // v0.0.19
-  if (challenge != null) { // v0.0.20
+  ) as Challenge | null;
+
+  if (challenge != null) { 
     challenge.ruling = ruling;
     challenge.save();
   }
@@ -326,8 +326,10 @@ export function handleRuling(ev: RulingEv): void {
       store.remove("Registration", humanity.id.toHex());
       request.winnerParty = PartyUtil.requester;
     }
-  } else if ((ruling == PartyUtil.challenger) && (challenge != null)) {
-    request.ultimateChallenger = challenge.challenger;
+  } else if (ruling == PartyUtil.challenger) {
+      if (challenge != null) {
+        request.ultimateChallenger = challenge.challenger;
+      }
     request.winnerParty = PartyUtil.challenger;
   } else if (submissionInfo.getRegistered()) {
     const registration = Factory.Registration(
@@ -388,13 +390,17 @@ export function handleEvidence(ev: EvidenceEv): void {
     group = new EvidenceGroup(evGroupId);
     group.length = ZERO;
   }
-  group.length = group.length.plus(ONE);
+  /* group.length = group.length.plus(ONE); // CON ESTO ACA ES LA v1.0.0
   group.save();
-
+ */
   const evidence = new Evidence(hash(group.id.concat(biToBytes(group.length))));
   evidence.creationTime = ev.block.timestamp;
   evidence.group = group.id;
   evidence.uri = ev.params._evidence;
   evidence.submitter = ev.transaction.from;
   evidence.save();
+
+  group.length = group.length.plus(ONE); // CON ESTO ACA ES LA v1.0.5 (con el index.ts modificado) y la v1.0.6 (index mod sin reverse())
+  group.save();
+
 }

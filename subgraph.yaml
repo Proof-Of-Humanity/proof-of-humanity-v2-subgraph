@@ -3,13 +3,133 @@ description: Proof of Humanity subgraph
 features:
   - fullTextSearch
   - nonFatalErrors
-  - grafting
-graft:
-  base: QmU128NqZGYPMzXyv2z8eDaqUGGCZfJc8oFLxf1QuTGZ4r
-  block: 12128450 # Block number
 schema:
   file: ./schema.graphql
 dataSources:
+  - kind: ethereum
+    name: ProofOfHumanity
+    network: mainnet
+    source:
+      address: "0x6cbEdC1920090EA4F28A38C1CD61c8D37b2cc323"
+      abi: ProofOfHumanity
+      startBlock: 20218898
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/index.ts
+      entities:
+        - Contract
+        - ArbitratorData
+        - Soul
+        - Claimer
+        - Request
+        - Challenge
+        - Round
+        - Vouch
+        - Contribution
+        - Evidence
+        - Counter
+      abis:
+        - name: ProofOfHumanity
+          file: ./abis/ProofOfHumanity.json
+      eventHandlers:
+        - event: Initialized()
+          handler: handleInitialized
+        - event: MetaEvidence(indexed uint256,string)
+          handler: handleMetaEvidence
+        - event: RequestBaseDepositChanged(uint256)
+          handler: handleRequestBaseDepositChanged
+        - event: DurationsChanged(uint40,uint40,uint40,uint40)
+          handler: handleDurationsChanged
+        - event: RequiredNumberOfVouchesChanged(uint32)
+          handler: handleRequiredNumberOfVouchesChanged
+        - event: ArbitratorChanged(address,bytes)
+          handler: handleArbitratorChanged
+        - event: HumanityGrantedDirectly(indexed bytes20,indexed address,uint40)
+          handler: handleHumanityGrantedDirectly
+        - event: HumanityDischargedDirectly(indexed bytes20)
+          handler: handleHumanityDischargedDirectly
+        - event: ClaimRequest(indexed address,indexed bytes20,uint256,string)
+          handler: handleClaimRequest
+        - event: RenewalRequest(indexed address,indexed bytes20,uint256)
+          handler: handleRenewalRequest
+        - event: RevocationRequest(indexed address,indexed bytes20,uint256)
+          handler: handleRevocationRequest
+        - event: VouchAdded(indexed address,indexed address,bytes20)
+          handler: handleVouchAdded
+        - event: VouchRemoved(indexed address,indexed address,bytes20)
+          handler: handleVouchRemoved
+        - event: VouchRegistered(indexed bytes20,indexed bytes20,uint256)
+          handler: handleVouchRegistered
+        - event: RequestWithdrawn(bytes20,uint256)
+          handler: handleRequestWithdrawn
+        - event: StateAdvanced(address)
+          handler: handleStateAdvanced
+        - event: RequestChallenged(bytes20,uint256,uint256,uint8,uint256)
+          handler: handleRequestChallenged
+        - event: HumanityClaimed(bytes20,uint256)
+          handler: handleHumanityClaimed
+        - event: HumanityRevoked(bytes20,uint256)
+          handler: handleHumanityRevoked
+        - event: VouchesProcessed(bytes20,uint256,uint256)
+          handler: handleVouchesProcessed
+        - event: ChallengePeriodRestart(bytes20,uint256,uint256)
+          handler: handleChallengePeriodRestart
+        - event: Ruling(indexed address,indexed uint256,uint256)
+          handler: handleRuling
+        - event: Evidence(indexed address,indexed uint256,indexed address,string)
+          handler: handleEvidence
+        - event: AppealCreated(address,uint256)
+          handler: handleAppealCreated
+        - event: Contribution(bytes20,uint256,uint256,uint256,address,uint256,uint8)
+          handler: handleContribution
+        - event: FeesAndRewardsWithdrawn(bytes20,uint256,uint256,uint256,address)
+          handler: handleFeesAndRewardsWithdrawn
+  - kind: ethereum
+    name: CrossChainProofOfHumanity
+    network: mainnet
+    source:
+      address: "0xD6F4E9d906CD7736a83e0AFa7EE9491658B4afA7"
+      abi: CrossChainProofOfHumanity
+      startBlock: 20218936
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/crosschain.ts
+      entities:
+        - Contract
+        - ArbitratorData
+        - Soul
+        - Claimer
+        - Request
+        - Challenge
+        - Round
+        - Vouch
+        - Contribution
+        - Evidence
+        - Counter
+        - CrossChainGateway
+        - CrossChainHumanity
+        - OutTransfer
+        - InTransfer
+      abis:
+        - name: CrossChainProofOfHumanity
+          file: ./abis/CrossChainProofOfHumanity.json
+      eventHandlers:
+        - event: GatewayAdded(indexed address,address)
+          handler: handleGatewayAdded
+        - event: GatewayRemoved(indexed address)
+          handler: handleGatewayRemoved
+        - event: UpdateInitiated(indexed bytes20,indexed address,uint40,bool,address)
+          handler: handleUpdateInitiated
+        - event: UpdateReceived(indexed bytes20,indexed address,uint40,bool)
+          handler: handleUpdateReceived
+        - event: TransferInitiated(indexed bytes20,indexed address,uint40,address,bytes32)
+          handler: handleTransferInitiated
+        - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
+          handler: handleTransferReceived
   - kind: ethereum
     name: ProofOfHumanityOld
     network: mainnet
@@ -66,4 +186,3 @@ dataSources:
           handler: executeRequestLegacy
         - function: processVouches(address,uint256,uint256)
           handler: processVouchesLegacy
-  
