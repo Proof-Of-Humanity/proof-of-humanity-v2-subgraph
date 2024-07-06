@@ -262,7 +262,7 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
 
   const poh = ProofOfHumanityOld.bind(call.to);
 
-  const challengeInfo = poh.getChallengeInfo(call.inputs._submissionID, request.index.plus(ONE).abs(), request.nbChallenges); // v15
+  const challengeInfo = poh.getChallengeInfo(call.inputs._submissionID, request.index.plus(ONE).abs(), request.nbChallenges); 
 
   challenge.index = request.nbChallenges;
   challenge.ruling = PartyUtil.none;
@@ -340,19 +340,6 @@ export function handleRuling(ev: RulingEv): void {
     challengeId
   ) as Challenge | null;
 
-  /* if (challenge == null) {
-    challenge = new Challenge(challengeId);
-    challenge.index = disputeData.getChallengeID();
-    challenge.request = request.id;
-    challenge.reason = ReasonUtil.none;
-    challenge.challenger = Address.zero();
-    challenge.creationTime = ZERO;
-    challenge.disputeId = ZERO;
-    challenge.ruling = PartyUtil.none;
-    challenge.nbRounds = ZERO;
-    challenge.save();
-  }
- */
   if (challenge != null) { 
     challenge.ruling = ruling;
     challenge.save();
@@ -430,9 +417,6 @@ export function handleEvidence(ev: EvidenceEv): void {
     group = new EvidenceGroup(evGroupId);
     group.length = ZERO;
   }
-  /* group.length = group.length.plus(ONE); // CON ESTO ACA ES LA v1.0.0
-  group.save();
- */
   const evidence = new Evidence(hash(group.id.concat(biToBytes(group.length))));
   evidence.creationTime = ev.block.timestamp;
   evidence.group = group.id;
@@ -440,7 +424,7 @@ export function handleEvidence(ev: EvidenceEv): void {
   evidence.submitter = ev.transaction.from;
   evidence.save();
 
-  group.length = group.length.plus(ONE); // CON ESTO ACA ES LA v1.0.5 (con el index.ts modificado) y la v1.0.6 (index mod sin reverse())
+  group.length = group.length.plus(ONE); 
   group.save();
 
 }
