@@ -249,6 +249,32 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.status = StatusUtil.disputed;
+
+  const reason = ReasonUtil.parse(call.inputs._reason);
+
+  const challengeId = hash(request.id.concat(biToBytes(request.nbChallenges)));
+  var challenge = Challenge.load(challengeId) as Challenge | null;
+
+  if (challenge == null) {
+    challenge = new Challenge(challengeId);
+    challenge.request = request.id;
+  }
+
+  const poh = ProofOfHumanityOld.bind(call.to);
+
+  const challengeInfo = poh.getChallengeInfo(call.inputs._submissionID, request.index.plus(ONE).abs(), request.nbChallenges); // v15
+
+  challenge.index = request.nbChallenges;
+  challenge.ruling = PartyUtil.none;
+  challenge.reason = reason;
+  challenge.challenger = call.inputs._submissionID;
+  challenge.disputeId = challengeInfo.getDisputeID();
+  challenge.creationTime = call.block.timestamp;
+  challenge.nbRounds = ONE;
+  challenge.save();
+
+  request.nbChallenges = request.nbChallenges.plus(ONE);
+  
   request.save();
 }
 
@@ -309,10 +335,24 @@ export function handleRuling(ev: RulingEv): void {
   request.resolutionTime = ev.block.timestamp;
   request.status = StatusUtil.resolved;
 
-  const challenge = Challenge.load(
-    hash(request.id.concat(biToBytes(disputeData.getChallengeID())))
+  const challengeId = hash(request.id.concat(biToBytes(disputeData.getChallengeID())));
+  var challenge = Challenge.load(
+    challengeId
   ) as Challenge | null;
 
+  /* if (challenge == null) {
+    challenge = new Challenge(challengeId);
+    challenge.index = disputeData.getChallengeID();
+    challenge.request = request.id;
+    challenge.reason = ReasonUtil.none;
+    challenge.challenger = Address.zero();
+    challenge.creationTime = ZERO;
+    challenge.disputeId = ZERO;
+    challenge.ruling = PartyUtil.none;
+    challenge.nbRounds = ZERO;
+    challenge.save();
+  }
+ */
   if (challenge != null) { 
     challenge.ruling = ruling;
     challenge.save();

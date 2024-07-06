@@ -463,7 +463,7 @@ export function handleVouchesProcessed(ev: VouchesProcessed): void {
     "Request",
     hash(
       ev.params.humanityId.concat(biToBytes(ev.params.requestId))
-    ).toHex(), // recipe.id is Bytes
+    ).toHex(),
     "vouches"
   );
 
