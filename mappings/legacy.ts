@@ -1,4 +1,4 @@
-import { Address, ByteArray, Bytes, log, store } from "@graphprotocol/graph-ts";
+import { Address, BigInt, ByteArray, Bytes, log, store } from "@graphprotocol/graph-ts";
 import {
   ProofOfHumanityOld,
   AddSubmissionManuallyCall,
@@ -81,7 +81,6 @@ export function addSubmissionManuallyLegacy(
     const submissionId = submissionIDs[i];
 
     const claimer = Factory.Claimer(submissionId, names[i]);
-    claimer.save();
 
     const humanity = Factory.Humanity(submissionId);
     humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE);
@@ -95,6 +94,9 @@ export function addSubmissionManuallyLegacy(
     request.status = StatusUtil.resolved;
     request.winnerParty = PartyUtil.requester;
     request.save();
+
+    claimer.currentRequest = request.id;
+    claimer.save();
 
     const registration = Factory.Registration(humanity.id, submissionId);
     registration.expirationTime = call.block.timestamp.plus(submissionDuration);
@@ -123,6 +125,12 @@ export function addSubmissionLegacy(call: AddSubmissionCall): void {
 
   claimer.currentRequest = request.id;
   claimer.save();
+
+  /* const poh = ProofOfHumanityOld.bind(call.to);
+  const submissionDuration = poh.submissionDuration();
+  const registration = Factory.Registration(humanity.id, call.from);
+  registration.expirationTime = call.block.timestamp.plus(submissionDuration);
+  registration.save(); */
 }
 
 export function reapplySubmissionLegacy(call: ReapplySubmissionCall): void {
@@ -145,11 +153,21 @@ export function reapplySubmissionLegacy(call: ReapplySubmissionCall): void {
 export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
   const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
   humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE);
+  humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
+  humanity.pendingRevocation = true;
   humanity.save();
 
-  const registration = Registration.load(humanity.id) as Registration;
+  const registration = Registration.load(humanity.id) as Registration | null;
+
   const request = Factory.Request(humanity.id, humanity.nbLegacyRequests.neg());
-  request.claimer = registration.claimer;
+  if (registration) {
+    request.claimer = registration.claimer;
+  } else {
+    log.warning("Remove submmission no-registration. SubmissionId: {}. ", [
+      call.inputs._submissionID.toHex(),
+    ])
+  }
+
   request.revocation = true;
   request.status = StatusUtil.resolving;
   request.creationTime = call.block.timestamp;
@@ -208,13 +226,17 @@ export function withdrawSubmissionLegacy(call: WithdrawSubmissionCall): void {
 export function changeStateToPendingLegacy(
   call: ChangeStateToPendingCall
 ): void {
-  const claimer = Claimer.load(call.inputs._submissionID) as Claimer;
-  if (!claimer.currentRequest) return;
+  const claimer = Claimer.load(call.inputs._submissionID) as Claimer | null;
+  if (!claimer || !claimer.currentRequest) return;
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.lastStatusChange = call.block.timestamp;
   request.status = StatusUtil.resolving;
   request.save();
+
+  const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
+  humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
+  humanity.save();
 
   const vouchesReceived = claimer.vouchesReceived.load();
   for (let i = 0; i < vouchesReceived.length; i++) {
@@ -244,20 +266,37 @@ export function changeStateToPendingLegacy(
 }
 
 export function challengeRequestLegacy(call: ChallengeRequestCall): void {
-  const claimer = Claimer.load(call.inputs._submissionID) as Claimer;
-  if (!claimer.currentRequest) return;
+  const claimer = Claimer.load(call.inputs._submissionID) as Claimer | null;
+  if (!claimer || !claimer.currentRequest) {
+    log.warning("ChallengeReq empty claimer request. SubmissionId: {}. ", [
+      call.inputs._submissionID.toHex(),
+    ])
+    return;
+  }
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.status = StatusUtil.disputed;
 
-  const reason = ReasonUtil.parse(call.inputs._reason);
+  const reason = ReasonUtil.parse(call.inputs._reason);  
+  var challenge: Challenge | null = null;
+  const challengedReqId = claimer.currentRequest as Bytes;
+  const challengeId = hash(challengedReqId.concat(biToBytes(request.nbChallenges)));
+  challenge = Challenge.load(challengeId) as Challenge | null;
 
-  const challengeId = hash(request.id.concat(biToBytes(request.nbChallenges)));
-  var challenge = Challenge.load(challengeId) as Challenge | null;
+  log.warning("ChallengeRequest x CurrentReq: ReqID: {}. ", [
+    request.id.toHex()
+  ])
 
   if (challenge == null) {
     challenge = new Challenge(challengeId);
     challenge.request = request.id;
+    log.warning("Challenge null. NEW. ReqID: {}. ", [
+      request.id.toHex()
+    ]);
+  } else {
+    log.warning("Challenge NOT null. ReqID: {}. ", [
+      request.id.toHex()
+    ]);
   }
 
   const poh = ProofOfHumanityOld.bind(call.to);
@@ -265,9 +304,11 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
   const challengeInfo = poh.getChallengeInfo(call.inputs._submissionID, request.index.plus(ONE).abs(), request.nbChallenges); 
 
   challenge.index = request.nbChallenges;
-  challenge.ruling = PartyUtil.none;
+  challenge.ruling = PartyUtil.parse(challengeInfo.getRuling());
+  //challenge.ruling = PartyUtil.none;
   challenge.reason = reason;
-  challenge.challenger = call.inputs._submissionID;
+  challenge.challenger = challengeInfo.getChallenger();
+  //challenge.challenger = call.inputs._submissionID;
   challenge.disputeId = challengeInfo.getDisputeID();
   challenge.creationTime = call.block.timestamp;
   challenge.nbRounds = ONE;
@@ -286,14 +327,18 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
   // If the status of the submission is not 0 (None), the call must have reverted.
   if (submissionInfo.getStatus() != 0) return;
 
-  const claimer = Claimer.load(call.inputs._submissionID) as Claimer;
+  const claimer = Claimer.load(call.inputs._submissionID) as Claimer | null;
 
-  if (!claimer.currentRequest) {
+  if (!claimer || !claimer.currentRequest) {
     log.debug("No current request {}", [
       call.inputs._submissionID.toHexString(),
     ]);
     return;
   }
+
+  const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
+  humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
+  humanity.save();
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.status = StatusUtil.resolved;
@@ -310,6 +355,27 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
       .getSubmissionTime()
       .plus(poh.submissionDuration());
     registration.save();
+  } else {
+    const revocationRequest = Request.load(
+      hash(
+        humanity.id
+        .concat(
+          biToBytes(
+            humanity.nbLegacyRequests.minus(ONE)
+          )
+        ).concat(LEGACY_FLAG)
+      )
+    ) as Request;
+    revocationRequest.status = StatusUtil.resolved;
+    revocationRequest.winnerParty = PartyUtil.requester;
+    revocationRequest.resolutionTime = call.block.timestamp;
+    revocationRequest.save();
+    store.remove("Registration", humanity.id.toHex());
+    log.warning("Execute Req revoking. Humanity ID: {}. CurrentReqID: {}. RevocationReqID: {}. ", [
+      humanity.id.toHex(),
+      request.id.toHex(),
+      revocationRequest.id.toHex()
+    ])
   }
 }
 
@@ -324,25 +390,53 @@ export function handleRuling(ev: RulingEv): void {
   );
 
   const humanity = Humanity.load(disputeData.getSubmissionID()) as Humanity;
+  humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
   const request = Request.load(
     hash(
       humanity.id
       .concat(
-        biToBytes(humanity.nbLegacyRequests.minus(ONE))
+        biToBytes(
+          humanity.nbLegacyRequests.minus(ONE)
+        )
       ).concat(LEGACY_FLAG)
     )
   ) as Request;
   request.resolutionTime = ev.block.timestamp;
   request.status = StatusUtil.resolved;
+  request.winnerParty = ruling; 
 
-  const challengeId = hash(request.id.concat(biToBytes(disputeData.getChallengeID())));
-  var challenge = Challenge.load(
-    challengeId
-  ) as Challenge | null;
+  const claimer = Claimer.load(request.claimer) as Claimer | null;
+  var challenge: Challenge | null = null;
+  if (claimer && claimer.currentRequest) {
+    const challengedReqId = claimer.currentRequest as Bytes;
+    const challengeId = hash(challengedReqId.concat(biToBytes(disputeData.getChallengeID())));
+    challenge = Challenge.load(challengeId) as Challenge | null;
+
+    const disputedRequest = Request.load(challengedReqId) as Request;
+    disputedRequest.resolutionTime = ev.block.timestamp;
+    disputedRequest.status = StatusUtil.resolved;
+    disputedRequest.winnerParty = ruling;
+    disputedRequest.save();
+    
+    log.warning("DisputeID x CurrentReq: Humanity ID: {}. ReqID: {}. ", [
+      humanity.id.toHex(),
+      request.id.toHex()
+    ])
+  }
 
   if (challenge != null) { 
     challenge.ruling = ruling;
     challenge.save();
+  } else {
+    log.warning("DisputeID: {}. Dispute Data submission: {}. Dispute Data challenge: {}. Dispute Data value0: {}. Dispute Data value1: {}. Humanity ID: {}. ReqID: {}. ", [
+      ev.params._disputeID.toHex(),
+      disputeData.getSubmissionID().toHex(),
+      disputeData.getChallengeID().toHex(),
+      disputeData.value0.toHex(),
+      disputeData.value1.toHex(),
+      humanity.id.toHex(),
+      request.id.toHex()
+    ])
   }
 
   const submissionInfo = poh.getSubmissionInfo(disputeData.getSubmissionID());
@@ -407,10 +501,18 @@ export function processVouchesLegacy(call: ProcessVouchesCall): void {
 }
 
 export function handleEvidence(ev: EvidenceEv): void {
-  const evGroupId = Bytes.fromUint8Array(
-    ByteArray.fromBigInt(ev.params._evidenceGroupID)
+  const evGroupIdRaw = BigInt.fromByteArray(
+    Bytes.fromUint8Array(
+      ByteArray.fromBigInt(ev.params._evidenceGroupID)
       .slice(0, 20)
       .reverse()
+    )
+  );
+  const evGroupId = Bytes.fromUint8Array( 
+    biToBytes(
+      evGroupIdRaw, 
+      20
+    )
   );
   let group = EvidenceGroup.load(evGroupId);
   if (group == null) {

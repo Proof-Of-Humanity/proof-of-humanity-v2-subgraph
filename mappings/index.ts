@@ -227,6 +227,7 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
   request.lastStatusChange = ev.block.timestamp;
   request.save();
 
+  humanity.pendingRevocation = true; // Check!
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
   humanity.nbRequests = humanity.nbRequests.plus(ONE);
   humanity.save();
@@ -476,6 +477,13 @@ export function handleVouchesProcessed(ev: VouchesProcessed): void {
 
 export function handleContribution(ev: ContributionEv): void {
   const request = Factory.Request(ev.params.humanityId, ev.params.requestId);
+
+  //----------------------------------------------------------------------------------------
+  /* const humanity = Humanity.load(ev.params.humanityId) as Humanity;
+  humanity.nbRequests = humanity.nbRequests.plus(ONE);
+  humanity.save(); */
+  //----------------------------------------------------------------------------------------
+
   const challengeId = hash(request.id.concat(biToBytes(ev.params.challengeId)));
   let challenge = Challenge.load(challengeId);
   if (challenge == null) {

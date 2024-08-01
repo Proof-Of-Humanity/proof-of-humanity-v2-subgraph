@@ -9,7 +9,7 @@ import {
   ArbitratorHistory,
 } from "../generated/schema";
 import { ZERO, ONE, ZERO_Bridged } from "./constants";
-import { biToBytes, hash } from "./misc";
+import { biToBytes, biToBytesReversed, hash } from "./misc";
 import { StatusUtil } from "./enums";
 
 export const LEGACY_FLAG = Bytes.fromUTF8("legacy");
@@ -112,18 +112,32 @@ export class Factory {
         pohId.concat(biToBytes(index.plus(ONE).abs())).concat(LEGACY_FLAG)
       );
       evGroupId = Bytes.fromUint8Array(
-        ByteArray.fromBigInt(
+        biToBytesReversed(
           BigInt.fromByteArray(
-            biToBytes(
-              index
-              .plus(ONE)
-              .abs(), 
-              20
+            Bytes.fromUint8Array(
+              BigInt.fromByteArray(
+                biToBytes(
+                  BigInt.fromByteArray(pohId),
+                  20
+                )
+              )
+              .plus(
+                BigInt.fromByteArray(
+                  biToBytes(
+                    index
+                    .plus(ONE)
+                    .abs(), 
+                    20
+                  )
+                )
+              )
+              .reverse()
             )
-          )
-          .plus(BigInt.fromByteArray(pohId))
+          ), 
+          20, 
+          pohId.at(-1) == 0
         )
-        .slice(0,20)
+        .reverse()
       );
     }
     let evidenceGroup = EvidenceGroup.load(evGroupId);
@@ -132,7 +146,7 @@ export class Factory {
       evidenceGroup.length = ZERO;
       evidenceGroup.save();
     }
-
+    
     let request = Request.load(requestId);
     if (request == null) {
       request = new Request(requestId);
