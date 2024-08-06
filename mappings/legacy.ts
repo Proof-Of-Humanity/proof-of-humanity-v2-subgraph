@@ -29,7 +29,7 @@ import {
   Challenge,
   EvidenceGroup,
 } from "../generated/schema";
-import { Factory, LEGACY_FLAG } from "../utils";
+import { Factory, LEGACY_FLAG, getPreviousNonRevoked } from "../utils";
 import { biToBytes, hash } from "../utils/misc";
 import { ZERO, ONE, TWO } from "../utils/constants";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
@@ -173,6 +173,13 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
   request.creationTime = call.block.timestamp;
   request.requester = call.from;
   request.lastStatusChange = call.block.timestamp;
+
+  const revokedReq = getPreviousNonRevoked(humanity.id, humanity.nbLegacyRequests.neg());
+  const evidence = Evidence.load(hash(revokedReq!.evidenceGroup.concat(biToBytes(ZERO)))); 
+  // The first (ZERO) piece of evidence is the registration one
+  
+  request.registrationEvidenceRevokedReq = evidence!.uri;
+
   request.save();
 }
 

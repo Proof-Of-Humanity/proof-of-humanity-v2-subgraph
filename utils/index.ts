@@ -34,6 +34,33 @@ export function getContract(): Contract {
   return contract;
 }
 
+export function getPreviousNonRevoked(pohId: Bytes, index: BigInt): Request | null {
+  var indexRevokedReq = index;
+  var revokedReqId: Bytes;
+  var request: Request | null;
+  do {
+    var indexSeed: BigInt;
+    var flag = Bytes.fromUTF8("");
+    if (index.ge(ZERO)) {
+      indexRevokedReq = indexRevokedReq.minus(ONE);
+      indexSeed = indexRevokedReq;
+    } else if (index.le(ZERO_Bridged.neg())) {
+      indexRevokedReq = indexRevokedReq.plus(ONE);
+      indexSeed = indexRevokedReq.abs();
+      flag = BRIDGED_FLAG;
+    } else {
+      indexRevokedReq = indexRevokedReq.plus(ONE);
+      indexSeed = indexRevokedReq.abs();
+      flag = LEGACY_FLAG;
+    }
+    revokedReqId = hash(
+      pohId.concat(biToBytes(indexSeed)).concat(flag)
+    );
+    request = Request.load(revokedReqId);
+  } while ((!!request) && (request.revocation));
+  return request;
+}
+
 export class Factory {
   static Humanity(id: Bytes): Humanity {
     let humanity = Humanity.load(id);
@@ -71,47 +98,8 @@ export class Factory {
   }
 
   static Request(pohId: Bytes, index: BigInt): Request {
-    let requestId: Bytes;
-    let evGroupId: Bytes;
-
-    if (index.ge(ZERO)) {
-      requestId = hash(pohId.concat(biToBytes(index)));
-      evGroupId = hash(
-        ByteArray.fromHexString(pohId.toHex())
-          .concat(new ByteArray(32 - index.byteLength))
-          .concat(ByteArray.fromBigInt(index))
-      );
-    } else if (index.le(ZERO_Bridged.neg())) {
-      requestId = hash(
-        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(BRIDGED_FLAG)
-      );
-      // A transferred profile will not have evidenceGroup since it does not exist on 
-      // the contract and thus, no event is triggered which therefore means that 
-      // function handleEvidence on mappings/index.ts will not be called.  
-      // We sum the index to the pohId to avoid it confuse with the evidence it might have 
-      // if it was originally a legacy profile, registered on v1.
-      evGroupId = Bytes.fromUint8Array( 
-        ByteArray.fromBigInt(
-          BigInt.fromByteArray(
-            biToBytes(
-              index
-              //.plus(ZERO_Bridged) 
-              // If we sum the ZERO_Bridged constant, it will cancel the index sum this id will 
-              // coincide with the corresponding to evidence group from v1 (if it happens to be 
-              // a legacy registered profile)
-              .abs(), 
-              20
-            )
-          )
-          .plus(BigInt.fromByteArray(pohId))
-        )
-        .slice(0,20)
-      );
-    } else {
-      requestId = hash(
-        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(LEGACY_FLAG)
-      );
-      evGroupId = Bytes.fromUint8Array(
+    function getEvGroupId(pohId: Bytes, index: BigInt): Bytes {
+      return Bytes.fromUint8Array(
         biToBytesReversed(
           BigInt.fromByteArray(
             Bytes.fromUint8Array(
@@ -140,6 +128,32 @@ export class Factory {
         .reverse()
       );
     }
+
+    let requestId: Bytes;
+    let evGroupId: Bytes;
+
+    if (index.ge(ZERO)) {
+      requestId = hash(pohId.concat(biToBytes(index)));
+      evGroupId = hash(
+        ByteArray.fromHexString(pohId.toHex())
+          .concat(new ByteArray(32 - index.byteLength))
+          .concat(ByteArray.fromBigInt(index))
+      );
+    } else if (index.le(ZERO_Bridged.neg())) {
+      requestId = hash(
+        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(BRIDGED_FLAG)
+      );
+      // A transferred profile will not have evidenceGroup since it does not exist on 
+      // the contract and thus, no event is triggered which therefore means that 
+      // function handleEvidence on mappings/index.ts will not be called. However, we
+      // need to create the group having an empty evidence array.
+      evGroupId = getEvGroupId(pohId, index);
+    } else {
+      requestId = hash(
+        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(LEGACY_FLAG)
+      );
+      evGroupId = getEvGroupId(pohId, index);
+    }
     let evidenceGroup = EvidenceGroup.load(evGroupId);
     if (evidenceGroup == null) {
       evidenceGroup = new EvidenceGroup(evGroupId);
@@ -167,6 +181,7 @@ export class Factory {
       request.nbChallenges = ZERO;
       request.contributors = [];
       request.evidenceGroup = evGroupId;
+      request.registrationEvidenceRevokedReq = "";
     }
     return request;
   }

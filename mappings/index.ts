@@ -43,7 +43,7 @@ import {
   RequesterFund,
   ChallengerFund,
 } from "../generated/schema";
-import { getContract, Factory } from "../utils";
+import { getContract, Factory, getPreviousNonRevoked } from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
 import { biToBytes, hash } from "../utils/misc";
 import { ProofOfHumanity } from "../utils/hardcoded";
@@ -225,6 +225,40 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
   request.creationTime = ev.block.timestamp;
   request.requester = ev.transaction.from;
   request.lastStatusChange = ev.block.timestamp;
+
+  const revokedReqHomeChain = getPreviousNonRevoked(humanity.id, humanity.nbRequests);
+  const revokedReqLegacy = getPreviousNonRevoked(humanity.id, humanity.nbLegacyRequests.neg());
+  var revokedReq: Request | null = null;
+  // Value of indexRevokedReqHomeChain could be -1 if the revoke in this chain was the first 
+  // request after a legacy profile or a bridged profile. In case the legacy one is present, 
+  // that should be checked against a revokedReqForeignChain. If it is present, then it was 
+  // created after the legacy and, in that case, revokedReq would be null bacause we should
+  // refer to the registration of the transferring profile which is missing at this chain.
+  // Then we don't have reference to the registration evidence which will be handled 
+  // straightforwardly by the frontend. 
+  if (revokedReqHomeChain) {
+    if (!revokedReqLegacy || revokedReqHomeChain.creationTime.gt(revokedReqLegacy.creationTime)) {
+      revokedReq = revokedReqHomeChain;
+    } else {
+      revokedReq = revokedReqLegacy;
+    }
+  } else if (revokedReqLegacy) {
+    revokedReq = revokedReqLegacy;
+  }
+
+  if (revokedReq) { // This cannot fail
+    const revokedReqForeignChain = getPreviousNonRevoked(humanity.id, humanity.nbBridgedRequests.neg());
+    // If revokedReqForeignChain exists, we need to make sure (and it shouldn't be the opposit) that 
+    // the creation time of revokedReqHomeChain is more recent than the one from revokedReqForeignChain
+    // to refer to its registration evidence. If the revoke is done to the transferred request, then 
+    // we cannot get the registration ev and it will be handled by the frontend 
+    if (!revokedReqForeignChain || revokedReq.creationTime.gt(revokedReqForeignChain.creationTime)) {
+      const evidence = Evidence.load(hash(revokedReq.evidenceGroup.concat(biToBytes(ZERO))));
+      // The first (ZERO) piece of evidence is the registration one
+      request.registrationEvidenceRevokedReq = evidence!.uri;
+    }
+  }
+
   request.save();
 
   humanity.pendingRevocation = true; // Check!

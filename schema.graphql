@@ -97,6 +97,7 @@ type Request @entity {
   nbChallenges: BigInt!
   challenges: [Challenge!]! @derivedFrom(field: "request")
   contributors: [Bytes!]!
+  registrationEvidenceRevokedReq: String!
 }
 
 type Challenger @entity {
