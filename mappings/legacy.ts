@@ -174,7 +174,7 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
   request.requester = call.from;
   request.lastStatusChange = call.block.timestamp;
 
-  const revokedReq = getPreviousNonRevoked(humanity.id, humanity.nbLegacyRequests.neg());
+  const revokedReq = getPreviousNonRevoked(humanity.id, humanity.nbLegacyRequests.minus(ONE).neg());
   const evidence = Evidence.load(hash(revokedReq!.evidenceGroup.concat(biToBytes(ZERO)))); 
   // The first (ZERO) piece of evidence is the registration one
   
