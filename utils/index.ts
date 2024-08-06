@@ -112,9 +112,7 @@ export class Factory {
               .plus(
                 BigInt.fromByteArray(
                   biToBytes(
-                    index
-                    .plus(ONE)
-                    .abs(), 
+                    index,
                     20
                   )
                 )
@@ -140,19 +138,21 @@ export class Factory {
           .concat(ByteArray.fromBigInt(index))
       );
     } else if (index.le(ZERO_Bridged.neg())) {
+      const thisIndex = index.abs();
       requestId = hash(
-        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(BRIDGED_FLAG)
+        pohId.concat(biToBytes(thisIndex)).concat(BRIDGED_FLAG)
       );
       // A transferred profile will not have evidenceGroup since it does not exist on 
       // the contract and thus, no event is triggered which therefore means that 
       // function handleEvidence on mappings/index.ts will not be called. However, we
       // need to create the group having an empty evidence array.
-      evGroupId = getEvGroupId(pohId, index);
+      evGroupId = getEvGroupId(pohId, thisIndex);
     } else {
+      const thisIndex = index.plus(ONE).abs();
       requestId = hash(
-        pohId.concat(biToBytes(index.plus(ONE).abs())).concat(LEGACY_FLAG)
+        pohId.concat(biToBytes(thisIndex)).concat(LEGACY_FLAG)
       );
-      evGroupId = getEvGroupId(pohId, index);
+      evGroupId = getEvGroupId(pohId, thisIndex);
     }
     let evidenceGroup = EvidenceGroup.load(evGroupId);
     if (evidenceGroup == null) {
