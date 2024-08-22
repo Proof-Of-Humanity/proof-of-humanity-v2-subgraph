@@ -2,7 +2,7 @@ import { Address, Bytes } from "@graphprotocol/graph-ts";
 import { ProofOfHumanity as ProofOfHumanityContract } from "../generated/ProofOfHumanity/ProofOfHumanity";
 
 export const ProofOfHumanityAddress = Address.fromBytes(
-  Bytes.fromHexString("0xe6573F65efAbc351b69F9b73ed8e95772698938b")
+  Bytes.fromHexString("0xECd1823b3087acEE3C77928b1959c08d31A8F20e")
 );
 
 export const ProofOfHumanity = ProofOfHumanityContract.bind(

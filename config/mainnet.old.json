@@ -1,0 +1,9 @@
+{
+    "network": "mainnet",
+    "address": "0x6cbEdC1920090EA4F28A38C1CD61c8D37b2cc323",
+    "start-block": 20218898,
+    "v1-address": "0xC5E9dDebb09Cd64DfaCab4011A0D5cEDaf7c9BDb",
+    "v1-start-block": 12011577,
+    "cross-chain": "0xD6F4E9d906CD7736a83e0AFa7EE9491658B4afA7",
+    "cross-chain-start-block": 20218936
+}

@@ -10,9 +10,9 @@ dataSources:
     name: ProofOfHumanity
     network: gnosis
     source:
-      address: "0xe6573F65efAbc351b69F9b73ed8e95772698938b"
+      address: "0xECd1823b3087acEE3C77928b1959c08d31A8F20e"
       abi: ProofOfHumanity
-      startBlock: 34761300
+      startBlock: 35610635
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -90,9 +90,9 @@ dataSources:
     name: CrossChainProofOfHumanity
     network: gnosis
     source:
-      address: "0x6cbEdC1920090EA4F28A38C1CD61c8D37b2cc323"
+      address: "0xF921b42B541bc53a07067B65207F879c9377bf7F"
       abi: CrossChainProofOfHumanity
-      startBlock: 34761332
+      startBlock: 35610817
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
