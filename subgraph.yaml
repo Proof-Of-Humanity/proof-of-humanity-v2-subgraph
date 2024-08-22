@@ -1,4 +1,4 @@
-specVersion: 0.0.4
+specVersion: 1.2.0
 description: Proof of Humanity subgraph
 features:
   - fullTextSearch
@@ -8,11 +8,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: ProofOfHumanity
-    network: gnosis
+    network: mainnet
     source:
-      address: "0xECd1823b3087acEE3C77928b1959c08d31A8F20e"
+      address: "0x87c5c294C9d0ACa6b9b2835A99FE0c9A444Aacc1"
       abi: ProofOfHumanity
-      startBlock: 35610635
+      startBlock: 20584008
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -88,11 +88,11 @@ dataSources:
           handler: handleFeesAndRewardsWithdrawn
   - kind: ethereum
     name: CrossChainProofOfHumanity
-    network: gnosis
+    network: mainnet
     source:
-      address: "0xF921b42B541bc53a07067B65207F879c9377bf7F"
+      address: "0xD8D462ac9F3FAD77Af2ae2640fE7F591F1651A2C"
       abi: CrossChainProofOfHumanity
-      startBlock: 35610817
+      startBlock: 20584115
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -130,3 +130,60 @@ dataSources:
           handler: handleTransferInitiated
         - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
           handler: handleTransferReceived
+  - kind: ethereum
+    name: ProofOfHumanityOld
+    network: mainnet
+    source:
+      address: "0xC5E9dDebb09Cd64DfaCab4011A0D5cEDaf7c9BDb"
+      abi: ProofOfHumanityOld
+      startBlock: 12011577
+      endBlock: 20584256
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/legacy.ts
+      entities:
+        - Contract
+        - ArbitratorData
+        - Soul
+        - Claimer
+        - Request
+        - Vouch
+        - Evidence
+        - Counter
+      abis:
+        - name: ProofOfHumanityOld
+          file: ./abis/ProofOfHumanityOld.json
+      eventHandlers:
+        - event: MetaEvidence(indexed uint256,string)
+          handler: handleMetaEvidence
+        - event: VouchAdded(indexed address,indexed address)
+          handler: handleVouchAdded
+        - event: VouchRemoved(indexed address,indexed address)
+          handler: handleVouchRemoved
+        - event: Ruling(indexed address,indexed uint256,uint256)
+          handler: handleRuling
+        - event: Evidence(indexed address,indexed uint256,indexed address,string)
+          handler: handleEvidence
+      callHandlers:
+        - function: addSubmissionManually(address[],string[],string[])
+          handler: addSubmissionManuallyLegacy
+        - function: removeSubmissionManually(address)
+          handler: removeSubmissionManuallyLegacy
+        - function: addSubmission(string,string)
+          handler: addSubmissionLegacy
+        - function: reapplySubmission(string,string)
+          handler: reapplySubmissionLegacy
+        - function: removeSubmission(address,string)
+          handler: removeSubmissionLegacy
+        - function: withdrawSubmission()
+          handler: withdrawSubmissionLegacy
+        - function: changeStateToPending(address,address[],bytes[],uint256[])
+          handler: changeStateToPendingLegacy
+        - function: challengeRequest(address,uint8,address,string)
+          handler: challengeRequestLegacy
+        - function: executeRequest(address)
+          handler: executeRequestLegacy
+        - function: processVouches(address,uint256,uint256)
+          handler: processVouchesLegacy

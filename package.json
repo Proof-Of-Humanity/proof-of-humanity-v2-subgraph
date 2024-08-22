@@ -30,7 +30,7 @@
     "deploy-chiado":  "yarn thegraph-login && yarn gen-chiado && yarn build && graph deploy --studio proof-of-humanity-chiado"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "^0.61.0",
+    "@graphprotocol/graph-cli": "^0.80.1",
     "@graphprotocol/graph-ts": "^0.31.0",
     "mustache": "^4.2.0",
     "env-cmd": "^10.1.0"
