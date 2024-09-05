@@ -1,10 +1,10 @@
 {
     "network": "mainnet",
-    "address": "0x87c5c294C9d0ACa6b9b2835A99FE0c9A444Aacc1",
-    "start-block": 20584008,
+    "address": "0xbE9834097A4E97689d9B667441acafb456D0480A",
+    "start-block": 20685061,
     "v1-address": "0xC5E9dDebb09Cd64DfaCab4011A0D5cEDaf7c9BDb",
     "v1-start-block": 12011577,
-    "v1-end-block": 20584256,
-    "cross-chain": "0xD8D462ac9F3FAD77Af2ae2640fE7F591F1651A2C",
-    "cross-chain-start-block": 20584115
+    "v1-end-block": 20685121,
+    "cross-chain": "0xa478095886659168E8812154fB0DE39F103E74b2",
+    "cross-chain-start-block": 20685150
 }
