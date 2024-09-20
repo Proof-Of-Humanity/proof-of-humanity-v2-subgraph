@@ -4,6 +4,7 @@
     "start-block": 4640829,
     "v1-address": "0x08Db8FD559cb4e3668f994553871c7eBa7c3941a",
     "v1-start-block": 4641635,
+    "v1-end-block": 4640835,
     "cross-chain": "0xd134748B972A320a73EfDe3AfF7a68718F6bA92c",
-    "cross-chain-start-block": 4640829
+    "cross-chain-start-block": 4640835
 }
