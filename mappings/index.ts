@@ -197,7 +197,8 @@ export function handleClaimRequest(ev: ClaimRequest): void {
 }
 
 export function handleRenewalRequest(ev: RenewalRequest): void {
-  const humanity = Humanity.load(ev.params.humanityId) as Humanity;
+  const humanity = Humanity.load(ev.params.humanityId) as Humanity | null;
+  if (!humanity) return;
   const claimer = Claimer.load(ev.params.requester) as Claimer;
 
   const request = Factory.Request(humanity.id, humanity.nbRequests);
@@ -215,7 +216,8 @@ export function handleRenewalRequest(ev: RenewalRequest): void {
 }
 
 export function handleRevocationRequest(ev: RevocationRequest): void {
-  const humanity = Humanity.load(ev.params.humanityId) as Humanity;
+  const humanity = Humanity.load(ev.params.humanityId) as Humanity | null;
+  if (!humanity) return;
   const registration = Registration.load(ev.params.humanityId) as Registration;
 
   const request = Factory.Request(humanity.id, humanity.nbRequests);
@@ -307,7 +309,8 @@ export function handleVouchRemoved(ev: VouchRemoved): void {
 export function handleRequestWithdrawn(ev: RequestWithdrawn): void {
   const request = Request.load(
     hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
-  ) as Request;
+  ) as Request | null;
+  if (!request) return ;
   request.status = StatusUtil.withdrawn;
   request.resolutionTime = ev.block.timestamp;
   request.save();
@@ -320,11 +323,13 @@ export function handleRequestWithdrawn(ev: RequestWithdrawn): void {
 export function handleVouchRegistered(ev: VouchRegistered): void {
   const voucher = Registration.load(
     ev.params.voucherHumanityId
-  ) as Registration;
+  ) as Registration | null;
+  if (!voucher) return;
 
   const request = Request.load(
     hash(ev.params.vouchedHumanityId.concat(biToBytes(ev.params.requestId)))
-  ) as Request;
+  ) as Request | null;
+  if (!request) return;
 
   const vouchId = hash(
     voucher.claimer.concat(request.claimer).concat(ev.params.vouchedHumanityId)
@@ -451,10 +456,12 @@ export function handleAppealCreated(ev: AppealCreated): void {
 }
 
 export function handleHumanityClaimed(ev: HumanityClaimed): void {
-  const humanity = Humanity.load(ev.params.humanityId) as Humanity;
+  const humanity = Humanity.load(ev.params.humanityId) as Humanity | null;
+  if (!humanity) return;
   const request = Request.load(
     hash(humanity.id.concat(biToBytes(ev.params.requestId)))
-  ) as Request;
+  ) as Request | null;
+  if (!request) return;
   request.status = StatusUtil.resolved;
   request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
@@ -478,10 +485,12 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
 }
 
 export function handleHumanityRevoked(ev: HumanityRevoked): void {
-  const humanity = Humanity.load(ev.params.humanityId) as Humanity;
+  const humanity = Humanity.load(ev.params.humanityId) as Humanity | null;
+  if (!humanity) return;
   const request = Request.load(
     hash(humanity.id.concat(biToBytes(ev.params.requestId)))
-  ) as Request;
+  ) as Request | null;
+  if (!request) return;
   request.status = StatusUtil.resolved;
   request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;

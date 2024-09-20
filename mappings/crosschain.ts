@@ -31,28 +31,6 @@ export function handleGatewayRemoved(ev: GatewayRemoved): void {
 }
 
 export function handleUpdateInitiated(ev: UpdateInitiated): void {
-  const humanity = Humanity.load(ev.params.humanityId as Bytes);
-  if (!humanity) return ;
-  if (humanity.inTransfer) {
-    const request = Factory.Request(humanity.id, humanity.nbBridgedRequests.neg());
-    const claimer = Claimer.load(ev.params.owner) as Claimer;
-    request.claimer = claimer.id;
-    request.requester = claimer.id;
-    request.creationTime = ev.block.timestamp;
-    request.lastStatusChange = ev.block.timestamp;
-    request.status = ev.params.claimed? StatusUtil.resolved : StatusUtil.withdrawn;
-    request.winnerParty = PartyUtil.requester;
-    request.resolutionTime = ev.block.timestamp;
-    
-    request.save();
-
-    claimer.currentRequest = request.id;
-    claimer.save();
-
-    humanity.nbBridgedRequests = humanity.nbBridgedRequests.plus(ONE);
-    humanity.inTransfer = false;
-    humanity.save(); 
-  }
 }
 
 export function handleUpdateReceived(ev: UpdateReceived): void {
@@ -62,36 +40,6 @@ export function handleUpdateReceived(ev: UpdateReceived): void {
   if (ev.params.claimed) {
     const claimer = Factory.Claimer(ev.params.owner, null);
     claimer.save();
-
-    //--------------------------------- Transfer completed -------------------
-    let humanity = Humanity.load(ev.params.humanityId as Bytes);
-    if (humanity) {
-      let reqArray = humanity.requests.load();
-      if (reqArray.length > 0) {
-        let iReqOut = -1;
-
-        for (let i = 0; i < reqArray.length; i++) {
-          let currentReq = Request.load(reqArray[i].id);
-          let referredReq = (iReqOut >= 0)? Request.load(reqArray[iReqOut].id): null;
-          if (currentReq!.status == StatusUtil.transferring) {
-            if (
-              (!!referredReq && 
-              currentReq!.lastStatusChange.ge(referredReq.lastStatusChange)) || 
-              (iReqOut == -1)
-            ) {
-              iReqOut = i;
-            }
-          }
-        }
-        const request = Request.load(reqArray[iReqOut].id);
-        if (request) {
-          request.lastStatusChange = ev.block.timestamp;
-          request.status = StatusUtil.transferred;
-          request.save();
-        }
-      }
-    }
-    //------------------------------------------------------------------------
 
     registration.claimer = claimer.id;
     registration.expirationTime = ev.params.expirationTime;
@@ -152,7 +100,7 @@ export function handleTransferInitiated(ev: TransferInitiated): void {
       const request = Request.load(reqArray[iReqOut].id);
       if (request) {
         request.lastStatusChange = ev.block.timestamp;
-        request.status = StatusUtil.transferring;
+        request.status = StatusUtil.transferred;
         request.save();
       }
     }
@@ -166,6 +114,23 @@ export function handleTransferReceived(ev: TransferReceived): void {
 
   const humanity = Humanity.load(ev.params.humanityId as Bytes);
   if (!humanity) return ;
-  humanity.inTransfer = true;
-  humanity.save();
+  
+  const request = Factory.Request(humanity.id, humanity.nbBridgedRequests.neg());
+  const claimer = Claimer.load(ev.params.owner) as Claimer;
+  request.claimer = claimer.id;
+  request.requester = claimer.id;
+  request.creationTime = ev.block.timestamp;
+  request.lastStatusChange = ev.block.timestamp;
+  request.status = StatusUtil.resolved;
+  request.winnerParty = PartyUtil.requester;
+  request.resolutionTime = ev.block.timestamp;
+  
+  request.save();
+
+  claimer.currentRequest = request.id;
+  claimer.save();
+
+  humanity.nbBridgedRequests = humanity.nbBridgedRequests.plus(ONE);
+  humanity.inTransfer = false;
+  humanity.save(); 
 }
