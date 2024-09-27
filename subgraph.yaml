@@ -8,11 +8,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: ProofOfHumanity
-    network: gnosis
+    network: chiado
     source:
-      address: "0xa4AC94C4fa65Bb352eFa30e3408e64F72aC857bc"
+      address: "0x2505C87AA36d9ed18514Ea7473Ac58aeDeb50849"
       abi: ProofOfHumanity
-      startBlock: 35846827
+      startBlock: 8943793
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -88,11 +88,11 @@ dataSources:
           handler: handleFeesAndRewardsWithdrawn
   - kind: ethereum
     name: CrossChainProofOfHumanity
-    network: gnosis
+    network: chiado
     source:
-      address: "0x16044E1063C08670f8653055A786b7CC2034d2b0"
+      address: "0xBEd896A3DEa0E065F05Ba83Fa63322c7b9d67838"
       abi: CrossChainProofOfHumanity
-      startBlock: 35846905
+      startBlock: 8944663
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

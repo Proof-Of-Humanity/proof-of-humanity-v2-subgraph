@@ -42,6 +42,7 @@ import {
   Contribution,
   RequesterFund,
   ChallengerFund,
+  Challenger,
 } from "../generated/schema";
 import { getContract, Factory, getPreviousNonRevoked } from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
@@ -372,11 +373,17 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
   ) as Request;
   request.status = StatusUtil.disputed;
 
+  var challenger = Challenger.load(ev.transaction.from);
+  if (challenger == null) {
+    challenger = new Challenger(ev.transaction.from);
+    challenger.save();
+  }
+  
   const challenge = Challenge.load(
     hash(request.id.concat(biToBytes(request.nbChallenges)))
   ) as Challenge;
   challenge.reason = reason;
-  challenge.challenger = ev.transaction.from;
+  challenge.challenger = challenger.id;
   challenge.disputeId = ev.params.disputeId;
   challenge.creationTime = ev.block.timestamp;
   challenge.nbRounds = ONE;
