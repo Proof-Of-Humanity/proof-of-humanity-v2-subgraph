@@ -31,6 +31,7 @@
     "deploy-chiado-goldsky": "yarn gen-chiado-goldsky && yarn build && yarn goldsky-login && goldsky subgraph deploy proof-of-humanity-chiado/1.0.1 --path ./build",
     "deploy-chiado-goldsky-old-overwrite": "yarn gen-chiado-goldsky-old && yarn build && yarn goldsky-login && goldsky subgraph delete proof-of-humanity-chiado/1.0.2 && goldsky subgraph deploy proof-of-humanity-chiado/1.0.2 --path ./build",
     "deploy-chiado-goldsky-old": "yarn gen-chiado-goldsky-old && yarn build && yarn goldsky-login && goldsky subgraph deploy proof-of-humanity-chiado/1.0.2 --path ./build",
+    "deploy-chiado-goldsky-old-overwrite-preparing": "yarn gen-chiado-goldsky-old && yarn build && yarn goldsky-login && goldsky subgraph delete proof-of-humanity-chiado/1.0.0 && goldsky subgraph deploy proof-of-humanity-chiado/1.0.0 --path ./build",
     "deploy-chiado":  "yarn thegraph-login && yarn gen-chiado && yarn build && graph deploy --studio proof-of-humanity-chiado"
   },
   "devDependencies": {
