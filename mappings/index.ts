@@ -581,6 +581,16 @@ export function handleContribution(ev: ContributionEv): void {
     }
     fund.amount = fund.amount.plus(ev.params.contribution);
     fund.save();
+    // ----- Now check requester, as it cannot be null
+    let fundIdReq: Bytes = hash(round.id.concat(ONE_B));
+    let fundReq = RequesterFund.load(fundIdReq);
+    if (fundReq == null) {
+      fundReq = new RequesterFund(fundIdReq);
+      fundReq.amount = ZERO;
+      fundReq.feeRewards = ZERO;
+      round.requesterFund = fundIdReq;
+    }
+    fundReq.save();
   }
   round.save();
 
