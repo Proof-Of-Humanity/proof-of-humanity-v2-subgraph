@@ -8,11 +8,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: ProofOfHumanity
-    network: mainnet
+    network: gnosis
     source:
-      address: "0x6cbEdC1920090EA4F28A38C1CD61c8D37b2cc323"
+      address: "0xa4AC94C4fa65Bb352eFa30e3408e64F72aC857bc"
       abi: ProofOfHumanity
-      startBlock: 20218898
+      startBlock: 35846827
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -88,11 +88,11 @@ dataSources:
           handler: handleFeesAndRewardsWithdrawn
   - kind: ethereum
     name: CrossChainProofOfHumanity
-    network: mainnet
+    network: gnosis
     source:
-      address: "0xD6F4E9d906CD7736a83e0AFa7EE9491658B4afA7"
+      address: "0x16044E1063C08670f8653055A786b7CC2034d2b0"
       abi: CrossChainProofOfHumanity
-      startBlock: 20218936
+      startBlock: 35846905
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -130,60 +130,3 @@ dataSources:
           handler: handleTransferInitiated
         - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
           handler: handleTransferReceived
-  - kind: ethereum
-    name: ProofOfHumanityOld
-    network: mainnet
-    source:
-      address: "0xC5E9dDebb09Cd64DfaCab4011A0D5cEDaf7c9BDb"
-      abi: ProofOfHumanityOld
-      startBlock: 12011577
-      endBlock: 20218900
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      file: ./mappings/legacy.ts
-      entities:
-        - Contract
-        - ArbitratorData
-        - Soul
-        - Claimer
-        - Request
-        - Vouch
-        - Evidence
-        - Counter
-      abis:
-        - name: ProofOfHumanityOld
-          file: ./abis/ProofOfHumanityOld.json
-      eventHandlers:
-        - event: MetaEvidence(indexed uint256,string)
-          handler: handleMetaEvidence
-        - event: VouchAdded(indexed address,indexed address)
-          handler: handleVouchAdded
-        - event: VouchRemoved(indexed address,indexed address)
-          handler: handleVouchRemoved
-        - event: Ruling(indexed address,indexed uint256,uint256)
-          handler: handleRuling
-        - event: Evidence(indexed address,indexed uint256,indexed address,string)
-          handler: handleEvidence
-      callHandlers:
-        - function: addSubmissionManually(address[],string[],string[])
-          handler: addSubmissionManuallyLegacy
-        - function: removeSubmissionManually(address)
-          handler: removeSubmissionManuallyLegacy
-        - function: addSubmission(string,string)
-          handler: addSubmissionLegacy
-        - function: reapplySubmission(string,string)
-          handler: reapplySubmissionLegacy
-        - function: removeSubmission(address,string)
-          handler: removeSubmissionLegacy
-        - function: withdrawSubmission()
-          handler: withdrawSubmissionLegacy
-        - function: changeStateToPending(address,address[],bytes[],uint256[])
-          handler: changeStateToPendingLegacy
-        - function: challengeRequest(address,uint8,address,string)
-          handler: challengeRequestLegacy
-        - function: executeRequest(address)
-          handler: executeRequestLegacy
-        - function: processVouches(address,uint256,uint256)
-          handler: processVouchesLegacy

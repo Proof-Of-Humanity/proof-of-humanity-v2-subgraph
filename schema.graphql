@@ -135,6 +135,7 @@ interface Fund {
   # hash(round.id//party)
   id: Bytes!
   amount: BigInt!
+  withdrawn: Boolean!
   feeRewards: BigInt!
   contributions: [Contribution!]! @derivedFrom(field: "fund")
   round: Round!
@@ -143,6 +144,7 @@ interface Fund {
 type RequesterFund implements Fund @entity {
   id: Bytes!
   amount: BigInt!
+  withdrawn: Boolean!
   feeRewards: BigInt!
   contributions: [Contribution!]! @derivedFrom(field: "fund")
   round: Round! @derivedFrom(field: "requesterFund")
@@ -151,6 +153,7 @@ type RequesterFund implements Fund @entity {
 type ChallengerFund implements Fund @entity {
   id: Bytes!
   amount: BigInt!
+  withdrawn: Boolean!
   round: Round! @derivedFrom(field: "challengerFund")
   feeRewards: BigInt!
   contributions: [Contribution!]! @derivedFrom(field: "fund")
