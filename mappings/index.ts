@@ -565,6 +565,7 @@ export function handleContribution(ev: ContributionEv): void {
     if (fund == null) {
       fund = new RequesterFund(fundId);
       fund.amount = ZERO;
+      fund.withdrawn = false;
       fund.feeRewards = ZERO;
       round.requesterFund = fundId;
     }
@@ -576,6 +577,7 @@ export function handleContribution(ev: ContributionEv): void {
     if (fund == null) {
       fund = new ChallengerFund(fundId);
       fund.amount = ZERO;
+      fund.withdrawn = false;
       fund.feeRewards = ZERO;
       round.challengerFund = fundId;
     }
@@ -587,6 +589,7 @@ export function handleContribution(ev: ContributionEv): void {
     if (fundReq == null) {
       fundReq = new RequesterFund(fundIdReq);
       fundReq.amount = ZERO;
+      fund.withdrawn = false;
       fundReq.feeRewards = ZERO;
       round.requesterFund = fundIdReq;
     }
@@ -617,14 +620,19 @@ export function handleFeesAndRewardsWithdrawn(
   const requesterFundContribution = Contribution.load(
     hash(hash(roundId.concat(ONE_B)).concat(ev.params.beneficiary))
   );
-  if (requesterFundContribution != null)
-    requesterFundContribution.amount = ZERO;
-
+  if (requesterFundContribution != null) {
+    const reqFund = RequesterFund.load(hash(roundId.concat(ONE_B)));
+    reqFund!.withdrawn = true;
+    reqFund!.save();
+  }
   const challengerFundContribution = Contribution.load(
     hash(hash(roundId.concat(TWO_B)).concat(ev.params.beneficiary))
   );
-  if (challengerFundContribution != null)
-    challengerFundContribution.amount = ZERO;
+  if (challengerFundContribution != null) {
+    const challFund = ChallengerFund.load(hash(roundId.concat(TWO_B)));
+    challFund!.withdrawn = true;
+    challFund!.save();
+  }
 }
 
 export function handleEvidence(ev: EvidenceEv): void {
