@@ -1,7 +1,7 @@
 {
     "network": "gnosis-chiado",
-    "address": "0x2505C87AA36d9ed18514Ea7473Ac58aeDeb50849",
-    "start-block": 8943793,
-    "cross-chain": "0xBEd896A3DEa0E065F05Ba83Fa63322c7b9d67838",
-    "cross-chain-start-block": 8944663
+    "address": "0x3DED649Cc1E0a5D67614d6742C4919B10F0Aabe9",
+    "start-block": 13753852,
+    "cross-chain": "0xBFb98b8F785dE02F35e4eAa8b83a4c9390f75f99",
+    "cross-chain-start-block": 13754613
 }
