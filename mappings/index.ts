@@ -79,6 +79,7 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
   const metaEvidenceUpdates = ev.params._metaEvidenceID.div(TWO);
 
   let arbitratorHistory: ArbitratorHistory;
+  const contract = getContract();
   if (ev.params._metaEvidenceID.mod(TWO).equals(ZERO)) {
     if (metaEvidenceUpdates.equals(ZERO)) {
       arbitratorHistory = ArbitratorHistory.load(
@@ -86,26 +87,26 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
       ) as ArbitratorHistory;
       arbitratorHistory.registrationMeta = ev.params._evidence;
     } else {
-      arbitratorHistory = new ArbitratorHistory(metaEvidenceUpdates.toString());
+      const newArbitratorHistoryId = BigInt.fromString(contract.latestArbitratorHistory as string).plus(ONE).toString();
+      arbitratorHistory = new ArbitratorHistory(newArbitratorHistoryId);
       arbitratorHistory.registrationMeta = ev.params._evidence;
       arbitratorHistory.clearingMeta = "";
 
       const prevArbitratorHistory = ArbitratorHistory.load(
-        metaEvidenceUpdates.minus(ONE).toString()
+        contract.latestArbitratorHistory as string
       ) as ArbitratorHistory;
       arbitratorHistory.arbitrator = prevArbitratorHistory.arbitrator;
       arbitratorHistory.extraData = prevArbitratorHistory.extraData;
     }
   } else {
     arbitratorHistory = ArbitratorHistory.load(
-      metaEvidenceUpdates.toString()
+      contract.latestArbitratorHistory as string
     ) as ArbitratorHistory;
     arbitratorHistory.clearingMeta = ev.params._evidence;
   }
   arbitratorHistory.updateTime = ev.block.timestamp;
   arbitratorHistory.save();
 
-  const contract = getContract();
   contract.latestArbitratorHistory = arbitratorHistory.id;
   contract.save();
 }
@@ -136,6 +137,7 @@ export function handleRequiredNumberOfVouchesChanged(
 
 export function handleArbitratorChanged(ev: ArbitratorChanged): void {
   const contract = getContract();
+  
   const prevArbitratorHistory = ArbitratorHistory.load(
     contract.latestArbitratorHistory as string
   ) as ArbitratorHistory;
@@ -151,7 +153,7 @@ export function handleArbitratorChanged(ev: ArbitratorChanged): void {
   arbitratorHistory.arbitrator = ev.params.arbitrator;
   arbitratorHistory.extraData = ev.params.arbitratorExtraData;
   arbitratorHistory.save();
-
+  
   contract.latestArbitratorHistory = arbitratorHistory.id;
   contract.save();
 }
