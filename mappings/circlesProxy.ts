@@ -21,18 +21,22 @@ function updateCirclesAccountFromRegistrations(
     if (registration.expirationTime > crossChainRegistration.expirationTime) {
       circlesAccount.trustExpiryTime = registration.expirationTime;
       circlesAccount.registration = registration.id;
+      circlesAccount.crossChainRegistration = null;
     } else {
       circlesAccount.trustExpiryTime = crossChainRegistration.expirationTime;
       circlesAccount.crossChainRegistration = crossChainRegistration.id;
+      circlesAccount.registration = null;
     }
   } else if (registration) {
     // Only local registration exists
     circlesAccount.trustExpiryTime = registration.expirationTime;
     circlesAccount.registration = registration.id;
+    circlesAccount.crossChainRegistration = null;
   } else if (crossChainRegistration) {
     // Only cross-chain registration exists
     circlesAccount.trustExpiryTime = crossChainRegistration.expirationTime;
     circlesAccount.crossChainRegistration = crossChainRegistration.id;
+    circlesAccount.registration = null;
   }
 }
 
