@@ -1,8 +1,8 @@
-import {log, Bytes, store, BigInt } from "@graphprotocol/graph-ts";
+import {log, Bytes, BigInt } from "@graphprotocol/graph-ts";
 import {
-  MemberRegistered,
+  AccountRegistered,
+  AccountsRemoved,
   TrustRenewed,
-  MembersRemoved
 } from "../generated/ProofOfHumanityCirclesProxy/ProofOfHumanityCirclesProxy";
 import { CirclesAccount, CrossChainRegistration, Registration } from "../generated/schema";
 
@@ -36,13 +36,13 @@ function updateCirclesAccountFromRegistrations(
   }
 }
 
-export function handleMemberRegistered(event: MemberRegistered): void {
-  log.info("handleMemberRegistered called: humanityID={} member={}", [
+export function handleAccountRegistered(event: AccountRegistered): void {
+  log.info("handleAccountRegistered called: humanityID={} member={}", [
     event.params.humanityID.toHex(),
-    event.params.member.toHex()
+    event.params.account.toHex()
   ]);
   
-  let circlesAccount = new CirclesAccount(event.params.member);
+  let circlesAccount = new CirclesAccount(event.params.account);
   updateCirclesAccountFromRegistrations(circlesAccount, event.params.humanityID);
   circlesAccount.save();
 }
@@ -56,4 +56,18 @@ export function handleTrustRenewed(event: TrustRenewed): void {
   
   updateCirclesAccountFromRegistrations(circlesAccount, event.params.humanityID);
   circlesAccount.save();
+}
+export function handleAccountsRemoved(event: AccountsRemoved): void {
+  const accounts = event.params.accounts;
+  const zero = BigInt.fromI32(0);
+  for (let i = 0; i < accounts.length; i++) {
+    let account = accounts[i];
+    let circlesAccount = CirclesAccount.load(account);
+    if(!circlesAccount) {
+      log.error("CirclesAccount entity not found for account={}", [account.toHex()]);
+      continue;
+    }
+    circlesAccount.trustExpiryTime = zero;
+    circlesAccount.save();
+  }
 }

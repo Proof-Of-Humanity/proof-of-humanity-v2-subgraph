@@ -151,10 +151,12 @@ dataSources:
         - name: ProofOfHumanityCirclesProxy
           file: ./abis/ProofOfHumanityCirclesProxy.json
       eventHandlers:
-        - event: MemberRegistered(indexed bytes20,indexed address)
-          handler: handleMemberRegistered
+        - event: AccountRegistered(indexed bytes20,indexed address)
+          handler: handleAccountRegistered
         - event: TrustRenewed(indexed bytes20,indexed address)
           handler: handleTrustRenewed
+        - event: AccountsRemoved(bytes20[],address[])
+          handler: handleAccountsRemoved
   {{/circles-proxy}}
   {{#v1-address}}
   - kind: ethereum
