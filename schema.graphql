@@ -47,7 +47,6 @@ type Registration @entity(immutable: false) {
   humanity: Humanity!
   claimer: Claimer!
   expirationTime: BigInt!
-  circleAccount: CirclesAccount @derivedFrom(field: "registration")
 }
 
 type Humanity @entity(immutable: false) {
@@ -64,6 +63,7 @@ type Humanity @entity(immutable: false) {
   nbPendingRequests: BigInt!
   nbBridgedRequests: BigInt!
   inTransfer: Boolean!
+  circleAccount: CirclesAccount @derivedFrom(field: "humanity")
 }
 
 type Claimer @entity(immutable: false) {
@@ -208,7 +208,6 @@ type CrossChainRegistration @entity(immutable: false) {
   claimer: Claimer!
   expirationTime: BigInt!
   lastReceivedTransferTimestamp: BigInt!
-  circleAccount: CirclesAccount @derivedFrom(field: "crossChainRegistration")
 }
 
 type OutTransfer @entity(immutable: false) {
@@ -232,11 +231,10 @@ type CrossChainGateway @entity(immutable: false) {
 }
 
 # TODO: maybe change this into an Integration entity depending upon future integrations
-type CirclesAccount @entity {
+type CirclesAccount @entity(immutable: false) {
   id: Bytes!                
   trustExpiryTime: BigInt! 
-  registration: Registration
-  crossChainRegistration: CrossChainRegistration
+  humanity: Humanity!
 }
 
 type _Schema_
