@@ -19,10 +19,8 @@ export function updateCirclesAccountLink(
   let crossChainRegistration = CrossChainRegistration.load(humanityID);
 
   if (registration && registration.expirationTime.gt(currentTime)) {
-    circlesAccount.humanity = humanityID;
     circlesAccount.trustExpiryTime = registration.expirationTime; 
   } else if (crossChainRegistration && crossChainRegistration.expirationTime.gt(currentTime)) {
-    circlesAccount.humanity = humanityID;
     circlesAccount.trustExpiryTime = crossChainRegistration.expirationTime; 
   }
 }
@@ -33,8 +31,13 @@ export function handleAccountRegistered(event: AccountRegistered): void {
     event.params.account.toHex()
   ]);
   
-  let circlesAccount = new CirclesAccount(event.params.account);
-  updateCirclesAccountLink(circlesAccount, event.params.humanityID, event.block.timestamp);
+  let circlesAccount = CirclesAccount.load(event.params.account);
+  if(circlesAccount == null) {
+    circlesAccount = new CirclesAccount(event.params.account);
+    circlesAccount.humanity = event.params.humanityID;
+  }
+
+  updateCirclesAccountLink(circlesAccount,event.params.humanityID, event.block.timestamp);
   circlesAccount.save();
 }
 
@@ -49,7 +52,6 @@ export function handleTrustRenewed(event: TrustRenewed): void {
     log.error("CirclesAccount entity not found for account={}", [event.params.account.toHex()]);
     return;
   }
-  
   updateCirclesAccountLink(circlesAccount, event.params.humanityID, event.block.timestamp);
   circlesAccount.save();
 }
