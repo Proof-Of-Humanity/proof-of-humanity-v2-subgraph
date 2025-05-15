@@ -11,6 +11,7 @@
     "gen-sepolia": "mustache config/sepolia.json subgraph.template.yaml > subgraph.yaml && mustache config/sepolia.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml && mustache config/mainnet.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-gnosis": "mustache config/gnosis.json subgraph.template.yaml > subgraph.yaml && mustache config/gnosis.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
+    "gen-gnosis-test": "mustache config/gnosis-test.json subgraph.template.yaml > subgraph.yaml && mustache config/gnosis-test.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-mainnet-before-audit": "mustache config/mainnet-before-audit.json subgraph.template.yaml > subgraph.yaml && mustache config/mainnet-before-audit.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-gnosis-before-audit": "mustache config/gnosis-before-audit.json subgraph.template.yaml > subgraph.yaml && mustache config/gnosis-before-audit.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
     "gen-mainnet-old": "mustache config/mainnet.old.json subgraph.template.yaml > subgraph.yaml && mustache config/mainnet.old.json utils/hardcoded.template.ts > utils/hardcoded.ts && yarn gen",
@@ -32,7 +33,8 @@
     "deploy-chiado-goldsky-old-overwrite": "yarn gen-chiado-goldsky-old && yarn build && yarn goldsky-login && goldsky subgraph delete proof-of-humanity-chiado/1.0.2 && goldsky subgraph deploy proof-of-humanity-chiado/1.0.2 --path ./build",
     "deploy-chiado-goldsky-old": "yarn gen-chiado-goldsky-old && yarn build && yarn goldsky-login && goldsky subgraph deploy proof-of-humanity-chiado/1.0.2 --path ./build",
     "deploy-chiado-goldsky-old-overwrite-preparing": "yarn gen-chiado-goldsky-old && yarn build && yarn goldsky-login && goldsky subgraph delete proof-of-humanity-chiado/1.0.0 && goldsky subgraph deploy proof-of-humanity-chiado/1.0.0 --path ./build",
-    "deploy-chiado": "yarn thegraph-login && yarn gen-chiado && yarn build && graph deploy proof-of-humanity-chiado"
+    "deploy-chiado": "yarn thegraph-login && yarn gen-chiado && yarn build && graph deploy proof-of-humanity-chiado",
+    "deploy-gnosis-test": "yarn thegraph-login && yarn gen-gnosis-test && yarn build && graph deploy poh-origin-gnosis-testnet"
   },
   "devDependencies": {
     "@graphprotocol/graph-cli": "0.97.0",

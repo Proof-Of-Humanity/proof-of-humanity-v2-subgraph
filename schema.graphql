@@ -63,7 +63,7 @@ type Humanity @entity(immutable: false) {
   nbPendingRequests: BigInt!
   nbBridgedRequests: BigInt!
   inTransfer: Boolean!
-  circleAccount: CirclesAccount @derivedFrom(field: "humanity")
+  circleAccount: CirclesAccount
 }
 
 type Claimer @entity(immutable: false) {
@@ -232,9 +232,10 @@ type CrossChainGateway @entity(immutable: false) {
 
 # TODO: maybe change this into an Integration entity depending upon future integrations
 type CirclesAccount @entity(immutable: false) {
+  
   id: Bytes!                
   trustExpiryTime: BigInt! 
-  humanity: Humanity!
+  humanities: [Humanity!]! @derivedFrom(field: "circleAccount")
 }
 
 type _Schema_
