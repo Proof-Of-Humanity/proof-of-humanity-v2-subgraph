@@ -132,6 +132,34 @@ dataSources:
         - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
           handler: handleTransferReceived
   {{/cross-chain}}
+  {{#circles-proxy}}
+  - kind: ethereum
+    name: ProofOfHumanityCirclesProxy
+    network: {{network}}
+    source:
+      address: "{{circles-proxy}}"
+      abi: ProofOfHumanityCirclesProxy
+      startBlock: {{circles-proxy-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/circlesProxy.ts
+      entities:
+        - CirclesAccount
+      abis:
+        - name: ProofOfHumanityCirclesProxy
+          file: ./abis/ProofOfHumanityCirclesProxy.json
+      eventHandlers:
+        - event: AccountRegistered(indexed bytes20,indexed address,uint40,uint96)
+          handler: handleAccountRegistered
+        - event: TrustRenewed(indexed bytes20,indexed address,uint96)
+          handler: handleTrustRenewed
+        - event: TrustReEvaluationBatchProcessed(indexed address,uint256,uint256)
+          handler: handleTrustReEvaluationBatchProcessed
+        - event: TrustReEvaluationCompleted(indexed address,uint96)
+          handler: handleTrustReEvaluationCompleted
+  {{/circles-proxy}}
   {{#v1-address}}
   - kind: ethereum
     name: ProofOfHumanityOld

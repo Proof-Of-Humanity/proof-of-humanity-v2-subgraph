@@ -1,0 +1,9 @@
+{
+    "network": "gnosis",
+    "address": "0x7B4b0390bb6D688AB8364a2F145B1fABD2A9304b",
+    "start-block": 35846827,
+    "cross-chain": "0xB0a19a04859ef8f71A89D610c6B5996255561946",
+    "cross-chain-start-block": 39925305,
+    "circles-proxy": "0x23270530d7EBEc8915Be8170cd91303051E1e26F",
+    "circles-proxy-start-block": 39925428
+}
