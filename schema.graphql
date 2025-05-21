@@ -159,7 +159,7 @@ type ChallengerFund implements Fund @entity(immutable: false) {
   contributions: [Contribution!]! @derivedFrom(field: "fund")
 }
 
-type Contribution @entity(immutable: true) {
+type Contribution @entity(immutable: false) {
   # hash(fund.id//contributor)
   id: Bytes!
   fund: Fund!
@@ -167,7 +167,7 @@ type Contribution @entity(immutable: true) {
   amount: BigInt!
 }
 
-type Vouch @entity(immutable: true) {
+type Vouch @entity(immutable: false) {
   # hash(claimer.id//pohId//voucher.id)
   id: Bytes!
   from: Claimer!
@@ -223,7 +223,7 @@ type InTransfer @entity(immutable: true) {
   humanityId: Bytes!
 }
 
-type CrossChainGateway @entity(immutable: true) {
+type CrossChainGateway @entity(immutable: false) {
   # gateway address
   id: Bytes!
   foreignProxy: Bytes!
