@@ -1,25 +1,25 @@
-type Party @entity {
+type Party @entity(immutable: false) {
   # none / requester / challenger
   id: ID!
   count: BigInt!
   challengesWon: [Challenge!]! @derivedFrom(field: "ruling")
 }
 
-type Reason @entity {
+type Reason @entity(immutable: false) {
   # none / incorrectSubmission / identityTheft / sybilAttack / deceased
   id: ID!
   count: BigInt!
   challenges: [Challenge!]! @derivedFrom(field: "reason")
 }
 
-type Status @entity {
+type Status @entity(immutable: false) {
   # vouching / resolving / disputed / resolved / withdrawn
   id: ID!
   count: BigInt!
   requests: [Request!]! @derivedFrom(field: "status")
 }
 
-type Contract @entity {
+type Contract @entity(immutable: false) {
   # address
   id: Bytes!
   baseDeposit: BigInt!
@@ -30,7 +30,7 @@ type Contract @entity {
   latestArbitratorHistory: ArbitratorHistory
 }
 
-type ArbitratorHistory @entity {
+type ArbitratorHistory @entity(immutable: true) {
   # arbHistId
   id: ID!
   arbitrator: Bytes!
@@ -41,7 +41,7 @@ type ArbitratorHistory @entity {
   requests: [Request!]! @derivedFrom(field: "arbitratorHistory")
 }
 
-type Registration @entity {
+type Registration @entity(immutable: false) {
   # hash(pohId//claimer)
   id: Bytes!
   humanity: Humanity!
@@ -49,7 +49,7 @@ type Registration @entity {
   expirationTime: BigInt!
 }
 
-type Humanity @entity {
+type Humanity @entity(immutable: false) {
   # pohId
   id: Bytes!
   registration: Registration @derivedFrom(field: "humanity")
@@ -65,7 +65,7 @@ type Humanity @entity {
   inTransfer: Boolean!
 }
 
-type Claimer @entity {
+type Claimer @entity(immutable: false) {
   # address
   id: Bytes!
   name: String
@@ -76,7 +76,7 @@ type Claimer @entity {
   nbVouchesReceived: BigInt!
 }
 
-type Request @entity {
+type Request @entity(immutable: false) {
   # hash(pohId//i)
   id: Bytes!
   humanity: Humanity!
@@ -100,14 +100,14 @@ type Request @entity {
   registrationEvidenceRevokedReq: String!
 }
 
-type Challenger @entity {
+type Challenger @entity(immutable: false) {
   # address
   id: Bytes!
   wins: [Request!]! @derivedFrom(field: "ultimateChallenger")
   challenges: [Challenge!]! @derivedFrom(field: "challenger")
 }
 
-type Challenge @entity {
+type Challenge @entity(immutable: false) {
   # hash(request.id//i)
   id: Bytes!
   index: BigInt!
@@ -121,7 +121,7 @@ type Challenge @entity {
   rounds: [Round!]! @derivedFrom(field: "challenge")
 }
 
-type Round @entity {
+type Round @entity(immutable: false) {
   # hash(challenge.id//i)
   id: Bytes!
   index: BigInt!
@@ -141,7 +141,7 @@ interface Fund {
   round: Round!
 }
 
-type RequesterFund implements Fund @entity {
+type RequesterFund implements Fund @entity(immutable: false) {
   id: Bytes!
   amount: BigInt!
   withdrawn: Boolean!
@@ -150,7 +150,7 @@ type RequesterFund implements Fund @entity {
   round: Round! @derivedFrom(field: "requesterFund")
 }
 
-type ChallengerFund implements Fund @entity {
+type ChallengerFund implements Fund @entity(immutable: false) {
   id: Bytes!
   amount: BigInt!
   withdrawn: Boolean!
@@ -159,7 +159,7 @@ type ChallengerFund implements Fund @entity {
   contributions: [Contribution!]! @derivedFrom(field: "fund")
 }
 
-type Contribution @entity {
+type Contribution @entity(immutable: true) {
   # hash(fund.id//contributor)
   id: Bytes!
   fund: Fund!
@@ -167,7 +167,7 @@ type Contribution @entity {
   amount: BigInt!
 }
 
-type Vouch @entity {
+type Vouch @entity(immutable: true) {
   # hash(claimer.id//pohId//voucher.id)
   id: Bytes!
   from: Claimer!
@@ -175,7 +175,7 @@ type Vouch @entity {
   for: Claimer!
 }
 
-type VouchInProcess @entity {
+type VouchInProcess @entity(immutable: false) {
   # hash(vouch.id)
   id: Bytes!
   vouch: Vouch!
@@ -184,7 +184,7 @@ type VouchInProcess @entity {
   request: Request!
 }
 
-type EvidenceGroup @entity {
+type EvidenceGroup @entity(immutable: false) {
   # evidenceGroupId
   id: Bytes!
   length: BigInt!
@@ -201,7 +201,7 @@ type Evidence @entity(immutable: true) {
   submitter: Bytes!
 }
 
-type CrossChainRegistration @entity {
+type CrossChainRegistration @entity(immutable: false) {
   # pohId
   id: Bytes!
   claimer: Claimer!
@@ -209,7 +209,7 @@ type CrossChainRegistration @entity {
   lastReceivedTransferTimestamp: BigInt!
 }
 
-type OutTransfer @entity {
+type OutTransfer @entity(immutable: false) {
   # pohId
   id: Bytes!
   foreignProxy: Bytes!
@@ -223,7 +223,7 @@ type InTransfer @entity(immutable: true) {
   humanityId: Bytes!
 }
 
-type CrossChainGateway @entity {
+type CrossChainGateway @entity(immutable: true) {
   # gateway address
   id: Bytes!
   foreignProxy: Bytes!
