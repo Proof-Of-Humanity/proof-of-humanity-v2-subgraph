@@ -591,7 +591,7 @@ export function handleContribution(ev: ContributionEv): void {
     if (fundReq == null) {
       fundReq = new RequesterFund(fundIdReq);
       fundReq.amount = ZERO;
-      fund.withdrawn = false;
+      fundReq.withdrawn = false;
       fundReq.feeRewards = ZERO;
       round.requesterFund = fundIdReq;
     }
