@@ -153,7 +153,7 @@ dataSources:
       eventHandlers:
         - event: AccountRegistered(indexed bytes20,indexed address,uint40,uint96)
           handler: handleAccountRegistered
-        - event: TrustRenewed(indexed bytes20,indexed address,indexed uint96)
+        - event: TrustRenewed(indexed bytes20,indexed address,uint96)
           handler: handleTrustRenewed
         - event: TrustReEvaluationBatchProcessed(indexed address,uint256,uint256)
           handler: handleTrustReEvaluationBatchProcessed

@@ -8,18 +8,23 @@
       },
       {
         "internalType": "address",
-        "name": "_coreMembersGroup",
+        "name": "_crossChainProofOfHumanity",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_crossChainProofOfHumanity",
+        "name": "_coreMembersGroup",
         "type": "address"
       },
       {
         "internalType": "address",
         "name": "_hub",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maximumBatchSize",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
@@ -116,7 +121,7 @@
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "uint96",
         "name": "newTrustExpiryTime",
         "type": "uint96"
@@ -124,19 +129,6 @@
     ],
     "name": "TrustRenewed",
     "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_BATCH_SIZE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [
@@ -197,6 +189,19 @@
       }
     ],
     "name": "changeHub",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maximumBatchSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeMaximumBatchSize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -304,6 +309,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maximumBatchSize",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
