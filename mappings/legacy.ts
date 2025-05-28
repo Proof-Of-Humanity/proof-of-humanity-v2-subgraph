@@ -34,7 +34,17 @@ import { biToBytes, hash } from "../utils/misc";
 import { ZERO, ONE, TWO } from "../utils/constants";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
 
+// V1 end block - after this block, only process withdrawSubmissionLegacy
+const V1_END_BLOCK = BigInt.fromI32(20685121);
+
+function shouldProcessEvent(blockNumber: BigInt, isWithdrawSubmission: boolean = false): boolean {
+  return isWithdrawSubmission || blockNumber.le(V1_END_BLOCK);
+}
+
 export function handleMetaEvidence(ev: MetaEvidence): void {
+  if (!shouldProcessEvent(ev.block.number)) {
+    return;
+  }
   const metaEvidenceUpdates = ev.params._metaEvidenceID.div(TWO);
 
   let arbitratorHistory: ArbitratorHistory;
@@ -72,6 +82,9 @@ export function handleMetaEvidence(ev: MetaEvidence): void {
 export function addSubmissionManuallyLegacy(
   call: AddSubmissionManuallyCall
 ): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const poh = ProofOfHumanityOld.bind(call.to);
   const submissionIDs = call.inputs._submissionIDs;
   const names = call.inputs._names;
@@ -107,10 +120,16 @@ export function addSubmissionManuallyLegacy(
 export function removeSubmissionManuallyLegacy(
   call: RemoveSubmissionManuallyCall
 ): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   store.remove("Registration", call.inputs._submissionID.toHex());
 }
 
 export function addSubmissionLegacy(call: AddSubmissionCall): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const humanity = Factory.Humanity(call.from);
   humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE);
   humanity.save();
@@ -134,6 +153,9 @@ export function addSubmissionLegacy(call: AddSubmissionCall): void {
 }
 
 export function reapplySubmissionLegacy(call: ReapplySubmissionCall): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const humanity = Humanity.load(call.from) as Humanity;
   humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE);
   humanity.save();
@@ -151,6 +173,9 @@ export function reapplySubmissionLegacy(call: ReapplySubmissionCall): void {
 }
 
 export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
   humanity.nbLegacyRequests = humanity.nbLegacyRequests.plus(ONE);
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
@@ -184,6 +209,9 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
 }
 
 export function handleVouchAdded(event: VouchAdded): void {
+  if (!shouldProcessEvent(event.block.number)) {
+    return;
+  }
   const voucher = Claimer.load(event.params._voucher) as Claimer | null;
   const claimer = Claimer.load(event.params._submissionID) as Claimer | null;
   if (voucher == null || claimer == null) return;
@@ -202,6 +230,9 @@ export function handleVouchAdded(event: VouchAdded): void {
 }
 
 export function handleVouchRemoved(event: VouchRemoved): void {
+  if (!shouldProcessEvent(event.block.number)) {
+    return;
+  }
   const voucher = Claimer.load(event.params._voucher) as Claimer | null;
   const claimer = Claimer.load(event.params._submissionID) as Claimer | null;
   if (voucher == null || claimer == null) return;
@@ -215,6 +246,10 @@ export function handleVouchRemoved(event: VouchRemoved): void {
 }
 
 export function withdrawSubmissionLegacy(call: WithdrawSubmissionCall): void {
+  // Always process withdraw submissions regardless of block number
+  if (!shouldProcessEvent(call.block.number, true)) {
+    return;
+  }
   const claimer = Claimer.load(call.from) as Claimer | null;
   if (!claimer) return;
   if (!claimer.currentRequest) return; 
@@ -233,6 +268,9 @@ export function withdrawSubmissionLegacy(call: WithdrawSubmissionCall): void {
 export function changeStateToPendingLegacy(
   call: ChangeStateToPendingCall
 ): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const claimer = Claimer.load(call.inputs._submissionID) as Claimer | null;
   if (!claimer || !claimer.currentRequest) return;
 
@@ -273,6 +311,9 @@ export function changeStateToPendingLegacy(
 }
 
 export function challengeRequestLegacy(call: ChallengeRequestCall): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const claimer = Claimer.load(call.inputs._submissionID) as Claimer | null;
   if (!claimer || !claimer.currentRequest) {
     log.warning("ChallengeReq empty claimer request. SubmissionId: {}. ", [
@@ -327,6 +368,9 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
 }
 
 export function executeRequestLegacy(call: ExecuteRequestCall): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const poh = ProofOfHumanityOld.bind(call.to);
 
   const submissionInfo = poh.getSubmissionInfo(call.inputs._submissionID);
@@ -387,6 +431,9 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
 }
 
 export function handleRuling(ev: RulingEv): void {
+  if (!shouldProcessEvent(ev.block.number)) {
+    return;
+  }
   const poh = ProofOfHumanityOld.bind(ev.address);
 
   const ruling = PartyUtil.parse(ev.params._ruling.toI32());
@@ -476,6 +523,9 @@ export function handleRuling(ev: RulingEv): void {
 }
 
 export function processVouchesLegacy(call: ProcessVouchesCall): void {
+  if (!shouldProcessEvent(call.block.number)) {
+    return;
+  }
   const request = Request.load( 
     hash(
       call.inputs._submissionID
@@ -508,6 +558,9 @@ export function processVouchesLegacy(call: ProcessVouchesCall): void {
 }
 
 export function handleEvidence(ev: EvidenceEv): void {
+  if (!shouldProcessEvent(ev.block.number)) {
+    return;
+  }
   const evGroupIdRaw = BigInt.fromByteArray(
     Bytes.fromUint8Array(
       ByteArray.fromBigInt(ev.params._evidenceGroupID)
