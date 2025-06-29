@@ -124,6 +124,7 @@ export function handleTransferReceived(ev: TransferReceived): void {
   request.status = StatusUtil.resolved;
   request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
+  request.expirationTime = ev.params.expirationTime;
   
   request.save();
 

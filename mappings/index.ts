@@ -486,6 +486,9 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
   );
   registration.save();
 
+  request.expirationTime = registration.expirationTime;
+  request.save();
+
   claimer.currentRequest = null;
   claimer.save();
 
