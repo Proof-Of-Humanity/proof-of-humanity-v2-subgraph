@@ -182,6 +182,7 @@ export class Factory {
       request.contributors = [];
       request.evidenceGroup = evGroupId;
       request.registrationEvidenceRevokedReq = "";
+      request.expirationTime = ZERO;
     }
     return request;
   }

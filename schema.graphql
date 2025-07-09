@@ -98,6 +98,7 @@ type Request @entity(immutable: false) {
   challenges: [Challenge!]! @derivedFrom(field: "request")
   contributors: [Bytes!]!
   registrationEvidenceRevokedReq: String!
+  expirationTime: BigInt
 }
 
 type Challenger @entity(immutable: false) {

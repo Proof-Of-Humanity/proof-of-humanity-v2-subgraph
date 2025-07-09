@@ -106,14 +106,16 @@ export function addSubmissionManuallyLegacy(
     request.lastStatusChange = call.block.timestamp;
     request.status = StatusUtil.resolved;
     request.winnerParty = PartyUtil.requester;
+    
+    const registration = Factory.Registration(humanity.id, submissionId);
+    registration.expirationTime = call.block.timestamp.plus(submissionDuration);
+    registration.save();
+    
+    request.expirationTime = registration.expirationTime;
     request.save();
 
     claimer.currentRequest = request.id;
     claimer.save();
-
-    const registration = Factory.Registration(humanity.id, submissionId);
-    registration.expirationTime = call.block.timestamp.plus(submissionDuration);
-    registration.save();
   }
 }
 
@@ -406,6 +408,7 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
       .getSubmissionTime()
       .plus(poh.submissionDuration());
     registration.save();
+    request.expirationTime = registration.expirationTime;
   } else {
     const revocationRequest = Request.load(
       hash(
@@ -428,6 +431,7 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
       revocationRequest.id.toHex()
     ])
   }
+  request.save();
 }
 
 export function handleRuling(ev: RulingEv): void {
@@ -470,6 +474,12 @@ export function handleRuling(ev: RulingEv): void {
     disputedRequest.resolutionTime = ev.block.timestamp;
     disputedRequest.status = StatusUtil.resolved;
     disputedRequest.winnerParty = ruling;
+    if (ruling == PartyUtil.requester) {
+      const registration = Registration.load(humanity.id) as Registration | null;
+      if (registration) {
+        disputedRequest.expirationTime = registration.expirationTime;
+      }
+    }
     disputedRequest.save();
     
     log.warning("DisputeID x CurrentReq: Humanity ID: {}. ReqID: {}. ", [
@@ -516,6 +526,7 @@ export function handleRuling(ev: RulingEv): void {
       .plus(poh.submissionDuration());
     registration.save();
     request.winnerParty = PartyUtil.requester;
+    request.expirationTime = registration.expirationTime;
   }
 
   request.save();
