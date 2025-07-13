@@ -352,6 +352,10 @@ export function handleVouchRegistered(ev: VouchRegistered): void {
   vouchInProcess.processed = false;
   vouchInProcess.voucher = voucher.id;
   vouchInProcess.save();
+
+  const humanity = Humanity.load(ev.params.voucherHumanityId) as Humanity;
+  humanity.vouching = true;
+  humanity.save();
 }
 
 export function handleStateAdvanced(ev: StateAdvanced): void {
@@ -527,6 +531,10 @@ export function handleVouchesProcessed(ev: VouchesProcessed): void {
     const vouch = changetype<VouchInProcess>(vouches[i]);
     vouch.processed = true;
     vouch.save();
+
+    const humanity = Humanity.load(vouch.voucher) as Humanity;
+    humanity.vouching = false;
+    humanity.save();
   }
 }
 
