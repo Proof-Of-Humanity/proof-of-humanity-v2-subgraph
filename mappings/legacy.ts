@@ -205,7 +205,13 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
   const evidence = Evidence.load(hash(revokedReq!.evidenceGroup.concat(biToBytes(ZERO)))); 
   // The first (ZERO) piece of evidence is the registration one
   
-  request.registrationEvidenceRevokedReq = evidence!.uri;
+  if (revokedReq != null) {
+    const evId = hash(revokedReq.evidenceGroup.concat(biToBytes(ZERO)));
+    const evidence = Evidence.load(evId);
+    if (evidence != null) {
+      request.registrationEvidenceRevokedReq = evidence.uri;
+    }
+  }
 
   request.save();
 }
