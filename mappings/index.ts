@@ -408,6 +408,7 @@ export function handleChallengePeriodRestart(ev: ChallengePeriodRestart): void {
     hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
   ) as Request;
   request.status = StatusUtil.resolving;
+  request.lastStatusChange = ev.block.timestamp;
   request.save();
 }
 
