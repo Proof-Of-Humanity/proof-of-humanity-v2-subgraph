@@ -241,7 +241,6 @@ type CirclesAccount @entity(immutable: false) {
 type RewardClaim @entity(immutable: true) {
   # humanityID as ID since each humanity can only claim once
   id: Bytes!
-  humanityID: Bytes!
   claimer: Claimer!
   amount: BigInt!
   timestamp: BigInt!

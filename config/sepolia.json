@@ -5,5 +5,7 @@
     "v1-address": "0xDC605c9094cDdF2af1704c25D7D69A97a08c7E30",
     "v1-start-block": 6198787,
     "cross-chain": "0x5142177398E94ce45b19c59cBA5d3d71a1c34202",
-    "cross-chain-start-block": 7461609
+    "cross-chain-start-block": 7461609,
+    "reward-distributor": "0xbe372A981fCFa743C02C7ddeee728e5eD74Ea11E",
+    "reward-distributor-start-block": 7461609
 }
