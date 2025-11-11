@@ -3,5 +3,7 @@
     "address": "0xa4AC94C4fa65Bb352eFa30e3408e64F72aC857bc",
     "start-block": 35846827,
     "cross-chain": "0x16044E1063C08670f8653055A786b7CC2034d2b0",
-    "cross-chain-start-block": 35846905
+    "cross-chain-start-block": 35846905,
+    "circles-proxy": "0xf49aB03E980BD27ecf9352cAF4A65921DD70a554",
+    "circles-proxy-start-block": 43089534
 }

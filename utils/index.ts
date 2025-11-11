@@ -84,6 +84,9 @@ export class Factory {
       claimer.nbVouchesReceived = ZERO;
       claimer.name = name;
     }
+    else if(name){
+      claimer.name = name;
+    }
     return claimer;
   }
 
