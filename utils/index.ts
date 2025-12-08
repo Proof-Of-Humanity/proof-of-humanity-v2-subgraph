@@ -95,8 +95,8 @@ export class Factory {
     if (registration == null) {
       registration = new Registration(pohId);
       registration.humanity = pohId;
-      registration.claimer = claimer;
     }
+    registration.claimer = claimer;
     return registration;
   }
 
