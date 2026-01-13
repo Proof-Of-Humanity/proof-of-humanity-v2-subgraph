@@ -15,10 +15,13 @@ import {
   InTransfer,
   OutTransfer,
   Request,
+  OutUpdate,
+  InUpdate
 } from "../generated/schema";
 import { ONE, ZERO } from "../utils/constants";
 import { Factory } from "../utils";
 import { PartyUtil, StatusUtil } from "../utils/enums";
+import { biToBytes, hash } from "../utils/misc";
 
 export function handleGatewayAdded(ev: GatewayAdded): void {
   const gateway = new CrossChainGateway(ev.params.bridgeGateway);
@@ -31,6 +34,12 @@ export function handleGatewayRemoved(ev: GatewayRemoved): void {
 }
 
 export function handleUpdateInitiated(ev: UpdateInitiated): void {
+  const update = new OutUpdate(hash(ev.transaction.hash.concat(biToBytes(ev.logIndex))).toHex());
+  update.humanityId = ev.params.humanityId;
+  update.txHash = ev.transaction.hash;
+  update.logIndex = ev.logIndex;
+  update.timestamp = ev.block.timestamp;
+  update.save();
 }
 
 export function handleUpdateReceived(ev: UpdateReceived): void {
@@ -47,7 +56,14 @@ export function handleUpdateReceived(ev: UpdateReceived): void {
     registration.save();
   } else {
     store.remove("CrossChainRegistration", ev.params.humanityId.toHex());
-  }
+    }
+  
+  const update = new InUpdate(hash(ev.transaction.hash.concat(biToBytes(ev.logIndex))).toHex());
+  update.humanityId = ev.params.humanityId;
+  update.txHash = ev.transaction.hash;
+  update.logIndex = ev.logIndex;
+  update.timestamp = ev.block.timestamp;
+  update.save();
 }
 
 export function handleTransferInitiated(ev: TransferInitiated): void {

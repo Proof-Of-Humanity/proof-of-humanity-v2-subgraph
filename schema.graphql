@@ -246,6 +246,24 @@ type RewardClaim @entity(immutable: true) {
   timestamp: BigInt!
 }
 
+type OutUpdate @entity(immutable: true) {
+  # Unique ID: hash(txHash + logIndex)
+  id: ID!
+  humanityId: Bytes!
+  txHash: Bytes!
+  logIndex: BigInt!
+  timestamp: BigInt!
+}
+
+type InUpdate @entity(immutable: true) {
+  # Unique ID: hash(txHash + logIndex)
+  id: ID!
+  humanityId: Bytes!
+  txHash: Bytes!
+  logIndex: BigInt!
+  timestamp: BigInt!
+}
+
 type _Schema_
   @fulltext(
     name: "submissionSearch"
