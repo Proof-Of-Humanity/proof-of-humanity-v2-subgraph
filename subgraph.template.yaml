@@ -160,6 +160,29 @@ dataSources:
         - event: TrustReEvaluationCompleted(indexed address,uint96)
           handler: handleTrustReEvaluationCompleted
   {{/circles-proxy}}
+  {{#reward-distributor}}
+  - kind: ethereum
+    name: RewardDistributor
+    network: {{network}}
+    source:
+      address: "{{reward-distributor}}"
+      abi: RewardDistributor
+      startBlock: {{reward-distributor-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/rewardDistributor.ts
+      entities:
+        - RewardClaim
+        - Claimer
+      abis:
+        - name: RewardDistributor
+          file: ./abis/RewardDistributor.json
+      eventHandlers:
+        - event: Claimed(indexed bytes20)
+          handler: handleClaimed
+  {{/reward-distributor}}
   {{#v1-address}}
   - kind: ethereum
     name: ProofOfHumanityOld
