@@ -257,6 +257,36 @@ type InUpdate @entity(immutable: true) {
   timestamp: BigInt!
 }
 
+type GlobalAnalytics @entity(immutable: false) {
+  id: ID!                              # "global"
+  verifiedHumanProfiles: BigInt!       # Current verified count (approximate - doesn't account for expirations)
+  airdropClaims: BigInt!               # Cumulative airdrop reward claims
+  registrationsPending: BigInt!        # Current in Vouching state
+  registrationsFunded: BigInt!         # Current in Resolving state (Pending Claim)
+  registrationsChallenged: BigInt!     # Current in Disputed state
+  registrationsRejected: BigInt!       # Cumulative rejections (lost challenges)
+  registrationsSubmitted: BigInt!      # Cumulative claim submissions (not renewals)
+  registrationsBridged: BigInt!        # Cumulative bridged profiles (inbound)
+  registrationsTransferredOut: BigInt! # Cumulative transferred out profiles (outbound)
+  registrationsWithdrawn: BigInt!      # Cumulative claim withdrawals
+  renewalsSubmitted: BigInt!           # Cumulative renewal submissions
+}
+
+type DailyAnalytics @entity(immutable: false) {
+  id: ID!                              # Day timestamp (midnight UTC)
+  date: BigInt!
+  verifiedHumanProfiles: BigInt!       # New verifications that day
+  airdropClaims: BigInt!               # New airdrop reward claims that day
+  registrationsPending: BigInt!        # New claim submissions that day
+  registrationsFunded: BigInt!         # New funded that day
+  registrationsChallenged: BigInt!     # New challenges that day
+  registrationsRejected: BigInt!       # New rejections that day
+  registrationsSubmitted: BigInt!      # New claim submissions that day
+  registrationsBridged: BigInt!        # New bridged profiles that day
+  registrationsWithdrawn: BigInt!      # New withdrawals that day
+  renewalsSubmitted: BigInt!           # New renewal submissions that day
+}
+
 type _Schema_
   @fulltext(
     name: "submissionSearch"

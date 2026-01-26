@@ -44,6 +44,7 @@ import {
   ChallengerFund,
   Challenger,
 } from "../generated/schema";
+import { AnalyticsUtil } from "../utils/analytics";
 import { getContract, Factory, getPreviousNonRevoked } from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
 import { biToBytes, hash } from "../utils/misc";
@@ -173,15 +174,19 @@ export function handleHumanityGrantedDirectly(
   );
   registration.expirationTime = ev.params.expirationTime;
   registration.save();
+
+  AnalyticsUtil.onDirectGrant(ev.block.timestamp);
 }
 
 export function handleHumanityDischargedDirectly(
   ev: HumanityDischargedDirectly
 ): void {
   store.remove("Registration", ev.params.humanityId.toHex());
+
+  AnalyticsUtil.onRevoked();
 }
 
-export function handleClaimRequest(ev: ClaimRequest): void {
+export function handleClaimRequest(ev: ClaimRequest): void{
   const humanity = Factory.Humanity(ev.params.humanityId);
   const claimer = Factory.Claimer(ev.params.requester, ev.params.name);
 
@@ -197,6 +202,8 @@ export function handleClaimRequest(ev: ClaimRequest): void {
 
   humanity.nbRequests = humanity.nbRequests.plus(ONE);
   humanity.save();
+
+  AnalyticsUtil.onClaimSubmitted(ev.block.timestamp);
 }
 
 export function handleRenewalRequest(ev: RenewalRequest): void {
@@ -216,6 +223,8 @@ export function handleRenewalRequest(ev: RenewalRequest): void {
 
   humanity.nbRequests = humanity.nbRequests.plus(ONE);
   humanity.save();
+
+  AnalyticsUtil.onRenewalSubmitted(ev.block.timestamp);
 }
 
 export function handleRevocationRequest(ev: RevocationRequest): void {
@@ -318,6 +327,11 @@ export function handleRequestWithdrawn(ev: RequestWithdrawn): void {
   request.resolutionTime = ev.block.timestamp;
   request.save();
 
+  // Withdrawals only happen from Vouching state per contract
+  if (!request.revocation) {
+    AnalyticsUtil.onWithdrawnFromVouching(ev.block.timestamp);
+  }
+
   const claimer = Claimer.load(request.requester) as Claimer;
   claimer.currentRequest = null;
   claimer.save();
@@ -369,6 +383,10 @@ export function handleStateAdvanced(ev: StateAdvanced): void {
   const humanity = Humanity.load(request.humanity) as Humanity;
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
   humanity.save();
+
+  if (!request.revocation) {
+    AnalyticsUtil.onFunded(ev.block.timestamp);
+  }
 }
 
 export function handleRequestChallenged(ev: RequestChallenged): void {
@@ -398,6 +416,10 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
   request.nbChallenges = request.nbChallenges.plus(ONE);
   request.save();
 
+  if (!request.revocation) {
+    AnalyticsUtil.onChallenged(ev.block.timestamp);
+  }
+
   // const round = challenge.rounds.load().at(-1);
   // round.creationTime = ev.block.timestamp;
   // round.save();
@@ -410,6 +432,10 @@ export function handleChallengePeriodRestart(ev: ChallengePeriodRestart): void {
   request.status = StatusUtil.resolving;
   request.lastStatusChange = ev.block.timestamp;
   request.save();
+
+  if (!request.revocation) {
+    AnalyticsUtil.onChallengeRestarted();
+  }
 }
 
 export function handleRuling(ev: Ruling): void {
@@ -421,13 +447,12 @@ export function handleRuling(ev: Ruling): void {
   );
 
   const humanity = Humanity.load(disputeData.getHumanityId()) as Humanity;
-  humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
 
   const request = Request.load(
     hash(humanity.id.concat(biToBytes(disputeData.getRequestId())))
   ) as Request;
+  const previousStatus = request.status;
   request.resolutionTime = ev.block.timestamp;
-  request.status = StatusUtil.resolved;
   request.winnerParty = ruling;
 
   const challenge = Challenge.load(
@@ -436,9 +461,25 @@ export function handleRuling(ev: Ruling): void {
   challenge.ruling = ruling;
   challenge.save();
 
-  if (request.revocation) humanity.pendingRevocation = false;
-  else if (ruling == PartyUtil.challenger)
+  if (request.revocation) {
+    humanity.pendingRevocation = false;
+    request.status = StatusUtil.resolved;
+    humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
+  } else if (ruling == PartyUtil.challenger) {
     request.ultimateChallenger = challenge.challenger;
+  }
+
+  // Analytics: Only count rejection if it's a claim request and requester didn't win
+  // If requester wins, either ChallengePeriodRestart or HumanityClaimed will handle analytics
+  if (
+    !request.revocation &&
+    ruling != PartyUtil.requester &&
+    previousStatus == StatusUtil.disputed
+  ) {
+    request.status = StatusUtil.resolved;
+    humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
+    AnalyticsUtil.onRejected(ev.block.timestamp);
+  }
 
   request.save();
   humanity.save();
@@ -476,6 +517,7 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
     hash(humanity.id.concat(biToBytes(ev.params.requestId)))
   ) as Request | null;
   if (!request) return;
+  const previousStatus = request.status;
   request.status = StatusUtil.resolved;
   request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
@@ -493,6 +535,34 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
 
   request.expirationTime = registration.expirationTime;
   request.save();
+
+  // Check if this is a renewal (registration already existed) or new claim
+  // We check if there was a previous resolved non-revocation request
+  let isRenewal = false;
+  
+  // If nbRequests > 1, check if any previous request was a successful claim
+  if (humanity.nbRequests.gt(ONE)) {
+    const previousReqId = ev.params.requestId.minus(ONE);
+    const previousReq = Request.load(
+      hash(ev.params.humanityId.concat(biToBytes(previousReqId)))
+    );
+    if (previousReq && !previousReq.revocation && previousReq.status == StatusUtil.resolved && previousReq.winnerParty == PartyUtil.requester) {
+      isRenewal = true;
+    }
+  }
+
+  // Determine if this came from challenged or unchallenged path
+  const wasChallenged = previousStatus == StatusUtil.disputed;
+  
+  if (!isRenewal) {
+    AnalyticsUtil.onAirdropClaimed(ev.block.timestamp);
+  }
+
+  if (wasChallenged) {
+    AnalyticsUtil.onVerifiedChallenged(ev.block.timestamp, isRenewal);
+  } else {
+    AnalyticsUtil.onVerifiedUnchallenged(ev.block.timestamp, isRenewal);
+  }
 
   claimer.currentRequest = null;
   claimer.save();
@@ -514,6 +584,8 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
   request.save();
 
   store.remove("Registration", ev.params.humanityId.toHex());
+
+  AnalyticsUtil.onRevoked();
 
   humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
   humanity.save();

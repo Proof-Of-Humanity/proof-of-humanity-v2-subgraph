@@ -18,6 +18,7 @@ import {
   OutUpdate,
   InUpdate
 } from "../generated/schema";
+import { AnalyticsUtil } from "../utils/analytics";
 import { ONE, ZERO } from "../utils/constants";
 import { Factory } from "../utils";
 import { PartyUtil, StatusUtil } from "../utils/enums";
@@ -90,6 +91,9 @@ export function handleTransferInitiated(ev: TransferInitiated): void {
 
   //--------------------------------- Transfer initiated -------------------
   let humanity = Humanity.load(ev.params.humanityId as Bytes);
+  if (humanity && humanity.nbRequests.gt(ZERO)) {
+    AnalyticsUtil.onTransferredOut();
+  }
   if (humanity) {
     let reqArray = humanity.requests.load();
     if (reqArray.length > 0) {
@@ -149,5 +153,8 @@ export function handleTransferReceived(ev: TransferReceived): void {
 
   humanity.nbBridgedRequests = humanity.nbBridgedRequests.plus(ONE);
   humanity.inTransfer = false;
-  humanity.save(); 
+  humanity.save();
+
+  // Track as bridged profile (verified count handled by HumanityGrantedDirectly)
+  AnalyticsUtil.onBridged(ev.block.timestamp);
 }
