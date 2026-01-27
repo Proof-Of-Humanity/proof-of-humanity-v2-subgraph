@@ -553,11 +553,6 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
 
   // Determine if this came from challenged or unchallenged path
   const wasChallenged = previousStatus == StatusUtil.disputed;
-  
-  if (!isRenewal) {
-    AnalyticsUtil.onAirdropClaimed(ev.block.timestamp);
-  }
-
   if (wasChallenged) {
     AnalyticsUtil.onVerifiedChallenged(ev.block.timestamp, isRenewal);
   } else {
