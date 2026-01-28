@@ -5,5 +5,7 @@
     "cross-chain": "0x16044E1063C08670f8653055A786b7CC2034d2b0",
     "cross-chain-start-block": 35846905,
     "circles-proxy": "0xf49aB03E980BD27ecf9352cAF4A65921DD70a554",
-    "circles-proxy-start-block": 43089534
+    "circles-proxy-start-block": 43089534,
+    "reward-distributor": "0x906113115C0A691F7E78dB91083EFfCD415Cb978",
+    "reward-distributor-start-block": 44279764
 }

@@ -231,12 +231,19 @@ type CrossChainGateway @entity(immutable: false) {
   foreignProxy: Bytes!
 }
 
-# TODO: maybe change this into an Integration entity depending upon future integrations
 type CirclesAccount @entity(immutable: false) {
   
   id: Bytes!                
   trustExpiryTime: BigInt! 
   humanities: [Humanity!]! @derivedFrom(field: "circleAccount")
+}
+
+type RewardClaim @entity(immutable: true) {
+  # humanityID as ID since each humanity can only claim once
+  id: Bytes!
+  claimer: Claimer!
+  amount: BigInt!
+  timestamp: BigInt!
 }
 
 type OutUpdate @entity(immutable: true) {
