@@ -268,6 +268,8 @@ type GlobalAnalytics @entity(immutable: false) {
   id: ID!                              # "global"
   verifiedHumanProfiles: BigInt!       # Current verified count (approximate - doesn't account for expirations)
   airdropClaims: BigInt!               # Cumulative airdrop reward claims
+  seerCreditsBuys: BigInt!             # Cumulative buys made using Seer Credits
+  seerCreditsUsers: BigInt!            # Cumulative unique wallets with at least one Seer Credits buy
   registrationsPending: BigInt!        # Current in Vouching state
   registrationsFunded: BigInt!         # Current in Resolving state (Pending Claim)
   registrationsChallenged: BigInt!     # Current in Disputed state
@@ -284,6 +286,8 @@ type DailyAnalytics @entity(immutable: false) {
   date: BigInt!
   verifiedHumanProfiles: BigInt!       # New verifications that day
   airdropClaims: BigInt!               # New airdrop reward claims that day
+  seerCreditsBuys: BigInt!             # New Seer Credits buys that day
+  seerCreditsUsers: BigInt!            # Unique wallets that bought with Seer Credits that day
   registrationsPending: BigInt!        # New claim submissions that day
   registrationsFunded: BigInt!         # New funded that day
   registrationsChallenged: BigInt!     # New challenges that day
@@ -292,6 +296,14 @@ type DailyAnalytics @entity(immutable: false) {
   registrationsBridged: BigInt!        # New bridged profiles that day
   registrationsWithdrawn: BigInt!      # New withdrawals that day
   renewalsSubmitted: BigInt!           # New renewal submissions that day
+}
+
+type SeerCreditsUser @entity(immutable: true) {
+  id: ID!
+}
+
+type SeerCreditsDailyUser @entity(immutable: true) {
+  id: ID!
 }
 
 type _Schema_

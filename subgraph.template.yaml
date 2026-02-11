@@ -183,6 +183,31 @@ dataSources:
         - event: Claimed(indexed bytes20)
           handler: handleClaimed
   {{/reward-distributor}}
+  {{#seer-credits}}
+  - kind: ethereum
+    name: SeerCredits
+    network: {{network}}
+    source:
+      address: "{{seer-credits}}"
+      abi: SeerCredits
+      startBlock: {{seer-credits-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/seerCredits.ts
+      entities:
+        - GlobalAnalytics
+        - DailyAnalytics
+        - SeerCreditsUser
+        - SeerCreditsDailyUser
+      abis:
+        - name: SeerCredits
+          file: ./abis/SeerCredits.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+  {{/seer-credits}}
   {{#v1-address}}
   - kind: ethereum
     name: ProofOfHumanityOld
