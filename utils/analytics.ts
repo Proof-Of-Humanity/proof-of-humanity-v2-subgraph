@@ -10,6 +10,8 @@ export function getGlobalAnalytics(): GlobalAnalytics {
     analytics = new GlobalAnalytics(GLOBAL_ANALYTICS_ID);
     analytics.verifiedHumanProfiles = ZERO;
     analytics.airdropClaims = ZERO;
+    analytics.seerCreditsBuys = ZERO;
+    analytics.seerCreditsUsers = ZERO;
     analytics.registrationsPending = ZERO;
     analytics.registrationsFunded = ZERO;
     analytics.registrationsChallenged = ZERO;
@@ -32,6 +34,8 @@ export function getDailyAnalytics(timestamp: BigInt): DailyAnalytics {
     analytics.date = dayId;
     analytics.verifiedHumanProfiles = ZERO;
     analytics.airdropClaims = ZERO;
+    analytics.seerCreditsBuys = ZERO;
+    analytics.seerCreditsUsers = ZERO;
     analytics.registrationsPending = ZERO;
     analytics.registrationsFunded = ZERO;
     analytics.registrationsChallenged = ZERO;
@@ -53,7 +57,7 @@ export class AnalyticsUtil {
 
     global.registrationsSubmitted = global.registrationsSubmitted.plus(ONE);
     global.registrationsPending = global.registrationsPending.plus(ONE);
-    
+
     daily.registrationsSubmitted = daily.registrationsSubmitted.plus(ONE);
     daily.registrationsPending = daily.registrationsPending.plus(ONE);
 
@@ -68,7 +72,7 @@ export class AnalyticsUtil {
 
     global.renewalsSubmitted = global.renewalsSubmitted.plus(ONE);
     global.registrationsPending = global.registrationsPending.plus(ONE);
-    
+
     daily.renewalsSubmitted = daily.renewalsSubmitted.plus(ONE);
     daily.registrationsPending = daily.registrationsPending.plus(ONE);
 
@@ -84,7 +88,7 @@ export class AnalyticsUtil {
 
     global.registrationsPending = global.registrationsPending.minus(ONE);
     global.registrationsFunded = global.registrationsFunded.plus(ONE);
-    
+
     daily.registrationsFunded = daily.registrationsFunded.plus(ONE);
 
     global.save();
@@ -99,7 +103,7 @@ export class AnalyticsUtil {
 
     global.registrationsFunded = global.registrationsFunded.minus(ONE);
     global.registrationsChallenged = global.registrationsChallenged.plus(ONE);
-    
+
     daily.registrationsChallenged = daily.registrationsChallenged.plus(ONE);
 
     global.save();
@@ -161,7 +165,7 @@ export class AnalyticsUtil {
 
     global.registrationsChallenged = global.registrationsChallenged.minus(ONE);
     global.registrationsRejected = global.registrationsRejected.plus(ONE);
-    
+
     daily.registrationsRejected = daily.registrationsRejected.plus(ONE);
 
     global.save();
@@ -175,7 +179,7 @@ export class AnalyticsUtil {
 
     global.registrationsPending = global.registrationsPending.minus(ONE);
     global.registrationsWithdrawn = global.registrationsWithdrawn.plus(ONE);
-    
+
     daily.registrationsWithdrawn = daily.registrationsWithdrawn.plus(ONE);
 
     global.save();
