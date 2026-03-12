@@ -4,6 +4,8 @@ import { HumanityEvent, Request } from "../generated/schema";
 export namespace HumanityEventTypeUtil {
   export const requestCreated = "REQUEST_CREATED";
   export const requestEnteredReview = "REQUEST_ENTERED_REVIEW";
+  export const requestVouchAdded = "REQUEST_VOUCH_ADDED";
+  export const requestVouchRemoved = "REQUEST_VOUCH_REMOVED";
   export const requestChallenged = "REQUEST_CHALLENGED";
   export const requestAppealCreated = "REQUEST_APPEAL_CREATED";
   export const requestResolvedAccepted = "REQUEST_RESOLVED_ACCEPTED";
@@ -33,6 +35,7 @@ export const createHumanityEvent = (
   humanityId: Bytes,
   request: Request | null = null,
   transferHash: Bytes | null = null,
+  voucher: Bytes | null = null,
   appealRound: BigInt | null = null,
   includeRevocation: boolean = false,
   revocation: boolean = false,
@@ -49,6 +52,10 @@ export const createHumanityEvent = (
 
   if (transferHash) {
     event.transferHash = transferHash;
+  }
+
+  if (voucher) {
+    event.voucher = voucher;
   }
 
   if (appealRound) {
@@ -72,6 +79,7 @@ export const createHumanityCallEvent = (
   humanityId: Bytes,
   request: Request | null = null,
   transferHash: Bytes | null = null,
+  voucher: Bytes | null = null,
   appealRound: BigInt | null = null,
   includeRevocation: boolean = false,
   revocation: boolean = false,
@@ -88,6 +96,10 @@ export const createHumanityCallEvent = (
 
   if (transferHash) {
     event.transferHash = transferHash;
+  }
+
+  if (voucher) {
+    event.voucher = voucher;
   }
 
   if (appealRound) {

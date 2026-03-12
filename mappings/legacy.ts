@@ -254,6 +254,7 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
     request,
     null,
     null,
+    null,
     true,
     true,
   );
@@ -278,6 +279,20 @@ export function handleVouchAdded(event: VouchAdded): void {
 
   claimer.nbVouchesReceived = claimer.nbVouchesReceived.plus(ONE);
   claimer.save();
+
+  const request = claimer.currentRequest
+    ? (Request.load(claimer.currentRequest as Bytes) as Request | null)
+    : null;
+  if (request == null || request.status != StatusUtil.vouching) return;
+
+  createHumanityEvent(
+    event,
+    HumanityEventTypeUtil.requestVouchAdded,
+    request.humanity,
+    request,
+    null,
+    voucher.id,
+  );
 }
 
 export function handleVouchRemoved(event: VouchRemoved): void {
@@ -294,6 +309,20 @@ export function handleVouchRemoved(event: VouchRemoved): void {
   store.remove("Vouch", vouchId.toHexString());
   claimer.nbVouchesReceived = claimer.nbVouchesReceived.minus(ONE);
   claimer.save();
+
+  const request = claimer.currentRequest
+    ? (Request.load(claimer.currentRequest as Bytes) as Request | null)
+    : null;
+  if (request == null || request.status != StatusUtil.vouching) return;
+
+  createHumanityEvent(
+    event,
+    HumanityEventTypeUtil.requestVouchRemoved,
+    request.humanity,
+    request,
+    null,
+    voucher.id,
+  );
 }
 
 export function withdrawSubmissionLegacy(call: WithdrawSubmissionCall): void {
@@ -438,6 +467,7 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
     request,
     null,
     null,
+    null,
     false,
     false,
     challenge.disputeId,
@@ -513,6 +543,7 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
     HumanityEventTypeUtil.requestResolvedAccepted,
     humanity.id,
     request,
+    null,
     null,
     null,
     true,
@@ -624,6 +655,7 @@ export function handleRuling(ev: RulingEv): void {
       HumanityEventTypeUtil.requestResolvedRejected,
       humanity.id,
       request,
+      null,
       null,
       null,
       true,

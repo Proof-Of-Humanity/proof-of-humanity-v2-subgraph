@@ -293,6 +293,7 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
     request,
     null,
     null,
+    null,
     true,
     true,
   );
@@ -318,6 +319,20 @@ export function handleVouchAdded(ev: VouchAdded): void {
 
   claimer.nbVouchesReceived = claimer.nbVouchesReceived.plus(ONE);
   claimer.save();
+
+  const request = claimer.currentRequest
+    ? (Request.load(claimer.currentRequest as Bytes) as Request | null)
+    : null;
+  if (request == null || request.status != StatusUtil.vouching) return;
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestVouchAdded,
+    humanity.id,
+    request,
+    null,
+    voucher.id,
+  );
 }
 
 export function handleVouchRemoved(ev: VouchRemoved): void {
@@ -333,6 +348,20 @@ export function handleVouchRemoved(ev: VouchRemoved): void {
 
   claimer.nbVouchesReceived = claimer.nbVouchesReceived.minus(ONE);
   claimer.save();
+
+  const request = claimer.currentRequest
+    ? (Request.load(claimer.currentRequest as Bytes) as Request | null)
+    : null;
+  if (request == null || request.status != StatusUtil.vouching) return;
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestVouchRemoved,
+    humanity.id,
+    request,
+    null,
+    voucher.id,
+  );
 }
 
 export function handleRequestWithdrawn(ev: RequestWithdrawn): void {
@@ -445,6 +474,7 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
     request,
     null,
     null,
+    null,
     false,
     false,
     ev.params.disputeId,
@@ -502,6 +532,7 @@ export function handleRuling(ev: Ruling): void {
       request,
       null,
       null,
+      null,
       true,
       request.revocation,
     );
@@ -534,6 +565,7 @@ export function handleAppealCreated(ev: AppealCreated): void {
     HumanityEventTypeUtil.requestAppealCreated,
     request.humanity,
     request,
+    null,
     null,
     challenge.nbRounds,
     false,
@@ -606,6 +638,7 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
     HumanityEventTypeUtil.requestResolvedAccepted,
     humanity.id,
     request,
+    null,
     null,
     null,
     true,
