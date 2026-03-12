@@ -229,6 +229,8 @@ type InTransfer @entity(immutable: true) {
 enum HumanityEventType {
   REQUEST_CREATED
   REQUEST_ENTERED_REVIEW
+  REQUEST_VOUCH_ADDED
+  REQUEST_VOUCH_REMOVED
   REQUEST_CHALLENGED
   REQUEST_APPEAL_CREATED
   REQUEST_RESOLVED_ACCEPTED
@@ -245,6 +247,7 @@ type HumanityEvent @entity(immutable: true) {
   type: HumanityEventType!
   requestIndex: BigInt
   transferHash: Bytes
+  voucher: Bytes
   disputeId: BigInt
   appealRound: BigInt
   revocation: Boolean
