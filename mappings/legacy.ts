@@ -32,6 +32,11 @@ import {
 import { Factory, LEGACY_FLAG, getPreviousNonRevoked } from "../utils";
 import { biToBytes, hash } from "../utils/misc";
 import { ZERO, ONE, TWO } from "../utils/constants";
+import {
+  HumanityEventTypeUtil,
+  createHumanityCallEvent,
+  createHumanityEvent,
+} from "../utils/events";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
 
 // V1 end block - after this block, only process withdrawSubmissionLegacy
@@ -106,13 +111,26 @@ export function addSubmissionManuallyLegacy(
     request.lastStatusChange = call.block.timestamp;
     request.status = StatusUtil.resolved;
     request.winnerParty = PartyUtil.requester;
-    
+
     const registration = Factory.Registration(humanity.id, submissionId);
     registration.expirationTime = call.block.timestamp.plus(submissionDuration);
     registration.save();
-    
+
     request.expirationTime = registration.expirationTime;
     request.save();
+
+    createHumanityCallEvent(
+      call,
+      HumanityEventTypeUtil.requestCreated,
+      humanity.id,
+      request,
+    );
+    createHumanityCallEvent(
+      call,
+      HumanityEventTypeUtil.requestResolvedAccepted,
+      humanity.id,
+      request,
+    );
 
     claimer.currentRequest = request.id;
     claimer.save();
@@ -144,6 +162,13 @@ export function addSubmissionLegacy(call: AddSubmissionCall): void {
   request.lastStatusChange = call.block.timestamp;
   request.save();
 
+  createHumanityCallEvent(
+    call,
+    HumanityEventTypeUtil.requestCreated,
+    humanity.id,
+    request,
+  );
+
   claimer.currentRequest = request.id;
   claimer.save();
 
@@ -169,6 +194,13 @@ export function reapplySubmissionLegacy(call: ReapplySubmissionCall): void {
   request.creationTime = call.block.timestamp;
   request.lastStatusChange = call.block.timestamp;
   request.save();
+
+  createHumanityCallEvent(
+    call,
+    HumanityEventTypeUtil.requestCreated,
+    humanity.id,
+    request,
+  );
 
   claimer.currentRequest = request.id;
   claimer.save();
@@ -202,9 +234,9 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
   request.lastStatusChange = call.block.timestamp;
 
   const revokedReq = getPreviousNonRevoked(humanity.id, humanity.nbLegacyRequests.minus(ONE).neg());
-  const evidence = Evidence.load(hash(revokedReq!.evidenceGroup.concat(biToBytes(ZERO)))); 
+  const evidence = Evidence.load(hash(revokedReq!.evidenceGroup.concat(biToBytes(ZERO))));
   // The first (ZERO) piece of evidence is the registration one
-  
+
   if (revokedReq != null) {
     const evId = hash(revokedReq.evidenceGroup.concat(biToBytes(ZERO)));
     const evidence = Evidence.load(evId);
@@ -214,6 +246,17 @@ export function removeSubmissionLegacy(call: RemoveSubmissionCall): void {
   }
 
   request.save();
+
+  createHumanityCallEvent(
+    call,
+    HumanityEventTypeUtil.requestCreated,
+    humanity.id,
+    request,
+    null,
+    null,
+    true,
+    true,
+  );
 }
 
 export function handleVouchAdded(event: VouchAdded): void {
@@ -260,14 +303,21 @@ export function withdrawSubmissionLegacy(call: WithdrawSubmissionCall): void {
   }
   const claimer = Claimer.load(call.from) as Claimer | null;
   if (!claimer) return;
-  if (!claimer.currentRequest) return; 
+  if (!claimer.currentRequest) return;
 
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
-  if (request.status != StatusUtil.vouching) return; 
+  if (request.status != StatusUtil.vouching) return;
 
   request.status = StatusUtil.withdrawn;
   request.resolutionTime = call.block.timestamp;
   request.save();
+
+  createHumanityCallEvent(
+    call,
+    HumanityEventTypeUtil.requestWithdrawn,
+    request.humanity,
+    request,
+  );
 
   claimer.currentRequest = null;
   claimer.save();
@@ -286,6 +336,13 @@ export function changeStateToPendingLegacy(
   request.lastStatusChange = call.block.timestamp;
   request.status = StatusUtil.resolving;
   request.save();
+
+  createHumanityCallEvent(
+    call,
+    HumanityEventTypeUtil.requestEnteredReview,
+    request.humanity,
+    request,
+  );
 
   const humanity = Humanity.load(call.inputs._submissionID) as Humanity;
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
@@ -333,7 +390,7 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.status = StatusUtil.disputed;
 
-  const reason = ReasonUtil.parse(call.inputs._reason);  
+  const reason = ReasonUtil.parse(call.inputs._reason);
   var challenge: Challenge | null = null;
   const challengedReqId = claimer.currentRequest as Bytes;
   const challengeId = hash(challengedReqId.concat(biToBytes(request.nbChallenges)));
@@ -357,7 +414,7 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
 
   const poh = ProofOfHumanityOld.bind(call.to);
 
-  const challengeInfo = poh.getChallengeInfo(call.inputs._submissionID, request.index.plus(ONE).abs(), request.nbChallenges); 
+  const challengeInfo = poh.getChallengeInfo(call.inputs._submissionID, request.index.plus(ONE).abs(), request.nbChallenges);
 
   challenge.index = request.nbChallenges;
   challenge.ruling = PartyUtil.parse(challengeInfo.getRuling());
@@ -371,8 +428,20 @@ export function challengeRequestLegacy(call: ChallengeRequestCall): void {
   challenge.save();
 
   request.nbChallenges = request.nbChallenges.plus(ONE);
-  
+
   request.save();
+
+  createHumanityCallEvent(
+    call,
+    HumanityEventTypeUtil.requestChallenged,
+    request.humanity,
+    request,
+    null,
+    null,
+    false,
+    false,
+    challenge.disputeId,
+  );
 }
 
 export function executeRequestLegacy(call: ExecuteRequestCall): void {
@@ -419,11 +488,11 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
     const revocationRequest = Request.load(
       hash(
         humanity.id
-        .concat(
-          biToBytes(
-            humanity.nbLegacyRequests.minus(ONE)
-          )
-        ).concat(LEGACY_FLAG)
+          .concat(
+            biToBytes(
+              humanity.nbLegacyRequests.minus(ONE)
+            )
+          ).concat(LEGACY_FLAG)
       )
     ) as Request;
     revocationRequest.status = StatusUtil.resolved;
@@ -438,6 +507,17 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
     ])
   }
   request.save();
+
+  createHumanityCallEvent(
+    call,
+    HumanityEventTypeUtil.requestResolvedAccepted,
+    humanity.id,
+    request,
+    null,
+    null,
+    true,
+    request.revocation,
+  );
 }
 
 export function handleRuling(ev: RulingEv): void {
@@ -458,16 +538,16 @@ export function handleRuling(ev: RulingEv): void {
   const request = Request.load(
     hash(
       humanity.id
-      .concat(
-        biToBytes(
-          humanity.nbLegacyRequests.minus(ONE)
-        )
-      ).concat(LEGACY_FLAG)
+        .concat(
+          biToBytes(
+            humanity.nbLegacyRequests.minus(ONE)
+          )
+        ).concat(LEGACY_FLAG)
     )
   ) as Request;
   request.resolutionTime = ev.block.timestamp;
   request.status = StatusUtil.resolved;
-  request.winnerParty = ruling; 
+  request.winnerParty = ruling;
 
   const claimer = Claimer.load(request.claimer) as Claimer | null;
   var challenge: Challenge | null = null;
@@ -487,14 +567,14 @@ export function handleRuling(ev: RulingEv): void {
       }
     }
     disputedRequest.save();
-    
+
     log.warning("DisputeID x CurrentReq: Humanity ID: {}. ReqID: {}. ", [
       humanity.id.toHex(),
       request.id.toHex()
     ])
   }
 
-  if (challenge != null) { 
+  if (challenge != null) {
     challenge.ruling = ruling;
     challenge.save();
   } else {
@@ -518,9 +598,9 @@ export function handleRuling(ev: RulingEv): void {
       request.winnerParty = PartyUtil.requester;
     }
   } else if (ruling == PartyUtil.challenger) {
-      if (challenge != null) {
-        request.ultimateChallenger = challenge.challenger;
-      }
+    if (challenge != null) {
+      request.ultimateChallenger = challenge.challenger;
+    }
     request.winnerParty = PartyUtil.challenger;
   } else if (submissionInfo.getRegistered()) {
     const registration = Factory.Registration(
@@ -537,18 +617,31 @@ export function handleRuling(ev: RulingEv): void {
 
   request.save();
   humanity.save();
+
+  if (ruling == PartyUtil.challenger) {
+    createHumanityEvent(
+      ev,
+      HumanityEventTypeUtil.requestResolvedRejected,
+      humanity.id,
+      request,
+      null,
+      null,
+      true,
+      request.revocation,
+    );
+  }
 }
 
 export function processVouchesLegacy(call: ProcessVouchesCall): void {
   if (!shouldProcessEvent(call.block.number)) {
     return;
   }
-  const request = Request.load( 
+  const request = Request.load(
     hash(
       call.inputs._submissionID
-      .concat(
-        biToBytes(call.inputs._requestID.abs())
-      ).concat(LEGACY_FLAG)
+        .concat(
+          biToBytes(call.inputs._requestID.abs())
+        ).concat(LEGACY_FLAG)
     )
   ) as Request;
   const vouches = request.vouches.load();
@@ -581,13 +674,13 @@ export function handleEvidence(ev: EvidenceEv): void {
   const evGroupIdRaw = BigInt.fromByteArray(
     Bytes.fromUint8Array(
       ByteArray.fromBigInt(ev.params._evidenceGroupID)
-      .slice(0, 20)
-      .reverse()
+        .slice(0, 20)
+        .reverse()
     )
   );
-  const evGroupId = Bytes.fromUint8Array( 
+  const evGroupId = Bytes.fromUint8Array(
     biToBytes(
-      evGroupIdRaw, 
+      evGroupIdRaw,
       20
     )
   );
@@ -603,7 +696,7 @@ export function handleEvidence(ev: EvidenceEv): void {
   evidence.submitter = ev.transaction.from;
   evidence.save();
 
-  group.length = group.length.plus(ONE); 
+  group.length = group.length.plus(ONE);
   group.save();
 
 }
