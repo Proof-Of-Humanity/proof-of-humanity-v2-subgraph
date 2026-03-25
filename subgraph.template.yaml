@@ -30,6 +30,7 @@ dataSources:
         - Contribution
         - Evidence
         - Counter
+        - HumanityEvent
       abis:
         - name: ProofOfHumanity
           file: ./abis/ProofOfHumanity.json
@@ -115,6 +116,7 @@ dataSources:
         - CrossChainHumanity
         - OutTransfer
         - InTransfer
+        - HumanityEvent
       abis:
         - name: CrossChainProofOfHumanity
           file: ./abis/CrossChainProofOfHumanity.json
@@ -205,6 +207,7 @@ dataSources:
         - Vouch
         - Evidence
         - Counter
+        - HumanityEvent
       abis:
         - name: ProofOfHumanityOld
           file: ./abis/ProofOfHumanityOld.json

@@ -100,6 +100,7 @@ type Request @entity(immutable: false) {
   contributors: [Bytes!]!
   registrationEvidenceRevokedReq: String!
   expirationTime: BigInt
+  inTransferHash: Bytes
 }
 
 type Challenger @entity(immutable: false) {
@@ -223,6 +224,33 @@ type InTransfer @entity(immutable: true) {
   # transfer hash
   id: Bytes!
   humanityId: Bytes!
+}
+
+enum HumanityEventType {
+  REQUEST_CREATED
+  REQUEST_ENTERED_REVIEW
+  REQUEST_VOUCH_ADDED
+  REQUEST_VOUCH_REMOVED
+  REQUEST_CHALLENGED
+  REQUEST_APPEAL_CREATED
+  REQUEST_RESOLVED_ACCEPTED
+  REQUEST_RESOLVED_REJECTED
+  REQUEST_WITHDRAWN
+  TRANSFER_INITIATED
+  TRANSFER_RECEIVED
+}
+
+type HumanityEvent @entity(immutable: true) {
+  id: ID!
+  humanityId: Bytes!
+  timestamp: BigInt!
+  type: HumanityEventType!
+  requestIndex: BigInt
+  transferHash: Bytes
+  voucher: Bytes
+  disputeId: BigInt
+  appealRound: BigInt
+  revocation: Boolean
 }
 
 type CrossChainGateway @entity(immutable: false) {
