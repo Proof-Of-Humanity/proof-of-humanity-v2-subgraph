@@ -20,6 +20,7 @@ import {
 } from "../generated/schema";
 import { ONE, ZERO } from "../utils/constants";
 import { Factory } from "../utils";
+import { HumanityEventTypeUtil, createHumanityEvent } from "../utils/events";
 import { PartyUtil, StatusUtil } from "../utils/enums";
 import { biToBytes, hash } from "../utils/misc";
 
@@ -118,6 +119,14 @@ export function handleTransferInitiated(ev: TransferInitiated): void {
         request.lastStatusChange = ev.block.timestamp;
         request.status = StatusUtil.transferred;
         request.save();
+
+        createHumanityEvent(
+          ev,
+          HumanityEventTypeUtil.transferInitiated,
+          humanity.id,
+          request,
+          ev.params.transferHash,
+        );
       }
     }
   }
@@ -141,8 +150,17 @@ export function handleTransferReceived(ev: TransferReceived): void {
   request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
   request.expirationTime = ev.params.expirationTime;
+  request.inTransferHash = ev.params.transferHash;
   
   request.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.transferReceived,
+    humanity.id,
+    request,
+    ev.params.transferHash,
+  );
 
   claimer.currentRequest = request.id;
   claimer.save();

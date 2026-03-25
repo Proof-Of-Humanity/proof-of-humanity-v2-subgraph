@@ -46,6 +46,7 @@ import {
 } from "../generated/schema";
 import { getContract, Factory, getPreviousNonRevoked } from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
+import { HumanityEventTypeUtil, createHumanityEvent } from "../utils/events";
 import { biToBytes, hash } from "../utils/misc";
 import { ProofOfHumanity } from "../utils/hardcoded";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
@@ -137,7 +138,7 @@ export function handleRequiredNumberOfVouchesChanged(
 
 export function handleArbitratorChanged(ev: ArbitratorChanged): void {
   const contract = getContract();
-  
+
   const prevArbitratorHistory = ArbitratorHistory.load(
     contract.latestArbitratorHistory as string
   ) as ArbitratorHistory;
@@ -153,7 +154,7 @@ export function handleArbitratorChanged(ev: ArbitratorChanged): void {
   arbitratorHistory.arbitrator = ev.params.arbitrator;
   arbitratorHistory.extraData = ev.params.arbitratorExtraData;
   arbitratorHistory.save();
-  
+
   contract.latestArbitratorHistory = arbitratorHistory.id;
   contract.save();
 }
@@ -197,6 +198,13 @@ export function handleClaimRequest(ev: ClaimRequest): void {
 
   humanity.nbRequests = humanity.nbRequests.plus(ONE);
   humanity.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestCreated,
+    humanity.id,
+    request,
+  );
 }
 
 export function handleRenewalRequest(ev: RenewalRequest): void {
@@ -216,6 +224,13 @@ export function handleRenewalRequest(ev: RenewalRequest): void {
 
   humanity.nbRequests = humanity.nbRequests.plus(ONE);
   humanity.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestCreated,
+    humanity.id,
+    request,
+  );
 }
 
 export function handleRevocationRequest(ev: RevocationRequest): void {
@@ -270,6 +285,18 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
   humanity.nbRequests = humanity.nbRequests.plus(ONE);
   humanity.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestCreated,
+    humanity.id,
+    request,
+    null,
+    null,
+    null,
+    true,
+    true,
+  );
 }
 
 export function handleVouchAdded(ev: VouchAdded): void {
@@ -292,6 +319,20 @@ export function handleVouchAdded(ev: VouchAdded): void {
 
   claimer.nbVouchesReceived = claimer.nbVouchesReceived.plus(ONE);
   claimer.save();
+
+  const request = claimer.currentRequest
+    ? (Request.load(claimer.currentRequest as Bytes) as Request | null)
+    : null;
+  if (request == null || request.status != StatusUtil.vouching) return;
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestVouchAdded,
+    humanity.id,
+    request,
+    null,
+    voucher.id,
+  );
 }
 
 export function handleVouchRemoved(ev: VouchRemoved): void {
@@ -307,16 +348,37 @@ export function handleVouchRemoved(ev: VouchRemoved): void {
 
   claimer.nbVouchesReceived = claimer.nbVouchesReceived.minus(ONE);
   claimer.save();
+
+  const request = claimer.currentRequest
+    ? (Request.load(claimer.currentRequest as Bytes) as Request | null)
+    : null;
+  if (request == null || request.status != StatusUtil.vouching) return;
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestVouchRemoved,
+    humanity.id,
+    request,
+    null,
+    voucher.id,
+  );
 }
 
 export function handleRequestWithdrawn(ev: RequestWithdrawn): void {
   const request = Request.load(
     hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
   ) as Request | null;
-  if (!request) return ;
+  if (!request) return;
   request.status = StatusUtil.withdrawn;
   request.resolutionTime = ev.block.timestamp;
   request.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestWithdrawn,
+    request.humanity,
+    request,
+  );
 
   const claimer = Claimer.load(request.requester) as Claimer;
   claimer.currentRequest = null;
@@ -366,6 +428,13 @@ export function handleStateAdvanced(ev: StateAdvanced): void {
   request.status = StatusUtil.resolving;
   request.save();
 
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestEnteredReview,
+    request.humanity,
+    request,
+  );
+
   const humanity = Humanity.load(request.humanity) as Humanity;
   humanity.nbPendingRequests = humanity.nbPendingRequests.plus(ONE);
   humanity.save();
@@ -384,7 +453,7 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
     challenger = new Challenger(ev.transaction.from);
     challenger.save();
   }
-  
+
   const challenge = Challenge.load(
     hash(request.id.concat(biToBytes(request.nbChallenges)))
   ) as Challenge;
@@ -397,6 +466,19 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
 
   request.nbChallenges = request.nbChallenges.plus(ONE);
   request.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestChallenged,
+    request.humanity,
+    request,
+    null,
+    null,
+    null,
+    false,
+    false,
+    ev.params.disputeId,
+  );
 
   // const round = challenge.rounds.load().at(-1);
   // round.creationTime = ev.block.timestamp;
@@ -442,6 +524,19 @@ export function handleRuling(ev: Ruling): void {
 
   request.save();
   humanity.save();
+  if (ruling == PartyUtil.challenger) {
+    createHumanityEvent(
+      ev,
+      HumanityEventTypeUtil.requestResolvedRejected,
+      humanity.id,
+      request,
+      null,
+      null,
+      null,
+      true,
+      request.revocation,
+    );
+  }
 }
 
 export function handleAppealCreated(ev: AppealCreated): void {
@@ -464,6 +559,19 @@ export function handleAppealCreated(ev: AppealCreated): void {
   ) as Round;
   round.creationTime = ev.block.timestamp;
   round.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestAppealCreated,
+    request.humanity,
+    request,
+    null,
+    null,
+    challenge.nbRounds,
+    false,
+    false,
+    challenge.disputeId,
+  );
 
   challenge.nbRounds = challenge.nbRounds.plus(ONE);
   challenge.save();
@@ -499,6 +607,13 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
 
   humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
   humanity.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestResolvedAccepted,
+    humanity.id,
+    request,
+  );
 }
 
 export function handleHumanityRevoked(ev: HumanityRevoked): void {
@@ -517,6 +632,18 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
 
   humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
   humanity.save();
+
+  createHumanityEvent(
+    ev,
+    HumanityEventTypeUtil.requestResolvedAccepted,
+    humanity.id,
+    request,
+    null,
+    null,
+    null,
+    true,
+    true,
+  );
 }
 
 export function handleVouchesProcessed(ev: VouchesProcessed): void {
