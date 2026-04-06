@@ -509,6 +509,7 @@ export function handleRuling(ev: Ruling): void {
     hash(humanity.id.concat(biToBytes(disputeData.getRequestId())))
   ) as Request;
   request.resolutionTime = ev.block.timestamp;
+  request.lastStatusChange = ev.block.timestamp;
   request.status = StatusUtil.resolved;
   request.winnerParty = ruling;
 
@@ -524,7 +525,7 @@ export function handleRuling(ev: Ruling): void {
 
   request.save();
   humanity.save();
-  if (ruling == PartyUtil.challenger) {
+  if (ruling != PartyUtil.requester) {
     createHumanityEvent(
       ev,
       HumanityEventTypeUtil.requestResolvedRejected,

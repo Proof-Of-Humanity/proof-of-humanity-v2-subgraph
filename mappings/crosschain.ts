@@ -83,6 +83,8 @@ export function handleTransferInitiated(ev: TransferInitiated): void {
   let transfer = OutTransfer.load(ev.params.humanityId);
   if (transfer == null) transfer = new OutTransfer(ev.params.humanityId);
   transfer.transferHash = ev.params.transferHash;
+  transfer.txHash = ev.transaction.hash;
+  transfer.logIndex = ev.logIndex;
   transfer.transferTimestamp = ev.block.timestamp;
   transfer.foreignProxy = (CrossChainGateway.load(
     ev.params.gateway
