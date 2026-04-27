@@ -426,6 +426,9 @@ export function handleStateAdvanced(ev: StateAdvanced): void {
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.lastStatusChange = ev.block.timestamp;
   request.status = StatusUtil.resolving;
+  request.challengePeriodEnd = ev.block.timestamp.plus(
+    getContract().challengePeriodDuration
+  );
   request.save();
 
   createHumanityEvent(
@@ -491,6 +494,9 @@ export function handleChallengePeriodRestart(ev: ChallengePeriodRestart): void {
   ) as Request;
   request.status = StatusUtil.resolving;
   request.lastStatusChange = ev.block.timestamp;
+  request.challengePeriodEnd = ev.block.timestamp.plus(
+    getContract().challengePeriodDuration
+  );
   request.save();
 }
 
