@@ -13,8 +13,11 @@
     "credits-manager": "0xB29D0C9875D93483891c0645fdC13D665a4d2D70",
     "foresight-router": "0xeC9048b59b3467415b1a38F63416407eA0c70fB8",
     "foresight-market": "0x6f7ae2815e7e13c14a6560f4b382ae78e7b1493e",
+    "foresight-market-condition-id": "0x0d6c99d7eb9fa657236905b6cf464eaa938371ae5ce8cf153af450321377241d",
+    "foresight-market-question-id": "0x02a0dd29b39078e2ff1ac596d63ac971268d9f6586b159d430603c60cbeef08c",
     "foresight-conditional-tokens": "0xCeAfDD6bc0bEF976fdCd1112955828E00543c0Ce",
     "foresight-credits": "0x09E7014D2c15Eb8C5ee25853FE6842FF5E2c94f9",
     "foresight-credits-manager": "0x17592eFE59a318A6B0AFE32145ee04eAFeeA8A61",
-    "foresight-start-block": 42439735
+    "foresight-sdai": "0xaf204776c7245bF4147c2612BF6e5972Ee483701",
+    "foresight-start-block": 45045000
 }

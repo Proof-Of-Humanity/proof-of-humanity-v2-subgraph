@@ -320,10 +320,3 @@ type ForesightCreditUse @entity(immutable: true) {
   timestamp: BigInt!
 }
 
-type _Schema_
-  @fulltext(
-    name: "submissionSearch"
-    language: en
-    algorithm: rank
-    include: [{ entity: "Claimer", fields: [{ name: "name" }] }]
-  )

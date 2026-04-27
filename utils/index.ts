@@ -16,9 +16,12 @@ export const LEGACY_FLAG = Bytes.fromUTF8("legacy");
 export const BRIDGED_FLAG = Bytes.fromUTF8("bridged");
 
 function getLatestArbitratorHistory(): string {
-  const arbitratorHistory: ArbitratorHistory = 
-    ArbitratorHistory.load("legacy#" + ZERO.toString()) as ArbitratorHistory;
-  return arbitratorHistory.id as string;
+  let arbitratorHistory = ArbitratorHistory.load(ZERO.toString());
+  if (arbitratorHistory == null) {
+    arbitratorHistory = ArbitratorHistory.load("legacy#" + ZERO.toString());
+  }
+
+  return (arbitratorHistory as ArbitratorHistory).id as string;
 }
 
 export function getContract(): Contract {

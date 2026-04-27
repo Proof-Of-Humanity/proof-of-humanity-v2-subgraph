@@ -8,11 +8,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: ProofOfHumanity
-    network: sepolia
+    network: gnosis
     source:
-      address: "0x44297C64e651E07e83215997D89aEE297a0AFebA"
+      address: "0xa4AC94C4fa65Bb352eFa30e3408e64F72aC857bc"
       abi: ProofOfHumanity
-      startBlock: 7460633
+      startBlock: 35846827
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -30,6 +30,8 @@ dataSources:
         - Contribution
         - Evidence
         - Counter
+        - GlobalAnalytics
+        - DailyAnalytics
       abis:
         - name: ProofOfHumanity
           file: ./abis/ProofOfHumanity.json
@@ -88,11 +90,11 @@ dataSources:
           handler: handleFeesAndRewardsWithdrawn
   - kind: ethereum
     name: CrossChainProofOfHumanity
-    network: sepolia
+    network: gnosis
     source:
-      address: "0x5142177398E94ce45b19c59cBA5d3d71a1c34202"
+      address: "0x16044E1063C08670f8653055A786b7CC2034d2b0"
       abi: CrossChainProofOfHumanity
-      startBlock: 7461609
+      startBlock: 35846905
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -114,6 +116,8 @@ dataSources:
         - CrossChainHumanity
         - OutTransfer
         - InTransfer
+        - GlobalAnalytics
+        - DailyAnalytics
       abis:
         - name: CrossChainProofOfHumanity
           file: ./abis/CrossChainProofOfHumanity.json
@@ -131,12 +135,38 @@ dataSources:
         - event: TransferReceived(indexed bytes20,indexed address,uint40,bytes32)
           handler: handleTransferReceived
   - kind: ethereum
-    name: RewardDistributor
-    network: sepolia
+    name: ProofOfHumanityCirclesProxy
+    network: gnosis
     source:
-      address: "0xbe372A981fCFa743C02C7ddeee728e5eD74Ea11E"
+      address: "0xf49aB03E980BD27ecf9352cAF4A65921DD70a554"
+      abi: ProofOfHumanityCirclesProxy
+      startBlock: 43089534
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/circlesProxy.ts
+      entities:
+        - CirclesAccount
+      abis:
+        - name: ProofOfHumanityCirclesProxy
+          file: ./abis/ProofOfHumanityCirclesProxy.json
+      eventHandlers:
+        - event: AccountRegistered(indexed bytes20,indexed address,uint40,uint96)
+          handler: handleAccountRegistered
+        - event: TrustRenewed(indexed bytes20,indexed address,uint96)
+          handler: handleTrustRenewed
+        - event: TrustReEvaluationBatchProcessed(indexed address,uint256,uint256)
+          handler: handleTrustReEvaluationBatchProcessed
+        - event: TrustReEvaluationCompleted(indexed address,uint96)
+          handler: handleTrustReEvaluationCompleted
+  - kind: ethereum
+    name: RewardDistributor
+    network: gnosis
+    source:
+      address: "0x906113115C0A691F7E78dB91083EFfCD415Cb978"
       abi: RewardDistributor
-      startBlock: 7461609
+      startBlock: 44279764
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -145,6 +175,8 @@ dataSources:
       entities:
         - RewardClaim
         - Claimer
+        - GlobalAnalytics
+        - DailyAnalytics
       abis:
         - name: RewardDistributor
           file: ./abis/RewardDistributor.json
@@ -152,58 +184,86 @@ dataSources:
         - event: Claimed(indexed bytes20)
           handler: handleClaimed
   - kind: ethereum
-    name: ProofOfHumanityOld
-    network: sepolia
+    name: SeerCredits
+    network: gnosis
     source:
-      address: "0xDC605c9094cDdF2af1704c25D7D69A97a08c7E30"
-      abi: ProofOfHumanityOld
-      startBlock: 6198787
+      address: "0xEDd48e43EBd4E2b31238a5CBA8FD548fC051aCAF"
+      abi: SeerCredits
+      startBlock: 42439735
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      file: ./mappings/legacy.ts
+      file: ./mappings/seerCredits.ts
       entities:
-        - Contract
-        - ArbitratorData
-        - Soul
-        - Claimer
-        - Request
-        - Vouch
-        - Evidence
-        - Counter
+        - GlobalAnalytics
+        - DailyAnalytics
+        - HumanAnalyticsProfile
       abis:
-        - name: ProofOfHumanityOld
-          file: ./abis/ProofOfHumanityOld.json
+        - name: SeerCredits
+          file: ./abis/SeerCredits.json
       eventHandlers:
-        - event: MetaEvidence(indexed uint256,string)
-          handler: handleMetaEvidence
-        - event: VouchAdded(indexed address,indexed address)
-          handler: handleVouchAdded
-        - event: VouchRemoved(indexed address,indexed address)
-          handler: handleVouchRemoved
-        - event: Ruling(indexed address,indexed uint256,uint256)
-          handler: handleRuling
-        - event: Evidence(indexed address,indexed uint256,indexed address,string)
-          handler: handleEvidence
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+  - kind: ethereum
+    name: ForesightGnosisRouter
+    network: gnosis
+    source:
+      address: "0xeC9048b59b3467415b1a38F63416407eA0c70fB8"
+      abi: GnosisRouter
+      startBlock: 42439735
+    mapping:
+      kind: ethereum/calls
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/foresight.ts
+      entities:
+        - GlobalAnalytics
+        - ForesightTrade
+        - HumanAnalyticsProfile
+      abis:
+        - name: GnosisRouter
+          file: ./abis/GnosisRouter.json
+        - name: TradeExecutor
+          file: ./abis/TradeExecutor.json
+        - name: CrossChainProofOfHumanity
+          file: ./abis/CrossChainProofOfHumanity.json
       callHandlers:
-        - function: addSubmissionManually(address[],string[],string[])
-          handler: addSubmissionManuallyLegacy
-        - function: removeSubmissionManually(address)
-          handler: removeSubmissionManuallyLegacy
-        - function: addSubmission(string,string)
-          handler: addSubmissionLegacy
-        - function: reapplySubmission(string,string)
-          handler: reapplySubmissionLegacy
-        - function: removeSubmission(address,string)
-          handler: removeSubmissionLegacy
-        - function: withdrawSubmission()
-          handler: withdrawSubmissionLegacy
-        - function: changeStateToPending(address,address[],bytes[],uint256[])
-          handler: changeStateToPendingLegacy
-        - function: challengeRequest(address,uint8,address,string)
-          handler: challengeRequestLegacy
-        - function: executeRequest(address)
-          handler: executeRequestLegacy
-        - function: processVouches(address,uint256,uint256)
-          handler: processVouchesLegacy
+        - function: splitFromBase(address)
+          handler: handleSplitFromBase
+        - function: mergeToBase(address,uint256)
+          handler: handleMergeToBase
+        - function: redeemToBase(address,uint256[],uint256[])
+          handler: handleRedeemToBase
+        - function: splitPosition(address,address,uint256)
+          handler: handleSplitPosition
+        - function: mergePositions(address,address,uint256)
+          handler: handleMergePositions
+        - function: redeemPositions(address,address,uint256[],uint256[])
+          handler: handleRedeemPositions
+  - kind: ethereum
+    name: ForesightCredits
+    network: gnosis
+    source:
+      address: "0x09E7014D2c15Eb8C5ee25853FE6842FF5E2c94f9"
+      abi: ForesightCredits
+      startBlock: 42439735
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/foresight.ts
+      entities:
+        - GlobalAnalytics
+        - ForesightCreditUse
+        - HumanAnalyticsProfile
+      abis:
+        - name: ForesightCredits
+          file: ./abis/ERC20Transfer.json
+        - name: TradeExecutor
+          file: ./abis/TradeExecutor.json
+        - name: CrossChainProofOfHumanity
+          file: ./abis/CrossChainProofOfHumanity.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleForesightCreditsTransfer

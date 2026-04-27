@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PoH Local Graph UI</title>
+    <style>
+      :root {
+        --bg: #f5f1e8;
+        --panel: #fffaf1;
+        --ink: #201a14;
+        --muted: #6d6256;
+        --line: #d8cdbd;
+        --accent: #a34c2c;
+        --accent-2: #2d6a5d;
+        --warn: #8f2d2d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        background:
+          radial-gradient(circle at top left, #fff6dc 0, transparent 30%),
+          linear-gradient(180deg, #f2eadb 0%, var(--bg) 100%);
+        color: var(--ink);
+      }
+
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      h1, h2 {
+        margin: 0 0 12px;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .hero {
+        display: grid;
+        gap: 12px;
+        padding: 24px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(32, 26, 20, 0.07);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        background: rgba(255, 250, 241, 0.92);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 8px 24px rgba(32, 26, 20, 0.05);
+      }
+
+      .label {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .value {
+        font-size: 24px;
+        line-height: 1.1;
+        word-break: break-word;
+      }
+
+      .status-ok { color: var(--accent-2); }
+      .status-bad { color: var(--warn); }
+
+      .controls, .endpoints {
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      input, textarea, button {
+        font: inherit;
+      }
+
+      input, textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: #fffdf8;
+        border-radius: 12px;
+        padding: 12px 14px;
+        color: var(--ink);
+      }
+
+      textarea {
+        min-height: 240px;
+        resize: vertical;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 16px;
+        background: var(--accent);
+        color: #fff8f0;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: #ebe0cf;
+        color: var(--ink);
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border: 1px solid var(--line);
+        background: #fffdf8;
+        border-radius: 14px;
+        padding: 14px;
+        min-height: 240px;
+        overflow: auto;
+      }
+
+      .small {
+        font-size: 14px;
+      }
+
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <h1>PoH Local Graph UI</h1>
+        <p>
+          Query the locally running Graph Node and inspect the Foresight slice without
+          using curl manually.
+        </p>
+      </section>
+
+      <section class="grid">
+        <div class="card endpoints">
+          <h2>Endpoints</h2>
+          <label class="label" for="query-endpoint">Query Endpoint</label>
+          <input id="query-endpoint" value="http://127.0.0.1:8000/subgraphs/name/poh-origin-gnosis-local-debug" />
+          <label class="label" for="status-endpoint">Status Endpoint</label>
+          <input id="status-endpoint" value="http://127.0.0.1:8030/graphql" />
+          <div class="row">
+            <button id="refresh-status">Refresh Status</button>
+            <button id="load-defaults" class="secondary">Load Foresight Query</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Index Status</h2>
+          <div class="small" id="status-summary">Not loaded yet.</div>
+          <div class="grid" style="margin-top: 14px;">
+            <div>
+              <span class="label">Health</span>
+              <div class="value" id="health">-</div>
+            </div>
+            <div>
+              <span class="label">Latest Block</span>
+              <div class="value" id="latest-block">-</div>
+            </div>
+            <div>
+              <span class="label">Chain Head</span>
+              <div class="value" id="chain-head">-</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h2>GraphQL Query</h2>
+          <textarea id="query-editor"></textarea>
+          <div class="row" style="margin-top: 12px;">
+            <button id="run-query">Run Query</button>
+            <button id="preset-status" class="secondary">Preset Status</button>
+            <button id="preset-range" class="secondary">Preset Foresight</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Response</h2>
+          <pre id="response-view">{}</pre>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: 16px;">
+        <h2>Notes</h2>
+        <p class="small">
+          If the browser shows network errors, the local Graph Node may still be syncing or
+          your browser may block localhost cross-origin requests. In that case, open this UI
+          from <a href="http://127.0.0.1:8787" target="_blank" rel="noreferrer">127.0.0.1:8787</a>
+          and keep the graph stack running.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const statusQuery = `{
+  indexingStatusForCurrentVersion(subgraphName: "poh-origin-gnosis-local-debug") {
+    subgraph
+    synced
+    health
+    chains {
+      network
+      latestBlock { number }
+      chainHeadBlock { number }
+    }
+    nonFatalErrors {
+      handler
+      block { number }
+      message
+    }
+  }
+}`;
+
+      const foresightQuery = `{
+  _meta {
+    hasIndexingErrors
+    block { number timestamp }
+  }
+  globalAnalytics(id: "global", subgraphError: allow) {
+    foresightParticipants
+    foresightCreditUsers
+  }
+  foresightTrades(first: 10, orderBy: timestamp, orderDirection: desc, subgraphError: allow) {
+    id
+    humanityId
+    timestamp
+  }
+  foresightCreditUses(first: 10, orderBy: timestamp, orderDirection: desc, subgraphError: allow) {
+    id
+    humanityId
+    timestamp
+  }
+}`;
+
+      const els = {
+        queryEndpoint: document.getElementById("query-endpoint"),
+        statusEndpoint: document.getElementById("status-endpoint"),
+        queryEditor: document.getElementById("query-editor"),
+        responseView: document.getElementById("response-view"),
+        statusSummary: document.getElementById("status-summary"),
+        health: document.getElementById("health"),
+        latestBlock: document.getElementById("latest-block"),
+        chainHead: document.getElementById("chain-head"),
+      };
+
+      async function postGraphQL(url, query) {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ query }),
+        });
+        return response.json();
+      }
+
+      function showJSON(data) {
+        els.responseView.textContent = JSON.stringify(data, null, 2);
+      }
+
+      async function refreshStatus() {
+        try {
+          const data = await postGraphQL(els.statusEndpoint.value, statusQuery);
+          showJSON(data);
+          const status = data?.data?.indexingStatusForCurrentVersion;
+          if (!status) {
+            els.statusSummary.textContent = "No indexing status returned.";
+            return;
+          }
+
+          els.statusSummary.textContent = status.synced
+            ? "Subgraph is synced."
+            : `Subgraph is syncing on ${status.chains?.[0]?.network || "unknown network"}.`;
+          els.health.textContent = status.health || "-";
+          els.health.className = `value ${status.health === "healthy" ? "status-ok" : "status-bad"}`;
+          els.latestBlock.textContent = status.chains?.[0]?.latestBlock?.number || "-";
+          els.chainHead.textContent = status.chains?.[0]?.chainHeadBlock?.number || "-";
+        } catch (error) {
+          els.statusSummary.textContent = `Status request failed: ${error.message}`;
+          els.health.textContent = "error";
+          els.health.className = "value status-bad";
+          showJSON({ error: error.message });
+        }
+      }
+
+      async function runQuery() {
+        try {
+          const data = await postGraphQL(els.queryEndpoint.value, els.queryEditor.value);
+          showJSON(data);
+        } catch (error) {
+          showJSON({ error: error.message });
+        }
+      }
+
+      document.getElementById("refresh-status").addEventListener("click", refreshStatus);
+      document.getElementById("run-query").addEventListener("click", runQuery);
+      document.getElementById("load-defaults").addEventListener("click", () => {
+        els.queryEditor.value = foresightQuery;
+      });
+      document.getElementById("preset-status").addEventListener("click", () => {
+        els.queryEditor.value = statusQuery;
+      });
+      document.getElementById("preset-range").addEventListener("click", () => {
+        els.queryEditor.value = foresightQuery;
+      });
+
+      els.queryEditor.value = foresightQuery;
+      refreshStatus();
+    </script>
+  </body>
+</html>

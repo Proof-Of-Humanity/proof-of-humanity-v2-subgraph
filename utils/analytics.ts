@@ -1,8 +1,13 @@
-import { BigInt } from "@graphprotocol/graph-ts";
-import { DailyAnalytics, GlobalAnalytics } from "../generated/schema";
+import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import {
+  DailyAnalytics,
+  GlobalAnalytics,
+  HumanAnalyticsProfile,
+} from "../generated/schema";
 import { ONE, ZERO } from "./constants";
 
 export const GLOBAL_ANALYTICS_ID = "global";
+const DAY_SECONDS = BigInt.fromI32(86400);
 
 export function getGlobalAnalytics(): GlobalAnalytics {
   let analytics = GlobalAnalytics.load(GLOBAL_ANALYTICS_ID);
@@ -12,6 +17,8 @@ export function getGlobalAnalytics(): GlobalAnalytics {
     analytics.airdropClaims = ZERO;
     analytics.seerCreditsBuys = ZERO;
     analytics.seerCreditsUsers = ZERO;
+    analytics.foresightParticipants = ZERO;
+    analytics.foresightCreditUsers = ZERO;
     analytics.registrationsPending = ZERO;
     analytics.registrationsFunded = ZERO;
     analytics.registrationsChallenged = ZERO;
@@ -22,12 +29,32 @@ export function getGlobalAnalytics(): GlobalAnalytics {
     analytics.registrationsWithdrawn = ZERO;
     analytics.renewalsSubmitted = ZERO;
     analytics.save();
+    return analytics;
   }
+
+  // Older synced stores may have been created before newer analytics fields existed.
+  // Hydrate them lazily so first reads do not throw deterministic indexing errors.
+  let wasPatched = false;
+
+  if (analytics.get("foresightParticipants") == null) {
+    analytics.foresightParticipants = ZERO;
+    wasPatched = true;
+  }
+
+  if (analytics.get("foresightCreditUsers") == null) {
+    analytics.foresightCreditUsers = ZERO;
+    wasPatched = true;
+  }
+
+  if (wasPatched) {
+    analytics.save();
+  }
+
   return analytics;
 }
 
 export function getDailyAnalytics(timestamp: BigInt): DailyAnalytics {
-  const dayId = timestamp.div(BigInt.fromI32(86400)).times(BigInt.fromI32(86400));
+  const dayId = getDayStart(timestamp);
   let analytics = DailyAnalytics.load(dayId.toString());
   if (analytics == null) {
     analytics = new DailyAnalytics(dayId.toString());
@@ -47,6 +74,25 @@ export function getDailyAnalytics(timestamp: BigInt): DailyAnalytics {
     analytics.save();
   }
   return analytics;
+}
+
+export function getDayStart(timestamp: BigInt): BigInt {
+  return timestamp.div(DAY_SECONDS).times(DAY_SECONDS);
+}
+
+export function getHumanAnalyticsProfile(
+  humanityId: Bytes
+): HumanAnalyticsProfile {
+  let profile = HumanAnalyticsProfile.load(humanityId);
+  if (profile == null) {
+    profile = new HumanAnalyticsProfile(humanityId);
+    profile.hasUsedSeerCredits = false;
+    profile.lastSeerCreditsBuyDay = ZERO;
+    profile.hasParticipatedInForesight = false;
+    profile.hasUsedForesightCredits = false;
+    profile.save();
+  }
+  return profile;
 }
 
 export class AnalyticsUtil {
@@ -237,5 +283,29 @@ export class AnalyticsUtil {
 
     global.save();
     daily.save();
+  }
+
+  static onForesightParticipation(
+    isNewParticipant: boolean
+  ): void {
+    const global = getGlobalAnalytics();
+
+    if (isNewParticipant) {
+      global.foresightParticipants = global.foresightParticipants.plus(ONE);
+    }
+
+    global.save();
+  }
+
+  static onForesightCreditUse(
+    isNewCreditUser: boolean
+  ): void {
+    const global = getGlobalAnalytics();
+
+    if (isNewCreditUser) {
+      global.foresightCreditUsers = global.foresightCreditUsers.plus(ONE);
+    }
+
+    global.save();
   }
 }

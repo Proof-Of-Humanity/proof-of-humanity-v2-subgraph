@@ -1,0 +1,44 @@
+services:
+  ipfs:
+    image: ipfs/kubo:v0.32.1
+    ports:
+      - "5001:5001"
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: graph
+      POSTGRES_PASSWORD: let-me-in
+      POSTGRES_DB: graph-node
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U graph -d graph-node"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  graph-node:
+    image: graphprotocol/graph-node:v0.42.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ipfs:
+        condition: service_started
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8020:8020"
+      - "8030:8030"
+      - "8040:8040"
+    environment:
+      postgres_host: postgres
+      postgres_user: graph
+      postgres_pass: let-me-in
+      postgres_db: graph-node
+      ipfs: ipfs:5001
+      ethereum: gnosis:archive,traces:https://gnosis-mainnet.g.alchemy.com/v2/8p1OeNNG-xm6GF98MBufdfWxZIWYGfwh
+      GRAPH_LOG: debug

@@ -8,3 +8,15 @@ export const ProofOfHumanityAddress = Address.fromBytes(
 export const ProofOfHumanity = ProofOfHumanityContract.bind(
   ProofOfHumanityAddress
 );
+
+{{#foresight-router}}
+export const ForesightRouterAddress = Address.fromBytes(
+  Bytes.fromHexString("{{foresight-router}}")
+);
+{{/foresight-router}}
+
+{{#foresight-market}}
+export const ForesightMarketAddress = Address.fromBytes(
+  Bytes.fromHexString("{{foresight-market}}")
+);
+{{/foresight-market}}

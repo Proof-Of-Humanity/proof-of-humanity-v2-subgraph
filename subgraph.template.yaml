@@ -30,6 +30,8 @@ dataSources:
         - Contribution
         - Evidence
         - Counter
+        - GlobalAnalytics
+        - DailyAnalytics
       abis:
         - name: ProofOfHumanity
           file: ./abis/ProofOfHumanity.json
@@ -115,6 +117,8 @@ dataSources:
         - CrossChainHumanity
         - OutTransfer
         - InTransfer
+        - GlobalAnalytics
+        - DailyAnalytics
       abis:
         - name: CrossChainProofOfHumanity
           file: ./abis/CrossChainProofOfHumanity.json
@@ -176,6 +180,8 @@ dataSources:
       entities:
         - RewardClaim
         - Claimer
+        - GlobalAnalytics
+        - DailyAnalytics
       abis:
         - name: RewardDistributor
           file: ./abis/RewardDistributor.json
@@ -199,8 +205,7 @@ dataSources:
       entities:
         - GlobalAnalytics
         - DailyAnalytics
-        - SeerCreditsUser
-        - SeerCreditsDailyUser
+        - HumanAnalyticsProfile
       abis:
         - name: SeerCredits
           file: ./abis/SeerCredits.json
@@ -208,6 +213,72 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
   {{/seer-credits}}
+  {{#foresight-router}}
+  - kind: ethereum
+    name: ForesightGnosisRouter
+    network: {{network}}
+    source:
+      address: "{{foresight-router}}"
+      abi: GnosisRouter
+      startBlock: {{foresight-start-block}}
+    mapping:
+      kind: ethereum/calls
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/foresight.ts
+      entities:
+        - GlobalAnalytics
+        - ForesightTrade
+        - HumanAnalyticsProfile
+      abis:
+        - name: GnosisRouter
+          file: ./abis/GnosisRouter.json
+        - name: TradeExecutor
+          file: ./abis/TradeExecutor.json
+        - name: CrossChainProofOfHumanity
+          file: ./abis/CrossChainProofOfHumanity.json
+      callHandlers:
+        - function: splitFromBase(address)
+          handler: handleSplitFromBase
+        - function: mergeToBase(address,uint256)
+          handler: handleMergeToBase
+        - function: redeemToBase(address,uint256[],uint256[])
+          handler: handleRedeemToBase
+        - function: splitPosition(address,address,uint256)
+          handler: handleSplitPosition
+        - function: mergePositions(address,address,uint256)
+          handler: handleMergePositions
+        - function: redeemPositions(address,address,uint256[],uint256[])
+          handler: handleRedeemPositions
+  {{/foresight-router}}
+  {{#foresight-credits}}
+  - kind: ethereum
+    name: ForesightCredits
+    network: {{network}}
+    source:
+      address: "{{foresight-credits}}"
+      abi: ForesightCredits
+      startBlock: {{foresight-start-block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./mappings/foresight.ts
+      entities:
+        - GlobalAnalytics
+        - ForesightCreditUse
+        - HumanAnalyticsProfile
+      abis:
+        - name: ForesightCredits
+          file: ./abis/ERC20Transfer.json
+        - name: TradeExecutor
+          file: ./abis/TradeExecutor.json
+        - name: CrossChainProofOfHumanity
+          file: ./abis/CrossChainProofOfHumanity.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleForesightCreditsTransfer
+  {{/foresight-credits}}
   {{#v1-address}}
   - kind: ethereum
     name: ProofOfHumanityOld
