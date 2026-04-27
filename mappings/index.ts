@@ -509,6 +509,7 @@ export function handleRuling(ev: Ruling): void {
     hash(humanity.id.concat(biToBytes(disputeData.getRequestId())))
   ) as Request;
   request.resolutionTime = ev.block.timestamp;
+  request.lastStatusChange = ev.block.timestamp;
   request.status = StatusUtil.resolved;
   request.winnerParty = ruling;
 
@@ -524,7 +525,7 @@ export function handleRuling(ev: Ruling): void {
 
   request.save();
   humanity.save();
-  if (ruling == PartyUtil.challenger) {
+  if (ruling != PartyUtil.requester) {
     createHumanityEvent(
       ev,
       HumanityEventTypeUtil.requestResolvedRejected,
@@ -762,17 +763,17 @@ export function handleFeesAndRewardsWithdrawn(
     hash(hash(roundId.concat(ONE_B)).concat(ev.params.beneficiary))
   );
   if (requesterFundContribution != null) {
-    const reqFund = RequesterFund.load(hash(roundId.concat(ONE_B)));
-    reqFund!.withdrawn = true;
-    reqFund!.save();
+    // Withdrawal is beneficiary-specific; keep fund-level flag untouched.
+    requesterFundContribution.amount = ZERO;
+    requesterFundContribution.save();
   }
   const challengerFundContribution = Contribution.load(
     hash(hash(roundId.concat(TWO_B)).concat(ev.params.beneficiary))
   );
   if (challengerFundContribution != null) {
-    const challFund = ChallengerFund.load(hash(roundId.concat(TWO_B)));
-    challFund!.withdrawn = true;
-    challFund!.save();
+    // Withdrawal is beneficiary-specific; keep fund-level flag untouched.
+    challengerFundContribution.amount = ZERO;
+    challengerFundContribution.save();
   }
 }
 

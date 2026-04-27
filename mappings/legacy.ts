@@ -577,6 +577,7 @@ export function handleRuling(ev: RulingEv): void {
     )
   ) as Request;
   request.resolutionTime = ev.block.timestamp;
+  request.lastStatusChange = ev.block.timestamp;
   request.status = StatusUtil.resolved;
   request.winnerParty = ruling;
 
@@ -589,6 +590,7 @@ export function handleRuling(ev: RulingEv): void {
 
     const disputedRequest = Request.load(challengedReqId) as Request;
     disputedRequest.resolutionTime = ev.block.timestamp;
+    disputedRequest.lastStatusChange = ev.block.timestamp;
     disputedRequest.status = StatusUtil.resolved;
     disputedRequest.winnerParty = ruling;
     if (ruling == PartyUtil.requester) {
@@ -649,7 +651,7 @@ export function handleRuling(ev: RulingEv): void {
   request.save();
   humanity.save();
 
-  if (ruling == PartyUtil.challenger) {
+  if (ruling != PartyUtil.requester) {
     createHumanityEvent(
       ev,
       HumanityEventTypeUtil.requestResolvedRejected,
