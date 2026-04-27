@@ -245,6 +245,9 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
   request.creationTime = ev.block.timestamp;
   request.requester = ev.transaction.from;
   request.lastStatusChange = ev.block.timestamp;
+  request.challengePeriodEnd = ev.block.timestamp.plus(
+    getContract().challengePeriodDuration
+  );
 
   const revokedReqHomeChain = getPreviousNonRevoked(humanity.id, humanity.nbRequests);
   const revokedReqLegacy = getPreviousNonRevoked(humanity.id, humanity.nbLegacyRequests.neg());
