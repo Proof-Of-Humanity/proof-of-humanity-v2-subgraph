@@ -46,7 +46,11 @@ import {
 } from "../generated/schema";
 import { getContract, Factory, getPreviousNonRevoked } from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
-import { HumanityEventTypeUtil, createHumanityEvent } from "../utils/events";
+import {
+  HumanityEventTypeUtil,
+  createHumanityEvent,
+  createHumanityEventWithSuffix,
+} from "../utils/events";
 import { biToBytes, hash } from "../utils/misc";
 import { ProofOfHumanity } from "../utils/hardcoded";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
@@ -78,7 +82,7 @@ function stampLatestWinningRequestPunishment(
   sourceRequest: Request,
   reason: string,
   timestamp: BigInt
-): void {
+): Request | null {
   const requests = store.loadRelated("Humanity", humanityId.toHex(), "requests");
   let latestId = Bytes.empty();
   let hasLatest = false;
@@ -109,15 +113,17 @@ function stampLatestWinningRequestPunishment(
     }
   }
 
-  if (!hasLatest) return;
+  if (!hasLatest) return null;
 
   const latestWinningRequest = Request.load(latestId) as Request | null;
-  if (latestWinningRequest == null) return;
+  if (latestWinningRequest == null) return null;
 
   latestWinningRequest.punishedVouchSourceRequest = sourceRequest.id;
   latestWinningRequest.punishedVouchReason = reason;
   latestWinningRequest.punishedVouchTimestamp = timestamp;
   latestWinningRequest.save();
+
+  return latestWinningRequest;
 }
 
 export function handleInitialized(ev: Initialized): void {
@@ -744,11 +750,26 @@ export function handleVouchesProcessed(ev: VouchesProcessed): void {
     if (sourceRequest != null) {
       if (punishedReason == ReasonUtil.none) continue;
 
-      stampLatestWinningRequestPunishment(
+      const punishedRequest = stampLatestWinningRequestPunishment(
         vouch.voucher,
         sourceRequest as Request,
         punishedReason,
         ev.block.timestamp
+      );
+
+      if (punishedRequest == null) continue;
+
+      createHumanityEventWithSuffix(
+        ev,
+        "punished-vouch:" + vouch.voucher.toHexString(),
+        HumanityEventTypeUtil.requestResolvedAccepted,
+        vouch.voucher,
+        punishedRequest,
+        null,
+        null,
+        null,
+        true,
+        true,
       );
     }
   }

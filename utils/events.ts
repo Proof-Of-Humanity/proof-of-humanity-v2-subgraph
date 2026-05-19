@@ -18,6 +18,9 @@ export namespace HumanityEventTypeUtil {
 const getEventId = (ev: ethereum.Event): string =>
   ev.transaction.hash.toHexString() + ":" + ev.logIndex.toString();
 
+const getEventIdWithSuffix = (ev: ethereum.Event, suffix: string): string =>
+  getEventId(ev) + ":" + suffix;
+
 const getCallId = (
   call: ethereum.Call,
   type: string,
@@ -42,6 +45,51 @@ export const createHumanityEvent = (
   disputeId: BigInt | null = null,
 ): void => {
   const event = new HumanityEvent(getEventId(ev));
+  event.humanityId = humanityId;
+  event.timestamp = ev.block.timestamp;
+  event.type = type;
+
+  if (request) {
+    event.requestIndex = request.index;
+  }
+
+  if (transferHash) {
+    event.transferHash = transferHash;
+  }
+
+  if (voucher) {
+    event.voucher = voucher;
+  }
+
+  if (appealRound) {
+    event.appealRound = appealRound;
+  }
+
+  if (includeRevocation) {
+    event.revocation = revocation;
+  }
+
+  if (disputeId) {
+    event.disputeId = disputeId;
+  }
+
+  event.save();
+};
+
+export const createHumanityEventWithSuffix = (
+  ev: ethereum.Event,
+  suffix: string,
+  type: string,
+  humanityId: Bytes,
+  request: Request | null = null,
+  transferHash: Bytes | null = null,
+  voucher: Bytes | null = null,
+  appealRound: BigInt | null = null,
+  includeRevocation: boolean = false,
+  revocation: boolean = false,
+  disputeId: BigInt | null = null,
+): void => {
+  const event = new HumanityEvent(getEventIdWithSuffix(ev, suffix));
   event.humanityId = humanityId;
   event.timestamp = ev.block.timestamp;
   event.type = type;
