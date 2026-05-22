@@ -32,8 +32,9 @@ const getCallId = (
   ":" +
   (request ? request.index.toString() : "none");
 
-export const createHumanityEvent = (
-  ev: ethereum.Event,
+const populateAndSaveHumanityEvent = (
+  event: HumanityEvent,
+  timestamp: BigInt,
   type: string,
   humanityId: Bytes,
   request: Request | null = null,
@@ -44,9 +45,8 @@ export const createHumanityEvent = (
   revocation: boolean = false,
   disputeId: BigInt | null = null,
 ): void => {
-  const event = new HumanityEvent(getEventId(ev));
   event.humanityId = humanityId;
-  event.timestamp = ev.block.timestamp;
+  event.timestamp = timestamp;
   event.type = type;
 
   if (request) {
@@ -74,6 +74,34 @@ export const createHumanityEvent = (
   }
 
   event.save();
+};
+
+export const createHumanityEvent = (
+  ev: ethereum.Event,
+  type: string,
+  humanityId: Bytes,
+  request: Request | null = null,
+  transferHash: Bytes | null = null,
+  voucher: Bytes | null = null,
+  appealRound: BigInt | null = null,
+  includeRevocation: boolean = false,
+  revocation: boolean = false,
+  disputeId: BigInt | null = null,
+): void => {
+  const event = new HumanityEvent(getEventId(ev));
+  populateAndSaveHumanityEvent(
+    event,
+    ev.block.timestamp,
+    type,
+    humanityId,
+    request,
+    transferHash,
+    voucher,
+    appealRound,
+    includeRevocation,
+    revocation,
+    disputeId,
+  );
 };
 
 export const createHumanityEventWithSuffix = (
@@ -90,35 +118,19 @@ export const createHumanityEventWithSuffix = (
   disputeId: BigInt | null = null,
 ): void => {
   const event = new HumanityEvent(getEventIdWithSuffix(ev, suffix));
-  event.humanityId = humanityId;
-  event.timestamp = ev.block.timestamp;
-  event.type = type;
-
-  if (request) {
-    event.requestIndex = request.index;
-  }
-
-  if (transferHash) {
-    event.transferHash = transferHash;
-  }
-
-  if (voucher) {
-    event.voucher = voucher;
-  }
-
-  if (appealRound) {
-    event.appealRound = appealRound;
-  }
-
-  if (includeRevocation) {
-    event.revocation = revocation;
-  }
-
-  if (disputeId) {
-    event.disputeId = disputeId;
-  }
-
-  event.save();
+  populateAndSaveHumanityEvent(
+    event,
+    ev.block.timestamp,
+    type,
+    humanityId,
+    request,
+    transferHash,
+    voucher,
+    appealRound,
+    includeRevocation,
+    revocation,
+    disputeId,
+  );
 };
 
 export const createHumanityCallEvent = (
@@ -134,33 +146,17 @@ export const createHumanityCallEvent = (
   disputeId: BigInt | null = null,
 ): void => {
   const event = new HumanityEvent(getCallId(call, type, request));
-  event.humanityId = humanityId;
-  event.timestamp = call.block.timestamp;
-  event.type = type;
-
-  if (request) {
-    event.requestIndex = request.index;
-  }
-
-  if (transferHash) {
-    event.transferHash = transferHash;
-  }
-
-  if (voucher) {
-    event.voucher = voucher;
-  }
-
-  if (appealRound) {
-    event.appealRound = appealRound;
-  }
-
-  if (includeRevocation) {
-    event.revocation = revocation;
-  }
-
-  if (disputeId) {
-    event.disputeId = disputeId;
-  }
-
-  event.save();
+  populateAndSaveHumanityEvent(
+    event,
+    call.block.timestamp,
+    type,
+    humanityId,
+    request,
+    transferHash,
+    voucher,
+    appealRound,
+    includeRevocation,
+    revocation,
+    disputeId,
+  );
 };

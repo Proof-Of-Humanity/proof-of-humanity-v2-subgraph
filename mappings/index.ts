@@ -56,7 +56,9 @@ import { ProofOfHumanity } from "../utils/hardcoded";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
 
 function getPunishedVouchReason(request: Request): string {
-  const ultimateChallenger = request.ultimateChallenger as Bytes;
+  const ultimateChallengerValue = request.ultimateChallenger;
+  if (!ultimateChallengerValue) return ReasonUtil.none;
+  const ultimateChallenger = ultimateChallengerValue as Bytes;
   if (ultimateChallenger.equals(Address.zero())) return ReasonUtil.none;
 
   const challenges = store.loadRelated(
@@ -66,7 +68,9 @@ function getPunishedVouchReason(request: Request): string {
   );
   for (let i = 0; i < challenges.length; i++) {
     const challenge = changetype<Challenge>(challenges[i]);
-    const challenger = challenge.challenger as Bytes;
+    const challengerValue = challenge.challenger;
+    if (!challengerValue) continue;
+    const challenger = challengerValue as Bytes;
     if (!challenger.equals(ultimateChallenger)) continue;
 
     const reason = challenge.reason;
@@ -91,7 +95,9 @@ function stampLatestWinningRequestPunishment(
   for (let i = 0; i < requests.length; i++) {
     const request = changetype<Request>(requests[i]);
     if (request.revocation) continue;
-    if ((request.winnerParty as string) != PartyUtil.requester) continue;
+    const winnerParty = request.winnerParty;
+    if (!winnerParty) continue;
+    if ((winnerParty as string) != PartyUtil.requester) continue;
 
     const status = request.status;
     let isWinningStatus = false;
