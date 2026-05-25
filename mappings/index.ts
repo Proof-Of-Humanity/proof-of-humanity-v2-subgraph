@@ -46,10 +46,91 @@ import {
 } from "../generated/schema";
 import { getContract, Factory, getPreviousNonRevoked } from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
-import { HumanityEventTypeUtil, createHumanityEvent } from "../utils/events";
+import {
+  HumanityEventTypeUtil,
+  createHumanityEvent,
+  createHumanityEventWithSuffix,
+} from "../utils/events";
 import { biToBytes, hash } from "../utils/misc";
 import { ProofOfHumanity } from "../utils/hardcoded";
 import { PartyUtil, ReasonUtil, StatusUtil } from "../utils/enums";
+
+function getPunishedVouchReason(request: Request): string {
+  const ultimateChallengerValue = request.ultimateChallenger;
+  if (!ultimateChallengerValue) return ReasonUtil.none;
+  const ultimateChallenger = ultimateChallengerValue as Bytes;
+  if (ultimateChallenger.equals(Address.zero())) return ReasonUtil.none;
+
+  const challenges = store.loadRelated(
+    "Request",
+    request.id.toHex(),
+    "challenges"
+  );
+  for (let i = 0; i < challenges.length; i++) {
+    const challenge = changetype<Challenge>(challenges[i]);
+    const challengerValue = challenge.challenger;
+    if (!challengerValue) continue;
+    const challenger = challengerValue as Bytes;
+    if (!challenger.equals(ultimateChallenger)) continue;
+
+    const reason = challenge.reason;
+    if (reason == ReasonUtil.sybilAttack) return reason;
+    if (reason == ReasonUtil.identityTheft) return reason;
+  }
+
+  return ReasonUtil.none;
+}
+
+function stampLatestWinningRequestPunishment(
+  humanityId: Bytes,
+  sourceRequest: Request,
+  reason: string,
+  timestamp: BigInt
+): Request | null {
+  const requests = store.loadRelated("Humanity", humanityId.toHex(), "requests");
+  let latestId = Bytes.empty();
+  let hasLatest = false;
+  let latestTimestamp = ZERO;
+
+  for (let i = 0; i < requests.length; i++) {
+    const request = changetype<Request>(requests[i]);
+    if (request.revocation) continue;
+    const winnerParty = request.winnerParty;
+    if (!winnerParty) continue;
+    if ((winnerParty as string) != PartyUtil.requester) continue;
+
+    const status = request.status;
+    let isWinningStatus = false;
+    if (status == StatusUtil.resolved) isWinningStatus = true;
+    if (status == StatusUtil.transferring) isWinningStatus = true;
+    if (status == StatusUtil.transferred) isWinningStatus = true;
+    if (!isWinningStatus) continue;
+
+    if (!hasLatest) {
+      latestId = request.id;
+      latestTimestamp = request.lastStatusChange;
+      hasLatest = true;
+      continue;
+    }
+
+    if (request.lastStatusChange.gt(latestTimestamp)) {
+      latestId = request.id;
+      latestTimestamp = request.lastStatusChange;
+    }
+  }
+
+  if (!hasLatest) return null;
+
+  const latestWinningRequest = Request.load(latestId) as Request | null;
+  if (latestWinningRequest == null) return null;
+
+  latestWinningRequest.punishedVouchSourceRequest = sourceRequest.id;
+  latestWinningRequest.punishedVouchReason = reason;
+  latestWinningRequest.punishedVouchTimestamp = timestamp;
+  latestWinningRequest.save();
+
+  return latestWinningRequest;
+}
 
 export function handleInitialized(ev: Initialized): void {
   const contract = getContract();
@@ -648,6 +729,13 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
 }
 
 export function handleVouchesProcessed(ev: VouchesProcessed): void {
+  const sourceRequest = Request.load(
+    hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
+  ) as Request | null;
+  let punishedReason = ReasonUtil.none;
+  if (sourceRequest != null) {
+    punishedReason = getPunishedVouchReason(sourceRequest as Request);
+  }
   const vouches = store.loadRelated(
     "Request",
     hash(
@@ -664,6 +752,32 @@ export function handleVouchesProcessed(ev: VouchesProcessed): void {
     const humanity = Humanity.load(vouch.voucher) as Humanity;
     humanity.vouching = false;
     humanity.save();
+
+    if (sourceRequest != null) {
+      if (punishedReason == ReasonUtil.none) continue;
+
+      const punishedRequest = stampLatestWinningRequestPunishment(
+        vouch.voucher,
+        sourceRequest as Request,
+        punishedReason,
+        ev.block.timestamp
+      );
+
+      if (punishedRequest == null) continue;
+
+      createHumanityEventWithSuffix(
+        ev,
+        "punished-vouch:" + vouch.voucher.toHexString(),
+        HumanityEventTypeUtil.requestResolvedAccepted,
+        vouch.voucher,
+        punishedRequest,
+        null,
+        null,
+        null,
+        true,
+        true,
+      );
+    }
   }
 }
 

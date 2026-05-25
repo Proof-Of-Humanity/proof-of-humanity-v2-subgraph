@@ -101,6 +101,9 @@ type Request @entity(immutable: false) {
   registrationEvidenceRevokedReq: String!
   expirationTime: BigInt
   inTransferHash: Bytes
+  punishedVouchSourceRequest: Request
+  punishedVouchReason: Reason
+  punishedVouchTimestamp: BigInt
 }
 
 type Challenger @entity(immutable: false) {

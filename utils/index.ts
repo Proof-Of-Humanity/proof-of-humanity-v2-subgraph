@@ -186,6 +186,9 @@ export class Factory {
       request.evidenceGroup = evGroupId;
       request.registrationEvidenceRevokedReq = "";
       request.expirationTime = ZERO;
+      request.punishedVouchSourceRequest = null;
+      request.punishedVouchReason = null;
+      request.punishedVouchTimestamp = null;
     }
     return request;
   }
