@@ -1,4 +1,4 @@
-import { Address, BigInt, ByteArray, Bytes } from "@graphprotocol/graph-ts";
+import { Address, BigInt, ByteArray, Bytes, store } from "@graphprotocol/graph-ts";
 import {
   Claimer,
   Contract,
@@ -32,6 +32,40 @@ export function getContract(): Contract {
     contract.baseDeposit = ZERO;
   }
   return contract;
+}
+
+function setClaimerRegistration(registration: Registration): void {
+  const claimer = Claimer.load(registration.claimer) as Claimer | null;
+  if (!claimer) return;
+
+  claimer.registration = registration.id;
+  claimer.save();
+}
+
+function clearClaimerRegistration(registrationId: Bytes): void {
+  const registration = Registration.load(registrationId) as Registration | null;
+  if (!registration) return;
+
+  const claimer = Claimer.load(registration.claimer) as Claimer | null;
+  if (!claimer || !claimer.registration || !claimer.registration!.equals(registration.id)) return;
+
+  claimer.registration = null;
+  claimer.save();
+}
+
+export function saveRegistration(registration: Registration): void {
+  const previousRegistration = Registration.load(registration.id) as Registration | null;
+  if (previousRegistration && !previousRegistration.claimer.equals(registration.claimer)) {
+    clearClaimerRegistration(previousRegistration.id);
+  }
+
+  registration.save();
+  setClaimerRegistration(registration);
+}
+
+export function removeRegistration(registrationId: Bytes): void {
+  clearClaimerRegistration(registrationId);
+  store.remove("Registration", registrationId.toHex());
 }
 
 export function getPreviousNonRevoked(pohId: Bytes, index: BigInt): Request | null {
