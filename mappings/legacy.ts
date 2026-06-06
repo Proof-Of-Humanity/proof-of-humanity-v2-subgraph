@@ -29,7 +29,13 @@ import {
   Challenge,
   EvidenceGroup,
 } from "../generated/schema";
-import { Factory, LEGACY_FLAG, getPreviousNonRevoked } from "../utils";
+import {
+  Factory,
+  LEGACY_FLAG,
+  getPreviousNonRevoked,
+  removeRegistration,
+  saveRegistration,
+} from "../utils";
 import { biToBytes, hash } from "../utils/misc";
 import { ZERO, ONE, TWO } from "../utils/constants";
 import {
@@ -114,7 +120,7 @@ export function addSubmissionManuallyLegacy(
 
     const registration = Factory.Registration(humanity.id, submissionId);
     registration.expirationTime = call.block.timestamp.plus(submissionDuration);
-    registration.save();
+    saveRegistration(registration);
 
     request.expirationTime = registration.expirationTime;
     request.save();
@@ -143,7 +149,7 @@ export function removeSubmissionManuallyLegacy(
   if (!shouldProcessEvent(call.block.number)) {
     return;
   }
-  store.remove("Registration", call.inputs._submissionID.toHex());
+  removeRegistration(call.inputs._submissionID);
 }
 
 export function addSubmissionLegacy(call: AddSubmissionCall): void {
@@ -512,7 +518,7 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
     registration.expirationTime = submissionInfo
       .getSubmissionTime()
       .plus(poh.submissionDuration());
-    registration.save();
+    saveRegistration(registration);
     request.expirationTime = registration.expirationTime;
   } else {
     const revocationRequest = Request.load(
@@ -529,7 +535,7 @@ export function executeRequestLegacy(call: ExecuteRequestCall): void {
     revocationRequest.winnerParty = PartyUtil.requester;
     revocationRequest.resolutionTime = call.block.timestamp;
     revocationRequest.save();
-    store.remove("Registration", humanity.id.toHex());
+    removeRegistration(humanity.id);
     log.warning("Execute Req revoking. Humanity ID: {}. CurrentReqID: {}. RevocationReqID: {}. ", [
       humanity.id.toHex(),
       request.id.toHex(),
@@ -627,7 +633,7 @@ export function handleRuling(ev: RulingEv): void {
     humanity.pendingRevocation = false;
 
     if (!submissionInfo.getRegistered()) {
-      store.remove("Registration", humanity.id.toHex());
+      removeRegistration(humanity.id);
       request.winnerParty = PartyUtil.requester;
     }
   } else if (ruling == PartyUtil.challenger) {
@@ -643,7 +649,7 @@ export function handleRuling(ev: RulingEv): void {
     registration.expirationTime = submissionInfo
       .getSubmissionTime()
       .plus(poh.submissionDuration());
-    registration.save();
+    saveRegistration(registration);
     request.winnerParty = PartyUtil.requester;
     request.expirationTime = registration.expirationTime;
   }

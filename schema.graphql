@@ -71,7 +71,7 @@ type Claimer @entity(immutable: false) {
   id: Bytes!
   name: String
   currentRequest: Request
-  registration: Registration @derivedFrom(field: "claimer")
+  registration: Registration
   vouches: [Vouch!]! @derivedFrom(field: "from")
   vouchesReceived: [Vouch!]! @derivedFrom(field: "for")
   nbVouchesReceived: BigInt!

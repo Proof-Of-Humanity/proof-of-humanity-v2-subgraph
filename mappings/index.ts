@@ -44,7 +44,13 @@ import {
   ChallengerFund,
   Challenger,
 } from "../generated/schema";
-import { getContract, Factory, getPreviousNonRevoked } from "../utils";
+import {
+  Factory,
+  getContract,
+  getPreviousNonRevoked,
+  removeRegistration,
+  saveRegistration,
+} from "../utils";
 import { ONE, ONE_B, TWO, TWO_B, ZERO } from "../utils/constants";
 import {
   HumanityEventTypeUtil,
@@ -254,13 +260,13 @@ export function handleHumanityGrantedDirectly(
     Address.fromBytes(claimer.id)
   );
   registration.expirationTime = ev.params.expirationTime;
-  registration.save();
+  saveRegistration(registration);
 }
 
 export function handleHumanityDischargedDirectly(
   ev: HumanityDischargedDirectly
 ): void {
-  store.remove("Registration", ev.params.humanityId.toHex());
+  removeRegistration(ev.params.humanityId);
 }
 
 export function handleClaimRequest(ev: ClaimRequest): void {
@@ -679,7 +685,7 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
   registration.expirationTime = ev.block.timestamp.plus(
     getContract().humanityLifespan
   );
-  registration.save();
+  saveRegistration(registration);
 
   request.expirationTime = registration.expirationTime;
   request.save();
@@ -710,7 +716,7 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
   request.resolutionTime = ev.block.timestamp;
   request.save();
 
-  store.remove("Registration", ev.params.humanityId.toHex());
+  removeRegistration(ev.params.humanityId);
 
   humanity.nbPendingRequests = humanity.nbPendingRequests.minus(ONE);
   humanity.save();
