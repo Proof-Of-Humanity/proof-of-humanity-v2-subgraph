@@ -34,6 +34,8 @@ dataSources:
       abis:
         - name: ProofOfHumanity
           file: ./abis/ProofOfHumanity.json
+        - name: IArbitrator
+          file: ./abis/IArbitrator.json
       eventHandlers:
         - event: Initialized()
           handler: handleInitialized
@@ -164,7 +166,7 @@ dataSources:
     source:
       address: "0x906113115C0A691F7E78dB91083EFfCD415Cb978"
       abi: RewardDistributor
-      startBlock: 44279764
+      startBlock: 44271442
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

@@ -207,6 +207,7 @@ export class Factory {
       request.requester = Address.zero();
       request.revocation = false;
       request.status = StatusUtil.vouching;
+      request.advanceRequesterFunded = false;
       request.creationTime = ZERO;
       request.resolutionTime = ZERO;
       request.challengePeriodEnd = ZERO;

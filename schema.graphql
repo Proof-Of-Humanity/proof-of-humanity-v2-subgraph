@@ -86,6 +86,7 @@ type Request @entity(immutable: false) {
   requester: Bytes!
   revocation: Boolean!
   claimer: Claimer!
+  advanceRequesterFunded: Boolean!
   creationTime: BigInt!
   resolutionTime: BigInt!
   lastStatusChange: BigInt!
@@ -169,6 +170,11 @@ type Contribution @entity(immutable: false) {
   # hash(fund.id//contributor)
   id: Bytes!
   fund: Fund!
+  side: Party!
+  humanity: Humanity!
+  request: Request!
+  challenge: Challenge!
+  round: Round!
   contributor: Bytes!
   amount: BigInt!
 }

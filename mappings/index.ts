@@ -44,6 +44,7 @@ import {
   ChallengerFund,
   Challenger,
 } from "../generated/schema";
+import { IArbitrator } from "../generated/ProofOfHumanity/IArbitrator";
 import {
   Factory,
   getContract,
@@ -136,6 +137,34 @@ function stampLatestWinningRequestPunishment(
   latestWinningRequest.save();
 
   return latestWinningRequest;
+}
+
+function updateAdvanceRequesterFunding(request: Request, requesterFundAmount: BigInt): void {
+  if (request.advanceRequesterFunded || request.revocation || request.status != StatusUtil.vouching) return;
+
+  const arbitratorHistory = ArbitratorHistory.load(request.arbitratorHistory);
+  if (arbitratorHistory == null) return;
+
+  const arbitrator = IArbitrator.bind(Address.fromBytes(arbitratorHistory.arbitrator));
+  const arbitrationCost = arbitrator.try_arbitrationCost(arbitratorHistory.extraData);
+  if (arbitrationCost.reverted) return;
+
+  const requiredFunding = getContract().baseDeposit.plus(arbitrationCost.value);
+  request.advanceRequesterFunded = requesterFundAmount.ge(requiredFunding);
+  request.save();
+}
+
+function clearAdvanceRequesterFunding(request: Request): void {
+  if (!request.advanceRequesterFunded) return;
+  request.advanceRequesterFunded = false;
+}
+
+function isInitialRequesterFundingContribution(ev: ContributionEv, contributionSide: string): boolean {
+  return (
+    contributionSide == PartyUtil.requester &&
+    ev.params.challengeId.equals(ZERO) &&
+    ev.params.round.equals(ZERO)
+  );
 }
 
 export function handleInitialized(ev: Initialized): void {
@@ -329,6 +358,7 @@ export function handleRevocationRequest(ev: RevocationRequest): void {
   request.claimer = registration.claimer;
   request.revocation = true;
   request.status = StatusUtil.resolving;
+  clearAdvanceRequesterFunding(request);
   request.creationTime = ev.block.timestamp;
   request.requester = ev.transaction.from;
   request.lastStatusChange = ev.block.timestamp;
@@ -457,6 +487,7 @@ export function handleRequestWithdrawn(ev: RequestWithdrawn): void {
   ) as Request | null;
   if (!request) return;
   request.status = StatusUtil.withdrawn;
+  clearAdvanceRequesterFunding(request);
   request.resolutionTime = ev.block.timestamp;
   request.save();
 
@@ -513,6 +544,7 @@ export function handleStateAdvanced(ev: StateAdvanced): void {
   const request = Request.load(claimer.currentRequest as Bytes) as Request;
   request.lastStatusChange = ev.block.timestamp;
   request.status = StatusUtil.resolving;
+  clearAdvanceRequesterFunding(request);
   request.save();
 
   createHumanityEvent(
@@ -534,6 +566,7 @@ export function handleRequestChallenged(ev: RequestChallenged): void {
     hash(ev.params.humanityId.concat(biToBytes(ev.params.requestId)))
   ) as Request;
   request.status = StatusUtil.disputed;
+  clearAdvanceRequesterFunding(request);
 
   var challenger = Challenger.load(ev.transaction.from);
   if (challenger == null) {
@@ -578,6 +611,7 @@ export function handleChallengePeriodRestart(ev: ChallengePeriodRestart): void {
   ) as Request;
   request.status = StatusUtil.resolving;
   request.lastStatusChange = ev.block.timestamp;
+  clearAdvanceRequesterFunding(request);
   request.save();
 }
 
@@ -598,6 +632,7 @@ export function handleRuling(ev: Ruling): void {
   request.resolutionTime = ev.block.timestamp;
   request.lastStatusChange = ev.block.timestamp;
   request.status = StatusUtil.resolved;
+  clearAdvanceRequesterFunding(request);
   request.winnerParty = ruling;
 
   const challenge = Challenge.load(
@@ -673,6 +708,7 @@ export function handleHumanityClaimed(ev: HumanityClaimed): void {
   ) as Request | null;
   if (!request) return;
   request.status = StatusUtil.resolved;
+  clearAdvanceRequesterFunding(request);
   request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
   request.save();
@@ -712,6 +748,7 @@ export function handleHumanityRevoked(ev: HumanityRevoked): void {
   ) as Request | null;
   if (!request) return;
   request.status = StatusUtil.resolved;
+  clearAdvanceRequesterFunding(request);
   request.winnerParty = PartyUtil.requester;
   request.resolutionTime = ev.block.timestamp;
   request.save();
@@ -821,7 +858,9 @@ export function handleContribution(ev: ContributionEv): void {
   }
 
   let fundId: Bytes;
-  if (PartyUtil.parse(ev.params.side) == PartyUtil.requester) {
+  const contributionSide = PartyUtil.parse(ev.params.side);
+  const isInitialRequesterFunding = isInitialRequesterFundingContribution(ev, contributionSide);
+  if (contributionSide == PartyUtil.requester) {
     fundId = hash(round.id.concat(ONE_B));
     let fund = RequesterFund.load(fundId);
     if (fund == null) {
@@ -833,6 +872,7 @@ export function handleContribution(ev: ContributionEv): void {
     }
     fund.amount = fund.amount.plus(ev.params.contribution);
     fund.save();
+    if (isInitialRequesterFunding) updateAdvanceRequesterFunding(request, fund.amount);
   } else {
     fundId = hash(round.id.concat(TWO_B));
     let fund = ChallengerFund.load(fundId);
@@ -867,6 +907,11 @@ export function handleContribution(ev: ContributionEv): void {
     contribution.amount = ev.params.contribution;
   } else contribution.amount = contribution.amount.plus(ev.params.contribution);
   contribution.fund = fundId;
+  contribution.side = contributionSide;
+  contribution.humanity = ev.params.humanityId;
+  contribution.request = request.id;
+  contribution.challenge = challenge.id;
+  contribution.round = round.id;
   contribution.save();
 }
 
