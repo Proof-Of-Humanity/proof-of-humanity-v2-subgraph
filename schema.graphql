@@ -320,6 +320,12 @@ type ForesightCreditUse @entity(immutable: true) {
   timestamp: BigInt!
 }
 
+type SeerCreditUse @entity(immutable: true) {
+  id: ID!
+  humanityId: Bytes!
+  timestamp: BigInt!
+}
+
 type _Schema_
   @fulltext(
     name: "submissionSearch"

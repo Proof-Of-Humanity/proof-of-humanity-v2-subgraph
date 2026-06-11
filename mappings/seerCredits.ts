@@ -3,6 +3,7 @@ import { Transfer } from "../generated/SeerCredits/SeerCredits";
 import {
   CrossChainRegistration,
   Registration,
+  SeerCreditUse,
 } from "../generated/schema";
 import {
   getDailyAnalytics,
@@ -40,6 +41,15 @@ export function handleTransfer(event: Transfer): void {
   daily.seerCreditsBuys = daily.seerCreditsBuys.plus(ONE);
 
   const humanityId = event.params.from;
+  const useId = event.transaction.hash
+    .toHexString()
+    .concat(":")
+    .concat(event.logIndex.toString());
+  const creditUse = new SeerCreditUse(useId);
+  creditUse.humanityId = humanityId;
+  creditUse.timestamp = event.block.timestamp;
+  creditUse.save();
+
   const profile = getHumanAnalyticsProfile(humanityId);
 
   if (!profile.hasUsedSeerCredits) {
