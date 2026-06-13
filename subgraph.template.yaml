@@ -34,6 +34,8 @@ dataSources:
       abis:
         - name: ProofOfHumanity
           file: ./abis/ProofOfHumanity.json
+        - name: IArbitrator
+          file: ./abis/IArbitrator.json
       eventHandlers:
         - event: Initialized()
           handler: handleInitialized
